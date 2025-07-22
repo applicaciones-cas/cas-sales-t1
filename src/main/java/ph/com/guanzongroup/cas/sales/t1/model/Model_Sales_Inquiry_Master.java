@@ -55,7 +55,6 @@ public class Model_Sales_Inquiry_Master extends Model {
             poEntity.updateObject("dFollowUp", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateString("cProcessd", "0");
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateObject("nPriority", 0);
             poEntity.updateString("cInqrStat", SalesInquiryStatic.OPEN);
             poEntity.updateString("cTranStat", SalesInquiryStatic.OPEN);
             //end - assign default values
@@ -239,6 +238,14 @@ public class Model_Sales_Inquiry_Master extends Model {
 
     public String getInquiryStatus() {
         return (String) getValue("cInqrStat");
+    }
+
+    public JSONObject setCategoryType(String categoryType) {
+        return setValue("cConditnx", categoryType);
+    }
+
+    public String getCategoryType() {
+        return (String) getValue("cConditnx");
     }
 
     public JSONObject setTransactionStatus(String transactionStatus) {

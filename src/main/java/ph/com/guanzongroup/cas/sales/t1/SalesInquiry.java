@@ -767,7 +767,7 @@ public class SalesInquiry extends Transaction {
                 + " LEFT JOIN industry d ON d.sIndstCdx = a.sIndstCdx "
                 + " LEFT JOIN payee e ON e.sPayeeIDx = a.sIssuedTo ";
         
-        "SELECT \n" +
+        String sa = "SELECT \n" +
 "a.sTransNox\n" +
 ", a.dTransact\n" +
 ", b.sCompnyNm AS sClientNm\n" +
@@ -781,7 +781,7 @@ public class SalesInquiry extends Transaction {
 "LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx\n" +
 "LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd\n" +
 "LEFT JOIN company f ON f.sCompnyID = a.sCompnyID\n" +
-"LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx"
+"LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx";
     }
     
     @Override

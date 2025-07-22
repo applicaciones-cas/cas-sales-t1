@@ -14,18 +14,16 @@ import org.guanzon.appdriver.iface.GValidator;
 public class SalesInquiryValidatorFactory {
     public static GValidator make(String industryId){
         switch (industryId) {
-//            case "01": //Mobile Phone
-//                return new SalesInquiry_MP();
-//            case "02": //Motorcycle
-//                return new SalesInquiry_MC();
-//            case "03": //Vehicle
-//                return new SalesInquiry_Vehicle();
-//            case "04": //Hospitality
+            case "01": //Mobile Phone
+                return new SalesInquiry_MP();
+            case "02": //Motorcycle
+                return new SalesInquiry_MC();
+            case "03": //Vehicle
+                return new SalesInquiry_Vehicle();
+            case "04": //Hospitality
 //                return new SalesInquiry_Hospitality();
-//            case "05": //Los Pedritos
+            case "05": //Los Pedritos
 //                return new SalesInquiry_LP();
-//            case "": //General
-//                return new SalesInquiry_General();
             case "07": //Appliances
                 return new SalesInquiry_Appliances();
             default:
