@@ -495,10 +495,10 @@ public class SalesInquiry extends Transaction {
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
         object.setRecordStatus(RecordStatus.ACTIVE);
         System.out.println("Brand ID : "  + Detail(row).getBrandId());;
-        poJSON = object.searchRecord(value, byCode,Detail(row).getBrandId());
+        poJSON = object.searchRecordOfVariants(value, byCode);
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
-            Detail(row).setBrandId(object.getModel().getBrandId());
+            Detail(row).setModelId(object.getModel().getBrandId());
             
             System.out.println("StockID : " + Detail(row).Inventory().getStockId());
             System.out.println("Model  : " + Detail(row).Inventory().Model().getDescription());
@@ -529,7 +529,6 @@ public class SalesInquiry extends Transaction {
            
             poJSON = checkExistingDetail(row);
             if ("error".equals((String) poJSON.get("result"))) {
-                poJSON.put("row", row);
                 return poJSON;
             }
             Detail(row).setColorId(object.getModel().getColorId());
@@ -545,6 +544,7 @@ public class SalesInquiry extends Transaction {
     
     private JSONObject checkExistingDetail(int row){
         poJSON = new JSONObject();
+        poJSON.put("row", row);
         
         for (int lnCtr = 0; lnCtr <= getDetailCount()- 1; lnCtr++) {
             if (Detail(lnCtr).getEntryNo() != row) {
@@ -553,6 +553,7 @@ public class SalesInquiry extends Transaction {
                     && Detail(lnCtr).getColorId().equals(Detail(row).getColorId())){
                     poJSON.put("result", "error");
                     poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                    poJSON.put("row", lnCtr);
                     return poJSON;
                 }
             }
@@ -849,6 +850,7 @@ public class SalesInquiry extends Transaction {
             Master().setBranchCode(poGRider.getBranchCode());
             Master().setIndustryId(psIndustryId);
             Master().setCompanyId(psCompanyId);
+            Master().setCategoryCode(psCategorCd);
             Master().setTransactionDate(poGRider.getServerDate());
 //            Master().setTargetDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
