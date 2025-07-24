@@ -28,6 +28,12 @@ import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.client.Client;
 import org.guanzon.cas.client.services.ClientControllers;
+import org.guanzon.cas.inv.Inventory;
+import org.guanzon.cas.inv.services.InvControllers;
+import org.guanzon.cas.parameter.Brand;
+import org.guanzon.cas.parameter.Color;
+//import org.guanzon.cas.parameter.Model;
+import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
@@ -409,6 +415,8 @@ public class SalesInquiry extends Transaction {
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setClientId(object.Master().getModel().getClientId());
+            Master().setAddressId(""); //TODO
+            Master().setContactId(""); //TODO
         }
 
         return poJSON;
@@ -424,7 +432,7 @@ public class SalesInquiry extends Transaction {
 //        object.Master().setClientType(Master().getClientType());
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setClientId(object.Master().getModel().getClientId());
+            Master().setAgentId(object.Master().getModel().getClientId());
         }
 
         return poJSON;
@@ -440,22 +448,126 @@ public class SalesInquiry extends Transaction {
 //        object.Master().setClientType(Master().getClientType());
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setClientId(object.Master().getModel().getClientId());
+            Master().setSalesMan(object.Master().getModel().getClientId());
         }
 
         return poJSON;
     }
     
-    public JSONObject loadSalesInquiry(String industryId, String company, String supplier, String referenceNo) {
+    public JSONObject SearchBrand(String value, boolean byCode, int row)
+            throws ExceptionInInitializerError,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        if(Master().getClientId()== null || "".equals(Master().getClientId())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client is not set.");
+            return poJSON;
+        }
+        
+        Brand object = new ParamControllers(poGRider, logwrapr).Brand();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+
+        poJSON = object.searchRecord(value, byCode, Master().getIndustryId());
+        if ("success".equals((String) poJSON.get("result"))) {
+            if (!object.getModel().getBrandId().equals(Detail(row).getBrandId())) {
+                Detail(row).setStockId("");
+            }
+
+            Detail(row).setBrandId(object.getModel().getBrandId());
+        }
+        return poJSON;
+    }
+
+    public JSONObject SearchModel(String value, boolean byCode, int row)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        poJSON.put("row", row);
+
+        if(Detail(row).getBrandId() == null || "".equals(Detail(row).getBrandId())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Brand is not set.");
+            return poJSON;
+        }
+        
+        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        System.out.println("Brand ID : "  + Detail(row).getBrandId());;
+        poJSON = object.searchRecord(value, byCode,Detail(row).getBrandId());
+        poJSON.put("row", row);
+        if ("success".equals((String) poJSON.get("result"))) {
+            Detail(row).setBrandId(object.getModel().getBrandId());
+            
+            System.out.println("StockID : " + Detail(row).Inventory().getStockId());
+            System.out.println("Model  : " + Detail(row).Inventory().Model().getDescription());
+        }
+
+        return poJSON;
+    }
+    
+    
+    public JSONObject SearchColor(String value, boolean byCode, int row)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        poJSON.put("row", row);
+
+        if(Detail(row).getModelId()== null || "".equals(Detail(row).getModelId())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Model is not set.");
+            return poJSON;
+        }
+        
+        Color object = new ParamControllers(poGRider, logwrapr).Color();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        System.out.println("Model ID : "  + Detail(row).getModelId());
+        poJSON = object.searchRecord(value, byCode);
+        poJSON.put("row", row);
+        if ("success".equals((String) poJSON.get("result"))) {
+           
+            poJSON = checkExistingDetail(row);
+            if ("error".equals((String) poJSON.get("result"))) {
+                poJSON.put("row", row);
+                return poJSON;
+            }
+            Detail(row).setColorId(object.getModel().getColorId());
+            
+            //Check for existing stock ID
+            
+            System.out.println("StockID : " + Detail(row).Inventory().getStockId());
+            System.out.println("Color  : " + Detail(row).Color().getDescription());
+        }
+
+        return poJSON;
+    }
+    
+    private JSONObject checkExistingDetail(int row){
+        poJSON = new JSONObject();
+        
+        for (int lnCtr = 0; lnCtr <= getDetailCount()- 1; lnCtr++) {
+            if (Detail(lnCtr).getEntryNo() != row) {
+                if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
+                    && Detail(lnCtr).getModelId().equals(Detail(row).getModelId())
+                    && Detail(lnCtr).getColorId().equals(Detail(row).getColorId())){
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                    return poJSON;
+                }
+            }
+        }
+        
+        return poJSON;
+    }
+    
+    public JSONObject loadSalesInquiry(String industryId, String client, String referenceNo) {
         try {
             if (industryId == null) {
                 industryId = psIndustryId;
             }
-            if (company == null) {
-                company = "";
-            }
-            if (supplier == null) {
-                supplier = "";
+            if (client == null) {
+                client = "";
             }
             if (referenceNo == null) {
                 referenceNo = "";
@@ -475,8 +587,7 @@ public class SalesInquiry extends Transaction {
 
             initSQL();
             String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
-                    + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + company)
-                    + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
+                    + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
             );
@@ -499,7 +610,7 @@ public class SalesInquiry extends Transaction {
                     // Print the result set
                     System.out.println("sTransNox: " + loRS.getString("sTransNox"));
                     System.out.println("dTransact: " + loRS.getDate("dTransact"));
-                    System.out.println("sCompnyNm: " + loRS.getString("sSupplrNm"));
+                    System.out.println("sCompnyNm: " + loRS.getString("sClientNm"));
                     System.out.println("------------------------------------------------------------------------------");
 
                     paMasterList.add(SalesInquiryMaster());
@@ -538,6 +649,10 @@ public class SalesInquiry extends Transaction {
         }
 
         return paMasterList.size();
+    }
+    
+    public Model_Sales_Inquiry_Master SalesInquiryList(int row) {
+        return (Model_Sales_Inquiry_Master) paMasterList.get(row);
     }
     
     public JSONObject removeSalesInquiryDetails() {
@@ -735,7 +850,9 @@ public class SalesInquiry extends Transaction {
             Master().setIndustryId(psIndustryId);
             Master().setCompanyId(psCompanyId);
             Master().setTransactionDate(poGRider.getServerDate());
+//            Master().setTargetDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
+            Master().setInquiryStatus(SalesInquiryStatic.OPEN);
 
         } catch (SQLException ex) {
             Logger.getLogger(SalesInquiry.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
@@ -750,38 +867,23 @@ public class SalesInquiry extends Transaction {
 
     @Override
     public void initSQL() {
-        SQL_BROWSE = " SELECT "
-                + "   a.dTransact  "
-                + " , a.sTransNox  "
-                + " , a.sIndstCdx  "
-                + " , a.sCompnyID  "
-                + " , a.sClientID  "
-                + " , a.sSOANoxxx  "
-                + " , b.sCompnyNm  AS sSupplrNm"
-                + " , c.sCompnyNm  AS sCompnyNm"
-                + " , d.sDescript  AS sIndustry"
-                + " , e.sPayeeNme  AS sPayeeNme"
-                + " FROM ap_payment_master a "
-                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                + " LEFT JOIN company c ON c.sCompnyID = a.sCompnyID "
-                + " LEFT JOIN industry d ON d.sIndstCdx = a.sIndstCdx "
-                + " LEFT JOIN payee e ON e.sPayeeIDx = a.sIssuedTo ";
+        SQL_BROWSE =  " SELECT "
+                    + " a.sTransNox "
+                    + " , a.dTransact "
+                    + " , b.sCompnyNm AS sClientNm "
+                    + " , c.sCompnyNm AS sSalePrsn "
+                    + " , d.sCompnyNm AS sAgentNme "
+                    + " , e.sBranchNm "
+                    + " , f.sCompnyNm "
+                    + " , g.sDescript "
+                    + " FROM sales_inquiry_master a "
+                    + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
+                    + " LEFT JOIN client_master c ON c.sClientID = a.sSalesman "
+                    + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
+                    + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
+                    + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
+                    + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx " ;
         
-        String sa = "SELECT \n" +
-"a.sTransNox\n" +
-", a.dTransact\n" +
-", b.sCompnyNm AS sClientNm\n" +
-", c.sCompnyNm AS sSalePrsn\n" +
-", d.sCompnyNm AS sAgentNme\n" +
-", e.sBranchNm\n" +
-", f.s\n" +
-"FROM sales_inquiry_master a\n" +
-"LEFT JOIN client_master b ON b.sClientID = a.sClientID\n" +
-"LEFT JOIN client_master c ON c.sClientID = a.sSalesman\n" +
-"LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx\n" +
-"LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd\n" +
-"LEFT JOIN company f ON f.sCompnyID = a.sCompnyID\n" +
-"LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx";
     }
     
     @Override

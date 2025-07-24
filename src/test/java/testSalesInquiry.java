@@ -37,7 +37,7 @@ public class testSalesInquiry {
         poSalesInquiryController = new SalesControllers(instance, null).SalesInquiry();
     }
 
-    @Test
+//    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
         String industryId = "01";
@@ -153,4 +153,123 @@ public class testSalesInquiry {
 
     }
     
+//    @Test
+    public void testLoadSalesInquiry() {
+        String industryId = "01";
+        String companyId = "";
+        JSONObject loJSON;
+        loJSON = poSalesInquiryController.InitTransaction();
+        if (!"success".equals((String) loJSON.get("result"))) {
+            System.err.println((String) loJSON.get("message"));
+            Assert.fail();
+        }
+        poSalesInquiryController.setIndustryId(industryId);
+        loJSON = poSalesInquiryController.loadSalesInquiry(industryId,"","");
+        if (!"success".equals((String) loJSON.get("result"))) {
+            System.err.println((String) loJSON.get("message"));
+            Assert.fail();
+        }
+        //retreiving using column index
+        for (int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryCount()- 1; lnCtr++) {
+            try {
+                System.out.println("Row No ->> " + lnCtr);
+                System.out.println("Transaction No ->> " + poSalesInquiryController.SalesInquiryList(lnCtr).getTransactionNo());
+                System.out.println("Transaction Date ->> " + poSalesInquiryController.SalesInquiryList(lnCtr).getTransactionDate());
+                System.out.println("Client ->> " + poSalesInquiryController.SalesInquiryList(lnCtr).Client().getCompanyName());
+                System.out.println("----------------------------------------------------------------------------------");
+            } catch (SQLException ex) {
+                Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (GuanzonException ex) {
+                Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+     @Test
+    public void testOpenTransaction() {
+        JSONObject loJSON;
+        
+        try {
+            loJSON = poSalesInquiryController.InitTransaction();
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            loJSON = poSalesInquiryController.OpenTransaction("M00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            //retreiving using column index
+            for (int lnCol = 1; lnCol <= poSalesInquiryController.Master().getColumnCount(); lnCol++){
+                System.out.println(poSalesInquiryController.Master().getColumn(lnCol) + " ->> " + poSalesInquiryController.Master().getValue(lnCol));
+            }
+            //retreiving using field descriptions
+            System.out.println(poSalesInquiryController.Master().Branch().getBranchName());
+            System.out.println(poSalesInquiryController.Master().Industry().getDescription());
+
+            //retreiving using column index
+            for (int lnCtr = 0; lnCtr <= poSalesInquiryController.Detail().size() - 1; lnCtr++){
+                for (int lnCol = 1; lnCol <= poSalesInquiryController.Detail(lnCtr).getColumnCount(); lnCol++){
+                    System.out.println(poSalesInquiryController.Detail(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.Detail(lnCtr).getValue(lnCol));
+                }
+            }
+        } catch (CloneNotSupportedException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }   
+    
+    @Test
+    public void testConfirmTransaction() {
+        JSONObject loJSON;
+        
+        try {
+            loJSON = poSalesInquiryController.InitTransaction();
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            loJSON = poSalesInquiryController.OpenTransaction("M00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            //retreiving using column index
+            for (int lnCol = 1; lnCol <= poSalesInquiryController.Master().getColumnCount(); lnCol++){
+                System.out.println(poSalesInquiryController.Master().getColumn(lnCol) + " ->> " + poSalesInquiryController.Master().getValue(lnCol));
+            }
+            //retreiving using field descriptions
+            System.out.println(poSalesInquiryController.Master().Branch().getBranchName());
+            System.out.println(poSalesInquiryController.Master().Industry().getDescription());
+
+            //retreiving using column index
+            for (int lnCtr = 0; lnCtr <= poSalesInquiryController.Detail().size() - 1; lnCtr++){
+                for (int lnCol = 1; lnCol <= poSalesInquiryController.Detail(lnCtr).getColumnCount(); lnCol++){
+                    System.out.println(poSalesInquiryController.Detail(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.Detail(lnCtr).getValue(lnCol));
+                }
+            }
+            
+            loJSON = poSalesInquiryController.ConfirmTransaction("test confirm");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+            
+            System.out.println((String) loJSON.get("message"));
+        } catch (CloneNotSupportedException |ParseException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }   
 }

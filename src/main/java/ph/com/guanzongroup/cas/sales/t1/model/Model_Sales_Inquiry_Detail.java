@@ -20,6 +20,7 @@ import org.guanzon.cas.inv.services.InvModels;
 import org.guanzon.cas.parameter.model.Model_Brand;
 import org.guanzon.cas.parameter.model.Model_Color;
 import org.guanzon.cas.parameter.model.Model_Model;
+import org.guanzon.cas.parameter.model.Model_Model_Variant;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 
@@ -34,6 +35,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
     //reference objects
     Model_Brand poBrand;
     Model_Model poModel;
+    Model_Model_Variant poModelVariant;
     Model_Color poColor;
     Model_Inventory poInventory;
     
@@ -65,6 +67,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
             poBrand = model.Brand();
             poModel = model.Model();
             poColor = model.Color();
+            poModelVariant = model.ModelVariant();
             
             InvModels invModel = new InvModels(poGRider); 
             poInventory = invModel.Inventory();
@@ -94,6 +97,17 @@ public class Model_Sales_Inquiry_Detail extends Model {
             return 0;
         }
         return (int) getValue("nEntryNox");
+    }
+
+    public JSONObject setPriority(int priority) {
+        return setValue("nPriority", priority);
+    }
+
+    public int getPriority() {
+        if (getValue("nPriority") == null || "".equals(getValue("nPriority"))) {
+            return 0;
+        }
+        return (int) getValue("nPriority");
     }
 
     public JSONObject setStockId(String stockId) {
@@ -226,6 +240,28 @@ public class Model_Sales_Inquiry_Detail extends Model {
         } else {
             poInventory.initialize();
             return poInventory;
+        }
+    }
+    
+    
+    public Model_Model_Variant ModelVariant() throws SQLException, GuanzonException {
+        if (!"".equals(Inventory().getVariantId())) {
+            if (poModelVariant.getEditMode() == EditMode.READY
+                    && poModelVariant.getModelId().equals(Inventory().getVariantId())) {
+                return poModelVariant;
+            } else {
+                poJSON = poModelVariant.openRecord((Inventory().getVariantId()));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poModelVariant;
+                } else {
+                    poModelVariant.initialize();
+                    return poModelVariant;
+                }
+            }
+        } else {
+            poModelVariant.initialize();
+            return poModelVariant;
         }
     }
     //end reference object models

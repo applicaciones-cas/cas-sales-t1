@@ -12,7 +12,9 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.cas.client.model.Model_Client_Address;
 import org.guanzon.cas.client.model.Model_Client_Master;
+import org.guanzon.cas.client.model.Model_Client_Mobile;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.parameter.model.Model_Branch;
 import org.guanzon.cas.parameter.model.Model_Company;
@@ -34,6 +36,8 @@ public class Model_Sales_Inquiry_Master extends Model {
     Model_Industry poIndustry;
     Model_Company poCompany;
     Model_Client_Master poClient;
+    Model_Client_Address poClientAddress;
+    Model_Client_Mobile poClientMobile;
     Model_Client_Master poAgent;
     Model_Client_Master poSalesPerson;
 
@@ -75,6 +79,8 @@ public class Model_Sales_Inquiry_Master extends Model {
             poClient = clientModel.ClientMaster();
             poAgent = clientModel.ClientMaster();
             poSalesPerson = clientModel.ClientMaster();
+            poClientAddress = clientModel.ClientAddress();
+            poClientMobile = clientModel.ClientMobile();
             
 //            end - initialize reference objects
 
@@ -375,6 +381,48 @@ public class Model_Sales_Inquiry_Master extends Model {
         } else {
             poClient.initialize();
             return poClient;
+        }
+    }
+    
+    public Model_Client_Address ClientAddress() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sAddrssID"))) {
+            if (poClientAddress.getEditMode() == EditMode.READY
+                    && poClientAddress.getClientId().equals((String) getValue("sAddrssID"))) {
+                return poClientAddress;
+            } else {
+                poJSON = poClientAddress.openRecord((String) getValue("sAddrssID"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poClientAddress;
+                } else {
+                    poClientAddress.initialize();
+                    return poClientAddress;
+                }
+            }
+        } else {
+            poClientAddress.initialize();
+            return poClientAddress;
+        }
+    }
+    
+    public Model_Client_Mobile ClientMobile() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sContctID"))) {
+            if (poClientMobile.getEditMode() == EditMode.READY
+                    && poClientMobile.getClientId().equals((String) getValue("sContctID"))) {
+                return poClientMobile;
+            } else {
+                poJSON = poClientMobile.openRecord((String) getValue("sContctID"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poClientMobile;
+                } else {
+                    poClientMobile.initialize();
+                    return poClientMobile;
+                }
+            }
+        } else {
+            poClientMobile.initialize();
+            return poClientMobile;
         }
     }
 
