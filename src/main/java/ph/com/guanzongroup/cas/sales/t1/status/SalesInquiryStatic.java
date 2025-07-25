@@ -17,4 +17,8 @@ public class SalesInquiryStatic {
     public static final  String VOID = "4";
     public static final  String PAID = "5"; 
     public static final  String POSTED = "11"; 
+    
+    public static final  String CATEGORY_APPLIANCES = "0002"; 
+    public static final  String CATEGORY_MC = "0003";
+    public static final  String CATEGORY_CAR = "0005";
 }

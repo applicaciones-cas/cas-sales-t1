@@ -389,7 +389,100 @@ public class SalesInquiry extends Transaction {
                 lsSQL,
                 "",
                 "Transaction Date»Transaction No»Client",
-                "dTransact»sTransNox»sCompnyNm",
+                "dTransact»sTransNox»sClientNm",
+                "a.dTransact»a.sTransNox»b.sCompnyNm",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+    
+    public JSONObject searchTransaction(String fsClient, String fsTransNo)
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psTranStat != null) {
+            if (psTranStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                    lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+                }
+                lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+            } else {
+                lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+            }
+        }
+
+        initSQL();
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, 
+                   " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                 + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
+                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
+        if (lsTransStat != null && !"".equals(lsTransStat)) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Transaction Date»Transaction No»Client",
+                "dTransact»sTransNox»sClientNm",
+                "a.dTransact»a.sTransNox»b.sCompnyNm",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+    
+    public JSONObject searchTransaction(String fsIndustry, String fsCompany, String fsCategory, String fsClient, String fsTransNo)
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psTranStat != null) {
+            if (psTranStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                    lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+                }
+                lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+            } else {
+                lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+            }
+        }
+
+        initSQL();
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, 
+                   " a.sIndstCdx = " + SQLUtil.toSQL(fsIndustry)
+                 + " AND a.sCompnyID = " + SQLUtil.toSQL(fsCompany)
+                 + " AND a.sCategrCd = " + SQLUtil.toSQL(fsCategory)
+                 + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
+                 + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
+                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
+        if (lsTransStat != null && !"".equals(lsTransStat)) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Transaction Date»Transaction No»Client",
+                "dTransact»sTransNox»sClientNm",
                 "a.dTransact»a.sTransNox»b.sCompnyNm",
                 1);
 
@@ -415,8 +508,8 @@ public class SalesInquiry extends Transaction {
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setClientId(object.Master().getModel().getClientId());
-            Master().setAddressId(""); //TODO
-            Master().setContactId(""); //TODO
+            Master().setAddressId("address"); //TODO
+            Master().setContactId("contact"); //TODO
         }
 
         return poJSON;
@@ -466,6 +559,11 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
+        poJSON = checkMaximumInqDetail();
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
         Brand object = new ParamControllers(poGRider, logwrapr).Brand();
         object.setRecordStatus(RecordStatus.ACTIVE);
 
@@ -476,6 +574,8 @@ public class SalesInquiry extends Transaction {
             }
 
             Detail(row).setBrandId(object.getModel().getBrandId());
+            Detail(row).setModelId("");
+            Detail(row).setColorId("");
         }
         return poJSON;
     }
@@ -498,7 +598,14 @@ public class SalesInquiry extends Transaction {
         poJSON = object.searchRecordOfVariants(value, byCode);
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
-            Detail(row).setModelId(object.getModel().getBrandId());
+            poJSON = checkExistingDetail(row,object.getModel().getModelId(),"",object.getModel().getStockId() );
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+            
+            Detail(row).setModelId(object.getModel().getModelId());
+            Detail(row).setColorId("");
+            Detail(row).setColorId(object.getModel().getStockId());
             
             System.out.println("StockID : " + Detail(row).Inventory().getStockId());
             System.out.println("Model  : " + Detail(row).Inventory().Model().getDescription());
@@ -527,7 +634,7 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
            
-            poJSON = checkExistingDetail(row);
+            poJSON = checkExistingDetail(row,Detail(row).getModelId(),object.getModel().getColorId(),Detail(row).getStockId() );
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
@@ -542,23 +649,99 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    private JSONObject checkExistingDetail(int row){
+    public JSONObject SearchInventory(String value, boolean byCode, int row)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        poJSON.put("row", row);
+        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        
+        poJSON = object.searchRecord(value, byCode, 
+                null,
+                null, 
+                Master().getIndustryId(),  
+                Master().getCategoryCode());
+        
+        poJSON.put("row", row);
+        System.out.println("result" + (String) poJSON.get("result"));
+        if ("success".equals((String) poJSON.get("result"))) {
+            poJSON = checkExistingDetail(row,object.getModel().getModelId(),object.getModel().getColorId(),object.getModel().getStockId() );
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+
+            Detail(row).setStockId(object.getModel().getStockId());
+            Detail(row).setModelId(object.getModel().getModelId());
+            Detail(row).setColorId(object.getModel().getColorId());
+        }
+        
+        System.out.println("StockID : " + Detail(row).Inventory().getStockId());
+        System.out.println("Description  : " + Detail(row).Inventory().getDescription());
+        return poJSON;
+    }
+    
+    private JSONObject checkExistingDetail(int row,String modelId, String colorId, String stockId){
         poJSON = new JSONObject();
         poJSON.put("row", row);
         
         for (int lnCtr = 0; lnCtr <= getDetailCount()- 1; lnCtr++) {
-            if (Detail(lnCtr).getEntryNo() != row) {
+            if (lnCtr != row) {
+                //Check Existing Stock ID
+                if(stockId != null && !"".equals(stockId)){
+                    if(stockId.equals(Detail(lnCtr).getStockId())){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                        poJSON.put("row", lnCtr);
+                        return poJSON;
+                    }
+                }
+                
+                //Check Existing Brand and Model
                 if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
-                    && Detail(lnCtr).getModelId().equals(Detail(row).getModelId())
-                    && Detail(lnCtr).getColorId().equals(Detail(row).getColorId())){
+                    && Detail(lnCtr).getModelId().equals(modelId)){
+                    
+                    //Check if there is brand and model without color Id
+                    if(Detail(lnCtr).getColorId() == null || "".equals(Detail(lnCtr).getColorId())){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Brand and model already exists without color.");
+                        poJSON.put("row", lnCtr);
+                        return poJSON;
+                    }
+                    
+                    //Check if brand, model and color already exists in the transaction detail
+                    if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
+                        && Detail(lnCtr).getModelId().equals(modelId)
+                        && Detail(lnCtr).getColorId().equals(colorId)){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                        poJSON.put("row", lnCtr);
+                        return poJSON;
+                    }
+                }
+                
+            }
+        }
+        
+        return poJSON;
+    }
+    
+    public JSONObject checkMaximumInqDetail(){
+        poJSON = new JSONObject();
+        //Check if client type is corporate allow only 5 inquiry detail
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_CAR)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_MC)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_APPLIANCES)){
+            
+            //TODO Corporate
+            if(Master().getClientType().equals("1")){
+                if(getDetailCount() > 5){
                     poJSON.put("result", "error");
-                    poJSON.put("message", "Unit Description already exists in the transaction detail.");
-                    poJSON.put("row", lnCtr);
+                    poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
                     return poJSON;
                 }
             }
         }
-        
         return poJSON;
     }
     
@@ -693,6 +876,11 @@ public class SalesInquiry extends Transaction {
 
     public void setCategoryId(String categoryId) {
         psCategorCd = categoryId;
+    }
+
+    @Override
+    public void setWithUI(boolean withUI) {
+        pbWithUI = withUI;
     }
 
     @Override
@@ -855,6 +1043,10 @@ public class SalesInquiry extends Transaction {
 //            Master().setTargetDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
             Master().setInquiryStatus(SalesInquiryStatic.OPEN);
+            Master().setSourceCode("0");
+            Master().setPurchaseType("0");
+            Master().setCategoryType("0");
+            Master().setClientType("0");
 
         } catch (SQLException ex) {
             Logger.getLogger(SalesInquiry.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);

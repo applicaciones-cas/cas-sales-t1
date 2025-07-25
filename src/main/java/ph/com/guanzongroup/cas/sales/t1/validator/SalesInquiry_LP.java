@@ -27,7 +27,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
  *
  * @author Arsiela 03-12-2025
  */
-public class SalesInquiry_Vehicle implements GValidator{
+public class SalesInquiry_LP implements GValidator{
     GRiderCAS poGRider;
     String psTranStat;
     JSONObject poJSON;
@@ -84,7 +84,7 @@ public class SalesInquiry_Vehicle implements GValidator{
                     poJSON.put("result", "success");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(SalesInquiry_Vehicle.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SalesInquiry_LP.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return poJSON;
@@ -144,12 +144,6 @@ public class SalesInquiry_Vehicle implements GValidator{
         if (poMaster.getContactId()== null || poMaster.getContactId().isEmpty()) {
             poJSON.put("message", "Contact Number is not set.");
             return poJSON;
-        }
-        if(SalesInquiryStatic.CATEGORY_CAR.equals(poMaster.getCategoryCode())){
-            if (poMaster.getSalesMan()== null || poMaster.getSalesMan().isEmpty()) {
-                poJSON.put("message", "Sales Person is not set.");
-                return poJSON;
-            }
         }
         if(poMaster.getSourceCode().equals("")){
             if (poMaster.getAgentId()== null || poMaster.getAgentId().isEmpty()) {

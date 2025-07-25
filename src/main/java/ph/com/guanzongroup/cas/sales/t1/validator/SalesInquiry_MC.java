@@ -121,6 +121,40 @@ public class SalesInquiry_MC implements GValidator{
             poJSON.put("message", "Branch is not set.");
             return poJSON;
         }
+        if (poMaster.getPurchaseType()== null || poMaster.getPurchaseType().isEmpty()) {
+            poJSON.put("message", "Purchase Type is not set.");
+            return poJSON;
+        }
+        if (poMaster.getCategoryType()== null || poMaster.getCategoryType().isEmpty()) {
+            poJSON.put("message", "Category Type is not set.");
+            return poJSON;
+        }
+        if (poMaster.getSourceCode()== null || poMaster.getSourceCode().isEmpty()) {
+            poJSON.put("message", "Source Code is not set.");
+            return poJSON;
+        }
+        if (poMaster.getClientId() == null || poMaster.getClientId().isEmpty()) {
+            poJSON.put("message", "Client is not set.");
+            return poJSON;
+        }
+        if (poMaster.getAddressId()== null || poMaster.getAddressId().isEmpty()) {
+            poJSON.put("message", "Address is not set.");
+            return poJSON;
+        }
+        if (poMaster.getContactId()== null || poMaster.getContactId().isEmpty()) {
+            poJSON.put("message", "Contact Number is not set.");
+            return poJSON;
+        }
+        if(poMaster.getSourceCode().equals("")){
+            if (poMaster.getAgentId()== null || poMaster.getAgentId().isEmpty()) {
+                poJSON.put("message", "Referral is not set.");
+                return poJSON;
+            }
+        }
+        if (poMaster.getInquiryStatus()== null || poMaster.getInquiryStatus().isEmpty()) {
+            poJSON.put("message", "Inquiry Status is not set.");
+            return poJSON;
+        }
         
         poJSON.put("result", "success");
         return poJSON;
