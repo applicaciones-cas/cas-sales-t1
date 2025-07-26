@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -851,7 +852,26 @@ public class SalesInquiry extends Transaction {
         poJSON.put("message", "success");
         return poJSON;
     }
+    
+    public void sortPriority(){
+        Detail().sort((item1, item2) -> {
+            Integer lnPriority1 = (Integer) item1.getValue("nPriority");
+            Integer lnPriority2 = (Integer) item2.getValue("nPriority");
 
+            if (lnPriority1 == 0 && lnPriority2 != 0) {
+                return 1; 
+            } else if (lnPriority2 == 0 && lnPriority1 != 0) {
+                return -1; 
+            } else {
+                return lnPriority1.compareTo(lnPriority2); 
+            }
+        });
+
+        //Update priority no
+        for(int lnCtr = 0;lnCtr <= getDetailCount()-1;lnCtr++){
+            Detail(lnCtr).setPriority(lnCtr+1);
+        }
+    }
     
     /*Convert Date to String*/
     private static String xsDateShort(Date fdValue) {
@@ -876,11 +896,6 @@ public class SalesInquiry extends Transaction {
 
     public void setCategoryId(String categoryId) {
         psCategorCd = categoryId;
-    }
-
-    @Override
-    public void setWithUI(boolean withUI) {
-        pbWithUI = withUI;
     }
 
     @Override

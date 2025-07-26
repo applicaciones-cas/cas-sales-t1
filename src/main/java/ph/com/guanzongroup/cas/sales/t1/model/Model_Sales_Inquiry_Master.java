@@ -61,6 +61,7 @@ public class Model_Sales_Inquiry_Master extends Model {
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cInqrStat", SalesInquiryStatic.OPEN);
             poEntity.updateString("cTranStat", SalesInquiryStatic.OPEN);
+            psClientType = "0";
             //end - assign default values
 
             poEntity.insertRow();
