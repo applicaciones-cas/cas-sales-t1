@@ -33,6 +33,7 @@ import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
 import org.guanzon.cas.parameter.Brand;
 import org.guanzon.cas.parameter.Color;
+import org.guanzon.cas.parameter.ModelVariant;
 //import org.guanzon.cas.parameter.Model;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
@@ -192,51 +193,6 @@ public class SalesInquiry extends Transaction {
             poJSON.put("message", "Transaction paid successfully.");
         } else {
             poJSON.put("message", "Transaction paid request submitted successfully.");
-        }
-
-        return poJSON;
-    }
-
-    public JSONObject ProcessTransaction(String remarks)
-            throws ParseException,
-            SQLException,
-            GuanzonException,
-            CloneNotSupportedException {
-        poJSON = new JSONObject();
-
-        String lsStatus = SalesInquiryStatic.PROCESSED;
-        boolean lbProcess = true;
-
-        if (getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transacton was loaded.");
-            return poJSON;
-        }
-
-        if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Transaction was already processed.");
-            return poJSON;
-        }
-
-        //validator
-        poJSON = isEntryOkay(SalesInquiryStatic.PROCESSED);
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbProcess);
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        if (lbProcess) {
-            poJSON.put("message", "Transaction processed successfully.");
-        } else {
-            poJSON.put("message", "Transaction process request submitted successfully.");
         }
 
         return poJSON;
@@ -620,9 +576,11 @@ public class SalesInquiry extends Transaction {
         }
         
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
+//        ModelVariant object = new ParamControllers(poGRider, logwrapr).ModelVariant();
         object.setRecordStatus(RecordStatus.ACTIVE);
-        System.out.println("Brand ID : "  + Detail(row).getBrandId());;
-        poJSON = object.searchRecordOfVariants(value, byCode);
+        System.out.println("Brand ID : "  + Detail(row).getBrandId());
+        poJSON = object.searchRecordOfVariants(value, byCode, null, Detail(row).getBrandId(), Master().getIndustryId(), Master().getCategoryCode());
+//        poJSON = object.searchRecordByModel(value, byCode, Detail(row).getBrandId());
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
             poJSON = checkExistingDetail(row,object.getModel().getModelId(),"",object.getModel().getStockId() );
@@ -631,8 +589,8 @@ public class SalesInquiry extends Transaction {
             }
             
             Detail(row).setModelId(object.getModel().getModelId());
-            Detail(row).setColorId("");
-            Detail(row).setColorId(object.getModel().getStockId());
+            Detail(row).setStockId(object.getModel().getStockId());
+            Detail(row).setColorId(object.getModel().getColorId());
             
             System.out.println("StockID : " + Detail(row).Inventory().getStockId());
             System.out.println("Model  : " + Detail(row).Inventory().Model().getDescription());

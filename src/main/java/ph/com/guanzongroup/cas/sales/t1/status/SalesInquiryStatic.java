@@ -10,11 +10,11 @@ package ph.com.guanzongroup.cas.sales.t1.status;
  * @author Arsiela
  */
 public class SalesInquiryStatic {
-    public static final String OPEN = "0";
-    public static final  String CONFIRMED = "1";
-    public static final  String PROCESSED = "2"; 
-    public static final  String CANCELLED = "3";
-    public static final  String VOID = "4";
+    public static final String OPEN = "0"; //Open/default 
+    public static final  String CONFIRMED = "1"; //contacted
+    public static final  String QOUTED = "2"; //qouted
+    public static final  String CANCELLED = "3"; //Converted to Sale
+    public static final  String VOID = "4"; //Lost/Declined
     public static final  String PAID = "5"; 
     public static final  String POSTED = "11"; 
     
