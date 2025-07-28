@@ -381,6 +381,14 @@ public class SalesInquiry extends Transaction {
 
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId));
+        //If current user is an ordinary user load only its inquiries
+//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
+//                lsSQL = MiscUtil.addCondition(lsSQL, 
+//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+//            }
+//        }
+        
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
         }
@@ -426,6 +434,15 @@ public class SalesInquiry extends Transaction {
                    " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                  + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
+        
+        //If current user is an ordinary user load only its inquiries
+//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
+//                lsSQL = MiscUtil.addCondition(lsSQL, 
+//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+//            }
+//        }
+        
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
         }
@@ -474,6 +491,15 @@ public class SalesInquiry extends Transaction {
                  + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                  + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
+        
+        //If current user is an ordinary user load only its inquiries
+//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
+//                lsSQL = MiscUtil.addCondition(lsSQL, 
+//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+//            }
+//        }
+        
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
         }
@@ -776,6 +802,14 @@ public class SalesInquiry extends Transaction {
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
             );
+            
+            //If current user is an ordinary user load only its inquiries
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
+//                    lsSQL = MiscUtil.addCondition(lsSQL, 
+//                            " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+//                }
+//            }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
                 lsSQL = lsSQL + lsTransStat;
@@ -972,6 +1006,14 @@ public class SalesInquiry extends Transaction {
         return (Model_Sales_Inquiry_Detail) paDetailRemoved.get(row);
     }
 
+    public void removeDetail(Model_Sales_Inquiry_Detail item) {
+        if (paDetailRemoved == null) {
+            paDetailRemoved = new ArrayList<>();
+        }
+        
+        paDetailRemoved.add(item);
+    }
+
     @Override
     public JSONObject willSave()
             throws SQLException,
@@ -1058,7 +1100,7 @@ public class SalesInquiry extends Transaction {
 //            Master().setTargetDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
             Master().setInquiryStatus(SalesInquiryStatic.OPEN);
-            Master().setSourceCode("0");
+            Master().setSourceCode("0"); //TODO
             Master().setPurchaseType("0");
             Master().setCategoryType("0");
             Master().setClientType("0");
