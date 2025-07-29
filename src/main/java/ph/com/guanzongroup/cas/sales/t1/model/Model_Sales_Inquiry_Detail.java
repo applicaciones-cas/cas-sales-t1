@@ -126,6 +126,14 @@ public class Model_Sales_Inquiry_Detail extends Model {
         return (String) getValue("sModelIDx");
     }
 
+    public JSONObject setModelVarianId(String varianId) {
+        return setValue("sVrntIDxx", varianId);
+    }
+
+    public String getModelVarianId() {
+        return (String) getValue("sVrntIDxx");
+    }
+
     public JSONObject setColorId(String colorId) {
         return setValue("sColorIDx", colorId);
     }
@@ -247,10 +255,10 @@ public class Model_Sales_Inquiry_Detail extends Model {
     public Model_Model_Variant ModelVariant() throws SQLException, GuanzonException {
         if (!"".equals(Inventory().getVariantId())) {
             if (poModelVariant.getEditMode() == EditMode.READY
-                    && poModelVariant.getModelId().equals(Inventory().getVariantId())) {
+                    && poModelVariant.getModelId().equals((String) getValue("sVrntIDxx"))) {
                 return poModelVariant;
             } else {
-                poJSON = poModelVariant.openRecord((Inventory().getVariantId()));
+                poJSON = poModelVariant.openRecord((String) getValue("sVrntIDxx"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poModelVariant;
