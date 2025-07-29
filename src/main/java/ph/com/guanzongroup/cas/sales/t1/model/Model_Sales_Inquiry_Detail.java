@@ -253,9 +253,9 @@ public class Model_Sales_Inquiry_Detail extends Model {
     
     
     public Model_Model_Variant ModelVariant() throws SQLException, GuanzonException {
-        if (!"".equals(Inventory().getVariantId())) {
+        if (!"".equals((String) getValue("sVrntIDxx"))) {
             if (poModelVariant.getEditMode() == EditMode.READY
-                    && poModelVariant.getModelId().equals((String) getValue("sVrntIDxx"))) {
+                    && poModelVariant.getVariantId().equals((String) getValue("sVrntIDxx"))) {
                 return poModelVariant;
             } else {
                 poJSON = poModelVariant.openRecord((String) getValue("sVrntIDxx"));

@@ -575,25 +575,28 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
-        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
-//        ModelVariant object = new ParamControllers(poGRider, logwrapr).ModelVariant();
+        ModelVariant object = new ParamControllers(poGRider, logwrapr).ModelVariant();
         object.setRecordStatus(RecordStatus.ACTIVE);
         System.out.println("Brand ID : "  + Detail(row).getBrandId());
-        poJSON = object.searchRecordOfVariants(value, byCode, null, Detail(row).getBrandId(), Master().getIndustryId(), Master().getCategoryCode());
-//        poJSON = object.searchRecordByModel(value, byCode, Detail(row).getBrandId());
+        poJSON = object.searchRecordByModel(value, byCode, Detail(row).getBrandId());
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
-            poJSON = checkExistingDetail(row,object.getModel().getModelId(),"",object.getModel().getStockId() );
+            poJSON = checkExistingDetail(row,
+                    object.getModel().getModelId(),
+                    object.getModel().getVariantId(),
+                    object.getModel().getColorId(),
+                    "");
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
             
             Detail(row).setModelId(object.getModel().getModelId());
-            Detail(row).setStockId(object.getModel().getStockId());
-            Detail(row).setColorId(object.getModel().getColorId());
+            Detail(row).setModelVarianId(object.getModel().getVariantId());
+            Detail(row).setStockId("");
+            Detail(row).setColorId("");
             
-            System.out.println("StockID : " + Detail(row).Inventory().getStockId());
-            System.out.println("Model  : " + Detail(row).Inventory().Model().getDescription());
+            System.out.println("Variant ID : " +  Detail(row).getModelVarianId());
+            System.out.println("Variant Desc : " +  Detail(row).ModelVariant().getDescription());
         }
 
         return poJSON;
@@ -619,16 +622,22 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
            
-            poJSON = checkExistingDetail(row,Detail(row).getModelId(),object.getModel().getColorId(),Detail(row).getStockId() );
+            //Set stock ID
+            Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
+            
+            poJSON = checkExistingDetail(row,
+                    Detail(row).getModelId(),
+                    Detail(row).getModelVarianId(),
+                    object.getModel().getColorId(),
+                    inventory.getModel().getStockId() );
+            
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
+            
             Detail(row).setColorId(object.getModel().getColorId());
+            Detail(row).setStockId(inventory.getModel().getStockId());
             
-            //Check for existing stock ID
-            
-            System.out.println("StockID : " + Detail(row).Inventory().getStockId());
-            System.out.println("Color  : " + Detail(row).Color().getDescription());
         }
 
         return poJSON;
@@ -651,7 +660,12 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         System.out.println("result" + (String) poJSON.get("result"));
         if ("success".equals((String) poJSON.get("result"))) {
-            poJSON = checkExistingDetail(row,object.getModel().getModelId(),object.getModel().getColorId(),object.getModel().getStockId() );
+            poJSON = checkExistingDetail(row,
+                    object.getModel().getModelId(),
+                    object.getModel().getVariantId(),
+                    object.getModel().getColorId(),
+                    object.getModel().getStockId() 
+                    );
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
@@ -666,7 +680,7 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    private JSONObject checkExistingDetail(int row,String modelId, String colorId, String stockId){
+    private JSONObject checkExistingDetail(int row,String modelId, String modelVariantId, String colorId, String stockId){
         poJSON = new JSONObject();
         poJSON.put("row", row);
         
@@ -680,16 +694,17 @@ public class SalesInquiry extends Transaction {
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
-                }
+                } 
                 
                 //Check Existing Brand and Model
                 if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
-                    && Detail(lnCtr).getModelId().equals(modelId)){
+                    && Detail(lnCtr).getModelId().equals(modelId)
+                    && Detail(lnCtr).getModelId().equals(modelVariantId)){
                     
                     //Check if there is brand and model without color Id
                     if(Detail(lnCtr).getColorId() == null || "".equals(Detail(lnCtr).getColorId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Brand and model already exists without color.");
+                        poJSON.put("message", "Brand, model and variant already exists without color.");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
@@ -697,9 +712,10 @@ public class SalesInquiry extends Transaction {
                     //Check if brand, model and color already exists in the transaction detail
                     if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
                         && Detail(lnCtr).getModelId().equals(modelId)
+                        && Detail(lnCtr).getModelId().equals(modelVariantId)
                         && Detail(lnCtr).getColorId().equals(colorId)){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                        poJSON.put("message", "Item Description already exists in the transaction detail.");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
