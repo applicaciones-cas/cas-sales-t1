@@ -759,6 +759,9 @@ public class SalesInquiry extends Transaction {
                     + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
+                    + " AND ( a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
+                    + " OR a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+                    + " ) "
             );
             
             //If current user is an ordinary user load only its inquiries
@@ -1079,6 +1082,7 @@ public class SalesInquiry extends Transaction {
         SQL_BROWSE =  " SELECT "
                     + " a.sTransNox "
                     + " , a.dTransact "
+                    + " , a.cTranStat "
                     + " , b.sCompnyNm AS sClientNm "
                     + " , c.sCompnyNm AS sSalePrsn "
                     + " , d.sCompnyNm AS sAgentNme "
