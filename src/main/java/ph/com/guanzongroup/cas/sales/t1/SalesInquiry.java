@@ -623,20 +623,24 @@ public class SalesInquiry extends Transaction {
         if ("success".equals((String) poJSON.get("result"))) {
            
             //Set stock ID
+            String lsStockId = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
-            
+            inventory.setRecordStatus(RecordStatus.ACTIVE);
+            inventory.searchRecord(Master().getCategoryType(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
+            if (!"error".equals((String) poJSON.get("result"))) {
+                lsStockId = inventory.getModel().getStockId();
+            }
             poJSON = checkExistingDetail(row,
                     Detail(row).getModelId(),
                     Detail(row).getModelVarianId(),
                     object.getModel().getColorId(),
-                    inventory.getModel().getStockId() );
-            
+                    lsStockId );
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
             
             Detail(row).setColorId(object.getModel().getColorId());
-            Detail(row).setStockId(inventory.getModel().getStockId());
+            Detail(row).setStockId(lsStockId);
             
         }
 
@@ -690,7 +694,7 @@ public class SalesInquiry extends Transaction {
                 if(stockId != null && !"".equals(stockId)){
                     if(stockId.equals(Detail(lnCtr).getStockId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Unit Description already exists in the transaction detail.");
+                        poJSON.put("message", "Item Description already exists in the transaction detail.");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
