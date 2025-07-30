@@ -71,10 +71,10 @@ public class SalesInquiry_Vehicle implements GValidator{
                     return validateNew();
                 case SalesInquiryStatic.CONFIRMED:
                     return validateConfirmed();
-                case SalesInquiryStatic.POSTED:
-                    return validatePosted();
-                case SalesInquiryStatic.PAID:
-                    return validatePaid();
+//                case SalesInquiryStatic.POSTED:
+//                    return validatePosted();
+//                case SalesInquiryStatic.PAID:
+//                    return validatePaid();
                 case SalesInquiryStatic.CANCELLED:
                     return validateCancelled();
                 case SalesInquiryStatic.VOID:
@@ -93,6 +93,7 @@ public class SalesInquiry_Vehicle implements GValidator{
     private JSONObject validateNew() throws SQLException{
         poJSON = new JSONObject();
         Date loTransactionDate = poMaster.getTransactionDate();
+        Date loTargetDate = poMaster.getTargetDate();
         LocalDate serverDate = strToDate(xsDateShort(poGRider.getServerDate()));
         LocalDate oneYearAgo = serverDate.minusYears(1);
         
@@ -103,6 +104,11 @@ public class SalesInquiry_Vehicle implements GValidator{
 
         if ("1900-01-01".equals(xsDateShort(loTransactionDate))) {
             poJSON.put("message", "Invalid Transaction Date.");
+            return poJSON;
+        }
+        
+        if (loTargetDate == null) {
+            poJSON.put("message", "Invalid Target Date.");
             return poJSON;
         }
         if (poMaster.getIndustryId() == null) {

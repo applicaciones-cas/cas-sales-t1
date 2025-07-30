@@ -152,51 +152,51 @@ public class SalesInquiry extends Transaction {
 
         return poJSON;
     }
-
-    public JSONObject PaidTransaction(String remarks)
-            throws ParseException,
-            SQLException,
-            GuanzonException,
-            CloneNotSupportedException {
-        poJSON = new JSONObject();
-
-        String lsStatus = SalesInquiryStatic.PAID;
-        boolean lbPaid = true;
-
-        if (getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transacton was loaded.");
-            return poJSON;
-        }
-
-        if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Transaction was already paid.");
-            return poJSON;
-        }
-
-        //validator
-        poJSON = isEntryOkay(lsStatus);
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbPaid);
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        if (lbPaid) {
-            poJSON.put("message", "Transaction paid successfully.");
-        } else {
-            poJSON.put("message", "Transaction paid request submitted successfully.");
-        }
-
-        return poJSON;
-    }
+//
+//    public JSONObject PaidTransaction(String remarks)
+//            throws ParseException,
+//            SQLException,
+//            GuanzonException,
+//            CloneNotSupportedException {
+//        poJSON = new JSONObject();
+//
+//        String lsStatus = SalesInquiryStatic.PAID;
+//        boolean lbPaid = true;
+//
+//        if (getEditMode() != EditMode.READY) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No transacton was loaded.");
+//            return poJSON;
+//        }
+//
+//        if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Transaction was already paid.");
+//            return poJSON;
+//        }
+//
+//        //validator
+//        poJSON = isEntryOkay(lsStatus);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//
+//        //change status
+//        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbPaid);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//
+//        poJSON = new JSONObject();
+//        poJSON.put("result", "success");
+//        if (lbPaid) {
+//            poJSON.put("message", "Transaction paid successfully.");
+//        } else {
+//            poJSON.put("message", "Transaction paid request submitted successfully.");
+//        }
+//
+//        return poJSON;
+//    }
 
     public JSONObject CancelTransaction(String remarks)
             throws ParseException,
@@ -584,7 +584,7 @@ public class SalesInquiry extends Transaction {
             poJSON = checkExistingDetail(row,
                     object.getModel().getModelId(),
                     object.getModel().getVariantId(),
-                    object.getModel().getColorId(),
+                    "",
                     "");
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
@@ -622,11 +622,17 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
            
+            System.out.println("Category Type : " + Master().getCategoryType());
+            System.out.println("Brand : " + Detail(row).getBrandId());
+            System.out.println("Model : " + Detail(row).getModelId());
+            System.out.println("Variant : " + Detail(row).getModelVarianId());
+            System.out.println("Color : " + object.getModel().getColorId());
+            
             //Set stock ID
             String lsStockId = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
-            inventory.setRecordStatus(RecordStatus.ACTIVE);
-            inventory.searchRecord(Master().getCategoryType(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
+            inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
+            inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
             }
@@ -703,7 +709,7 @@ public class SalesInquiry extends Transaction {
                 //Check Existing Brand and Model
                 if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
                     && Detail(lnCtr).getModelId().equals(modelId)
-                    && Detail(lnCtr).getModelId().equals(modelVariantId)){
+                    && Detail(lnCtr).getModelVarianId().equals(modelVariantId)){
                     
                     //Check if there is brand and model without color Id
                     if(Detail(lnCtr).getColorId() == null || "".equals(Detail(lnCtr).getColorId())){
@@ -776,6 +782,7 @@ public class SalesInquiry extends Transaction {
 
             initSQL();
             String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
+                    + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
                     + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
@@ -886,6 +893,23 @@ public class SalesInquiry extends Transaction {
         for(int lnCtr = 0;lnCtr <= getDetailCount()-1;lnCtr++){
             Detail(lnCtr).setPriority(lnCtr+1);
         }
+        
+    }
+    
+    public void sortEntryNo(){
+        Detail().sort((item1, item2) -> {
+            Integer lnEntry1 = (Integer) item1.getValue("nEntryNox");
+            Integer lnEntry2 = (Integer) item2.getValue("nEntryNox");
+
+            if (lnEntry1 == 0 && lnEntry2 != 0) {
+                return 1; 
+            } else if (lnEntry2 == 0 && lnEntry1 != 0) {
+                return -1; 
+            } else {
+                return lnEntry1.compareTo(lnEntry2); 
+            }
+        });
+        
     }
     
     /*Convert Date to String*/
@@ -1046,9 +1070,39 @@ public class SalesInquiry extends Transaction {
         }
 
         //assign other info on detail
+        int lnEntryNo = 1;
+        boolean lbMulti = false;
+        System.out.println("Total Detail : " + getDetailCount());
+        sortEntryNo();
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
-            Detail(lnCtr).setEntryNo(lnCtr + 1);
+            System.out.println("Ctr "+ lnCtr + " Entry No : " + Detail(lnCtr).getEntryNo());
+            Detail(lnCtr).setEntryNo(lnCtr+1);
+            
+            lnEntryNo = 1;
+            //Update entry no if equal to 0
+            if(Detail(lnCtr).getEntryNo() == 0){
+                for(int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++){
+                    if(Detail(lnRow).getEntryNo() == lnEntryNo){
+                        lnEntryNo++;
+                    }
+                }
+                
+                System.out.println("Ctr "+ lnCtr + " SET Entry No : " + lnEntryNo);
+                Detail(lnCtr).setEntryNo(lnEntryNo);
+            } else {
+                //Update entry no if more than the detail count
+                if(Detail(lnCtr).getEntryNo() > getDetailCount()){
+                    for(int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++){
+                        if(Detail(lnRow).getEntryNo() == lnEntryNo){
+                            lnEntryNo++;
+                        }
+                    }
+                    
+                    System.out.println("Ctr "+ lnCtr + " SET Entry No : " + lnEntryNo);
+                    Detail(lnCtr).setEntryNo(lnEntryNo);
+                } 
+            }     
         }
         
         poJSON.put("result", "success");
@@ -1073,14 +1127,20 @@ public class SalesInquiry extends Transaction {
             /*Put initial model values here*/
             poJSON = new JSONObject();
             System.out.println("Dept ID : " + poGRider.getDepartment());
+            System.out.println("Current User : " + poGRider.getUserID());
+            
             Master().setBranchCode(poGRider.getBranchCode());
             Master().setIndustryId(psIndustryId);
             Master().setCompanyId(psCompanyId);
             Master().setCategoryCode(psCategorCd);
             Master().setTransactionDate(poGRider.getServerDate());
-//            Master().setTargetDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
             Master().setInquiryStatus(SalesInquiryStatic.OPEN);
+            
+            LocalDate currentDate = strToDate(xsDateShort(poGRider.getServerDate())).plusMonths(1);
+            String formattedDate = currentDate.format(DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
+            Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
+//            Master().setSalesMan(poGRider.getUserID());
             Master().setSourceCode("0"); //TODO
             Master().setPurchaseType("0");
             Master().setCategoryType("0");
