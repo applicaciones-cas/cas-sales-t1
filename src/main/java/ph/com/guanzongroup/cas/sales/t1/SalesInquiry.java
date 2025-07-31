@@ -337,7 +337,8 @@ public class SalesInquiry extends Transaction {
 
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
+                                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
+                                            + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
         //If current user is an ordinary user load only its inquiries
 //        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
 //            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
@@ -390,6 +391,7 @@ public class SalesInquiry extends Transaction {
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, 
                    " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                  + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
+                 + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                  + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
         
@@ -804,6 +806,7 @@ public class SalesInquiry extends Transaction {
             initSQL();
             String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
                     + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
+                    + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                     + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
