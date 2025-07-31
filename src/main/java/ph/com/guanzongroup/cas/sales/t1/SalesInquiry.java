@@ -336,7 +336,8 @@ public class SalesInquiry extends Transaction {
         }
 
         initSQL();
-        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
         //If current user is an ordinary user load only its inquiries
 //        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
 //            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
@@ -388,6 +389,7 @@ public class SalesInquiry extends Transaction {
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, 
                    " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                 + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
                  + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%"+fsClient)
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
         
@@ -700,7 +702,7 @@ public class SalesInquiry extends Transaction {
                 if(stockId != null && !"".equals(stockId)){
                     if(stockId.equals(Detail(lnCtr).getStockId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Item Description already exists in the transaction detail.");
+                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+lnCtr+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
@@ -714,7 +716,7 @@ public class SalesInquiry extends Transaction {
                     //Check if there is brand and model without color Id
                     if(Detail(lnCtr).getColorId() == null || "".equals(Detail(lnCtr).getColorId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Brand, model and variant already exists without color.");
+                        poJSON.put("message", "Brand, model and variant already exists without color at row "+lnCtr+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
@@ -722,10 +724,10 @@ public class SalesInquiry extends Transaction {
                     //Check if brand, model and color already exists in the transaction detail
                     if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
                         && Detail(lnCtr).getModelId().equals(modelId)
-                        && Detail(lnCtr).getModelId().equals(modelVariantId)
+                        && Detail(lnCtr).getModelVarianId().equals(modelVariantId)
                         && Detail(lnCtr).getColorId().equals(colorId)){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Item Description already exists in the transaction detail.");
+                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+lnCtr+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
