@@ -664,6 +664,13 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
         poJSON.put("row", row);
+        
+        if(Master().getClientId()== null || "".equals(Master().getClientId())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client is not set.");
+            return poJSON;
+        }
+        
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
         object.setRecordStatus(RecordStatus.ACTIVE);
         
