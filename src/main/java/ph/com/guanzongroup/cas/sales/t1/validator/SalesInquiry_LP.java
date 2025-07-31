@@ -71,10 +71,12 @@ public class SalesInquiry_LP implements GValidator{
                     return validateNew();
                 case SalesInquiryStatic.CONFIRMED:
                     return validateConfirmed();
-//                case SalesInquiryStatic.POSTED:
-//                    return validatePosted();
-//                case SalesInquiryStatic.PAID:
-//                    return validatePaid();
+                case SalesInquiryStatic.QUOTED:
+                    return validateQuoted();
+                case SalesInquiryStatic.SALE:
+                    return validateSale();
+                case SalesInquiryStatic.LOST:
+                    return validateLost();
                 case SalesInquiryStatic.CANCELLED:
                     return validateCancelled();
                 case SalesInquiryStatic.VOID:
@@ -84,7 +86,7 @@ public class SalesInquiry_LP implements GValidator{
                     poJSON.put("result", "success");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(SalesInquiry_LP.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SalesInquiry_Appliances.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return poJSON;
@@ -111,6 +113,7 @@ public class SalesInquiry_LP implements GValidator{
             poJSON.put("message", "Invalid Target Date.");
             return poJSON;
         }
+        
         if (poMaster.getIndustryId() == null) {
             poJSON.put("message", "Industry is not set.");
             return poJSON;
@@ -161,20 +164,12 @@ public class SalesInquiry_LP implements GValidator{
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;
         }
-        
         poJSON.put("result", "success");
         return poJSON;
     }
     
     private JSONObject validateConfirmed()throws SQLException{
         poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        return poJSON;
-    }
-    
-    private JSONObject validateApproved(){
-        poJSON = new JSONObject();
-                
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -186,14 +181,21 @@ public class SalesInquiry_LP implements GValidator{
         return poJSON;
     }
     
-    private JSONObject validatePosted(){
+    private JSONObject validateQuoted(){
         poJSON = new JSONObject();
                 
         poJSON.put("result", "success");
         return poJSON;
     }
     
-    private JSONObject validatePaid(){
+    private JSONObject validateSale(){
+        poJSON = new JSONObject();
+                
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    private JSONObject validateLost(){
         poJSON = new JSONObject();
                 
         poJSON.put("result", "success");
@@ -203,26 +205,12 @@ public class SalesInquiry_LP implements GValidator{
     private JSONObject validateCancelled() throws SQLException{
         poJSON = new JSONObject();
         
-        //TODO
-//        poJSON = checkPOReturn();
-//        if("error".equals((String) poJSON.get("result"))){
-//            poJSON.put("message", "Found existing Purchase Order Return <" + (String) poJSON.get("sTransNox") + ">. Cancellation of transaction aborted.");
-//            return poJSON;
-//        }
-        
         poJSON.put("result", "success");
         return poJSON;
     }
     
     private JSONObject validateVoid() throws SQLException{
         poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        return poJSON;
-    }
-    
-    private JSONObject validateReturned() throws SQLException{
-        poJSON = new JSONObject();
-        
         poJSON.put("result", "success");
         return poJSON;
     }
