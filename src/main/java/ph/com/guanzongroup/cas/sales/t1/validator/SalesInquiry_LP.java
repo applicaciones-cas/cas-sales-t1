@@ -86,7 +86,7 @@ public class SalesInquiry_LP implements GValidator{
                     poJSON.put("result", "success");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(SalesInquiry_Appliances.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
         
         return poJSON;
@@ -118,49 +118,49 @@ public class SalesInquiry_LP implements GValidator{
             poJSON.put("message", "Industry is not set.");
             return poJSON;
         }
-        if (poMaster.getCompanyId() == null || poMaster.getCompanyId().isEmpty()) {
+        if (poMaster.getCompanyId() == null || "".equals(poMaster.getCompanyId())) {
             poJSON.put("message", "Company is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryCode()== null || poMaster.getCategoryCode().isEmpty()) {
+        if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
             poJSON.put("message", "Category is not set.");
             return poJSON;
         }
-        if (poMaster.getBranchCode()== null || poMaster.getBranchCode().isEmpty()) {
+        if (poMaster.getBranchCode()== null || "".equals(poMaster.getBranchCode())) {
             poJSON.put("message", "Branch is not set.");
             return poJSON;
         }
-        if (poMaster.getPurchaseType()== null || poMaster.getPurchaseType().isEmpty()) {
+        if (poMaster.getPurchaseType()== null || "".equals(poMaster.getPurchaseType())) {
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryType()== null || poMaster.getCategoryType().isEmpty()) {
+        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
             poJSON.put("message", "Category Type is not set.");
             return poJSON;
         }
-        if (poMaster.getSourceCode()== null || poMaster.getSourceCode().isEmpty()) {
+        if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
             poJSON.put("message", "Source Code is not set.");
             return poJSON;
         }
-        if (poMaster.getClientId() == null || poMaster.getClientId().isEmpty()) {
+        if (poMaster.getClientId() == null || "".equals(poMaster.getClientId())) {
             poJSON.put("message", "Client is not set.");
             return poJSON;
         }
-        if (poMaster.getAddressId()== null || poMaster.getAddressId().isEmpty()) {
+        if (poMaster.getAddressId()== null || "".equals(poMaster.getAddressId())) {
             poJSON.put("message", "Address is not set.");
             return poJSON;
         }
-        if (poMaster.getContactId()== null || poMaster.getContactId().isEmpty()) {
+        if (poMaster.getContactId()== null || "".equals(poMaster.getContactId())) {
             poJSON.put("message", "Contact Number is not set.");
             return poJSON;
         }
         if(poMaster.getSourceCode().equals("")){
-            if (poMaster.getAgentId()== null || poMaster.getAgentId().isEmpty()) {
+            if (poMaster.getAgentId()== null || "".equals(poMaster.getAgentId())) {
                 poJSON.put("message", "Referral is not set.");
                 return poJSON;
             }
         }
-        if (poMaster.getInquiryStatus()== null || poMaster.getInquiryStatus().isEmpty()) {
+        if (poMaster.getInquiryStatus()== null || "".equals(poMaster.getInquiryStatus())) {
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;
         }
