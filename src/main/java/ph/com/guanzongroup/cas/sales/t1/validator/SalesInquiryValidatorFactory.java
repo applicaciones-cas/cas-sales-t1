@@ -20,6 +20,8 @@ public class SalesInquiryValidatorFactory {
                 return new SalesInquiry_MC();
             case "03": //Vehicle
                 return new SalesInquiry_Vehicle();
+            case "04": //Monarch Food
+                return new SalesInquiry_Monarch();
             case "05": //Los Pedritos
                 return new SalesInquiry_LP();
             case "07": //Appliances

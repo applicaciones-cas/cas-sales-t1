@@ -584,6 +584,7 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
             poJSON = checkExistingDetail(row,
+                    Detail(row).getBrandId(),
                     object.getModel().getModelId(),
                     object.getModel().getVariantId(),
                     "",
@@ -639,6 +640,7 @@ public class SalesInquiry extends Transaction {
                 lsStockId = inventory.getModel().getStockId();
             }
             poJSON = checkExistingDetail(row,
+                    Detail(row).getBrandId(),
                     Detail(row).getModelId(),
                     Detail(row).getModelVarianId(),
                     object.getModel().getColorId(),
@@ -673,6 +675,7 @@ public class SalesInquiry extends Transaction {
         System.out.println("result" + (String) poJSON.get("result"));
         if ("success".equals((String) poJSON.get("result"))) {
             poJSON = checkExistingDetail(row,
+                    Detail(row).getBrandId(),
                     object.getModel().getModelId(),
                     object.getModel().getVariantId(),
                     object.getModel().getColorId(),
@@ -684,6 +687,7 @@ public class SalesInquiry extends Transaction {
 
             Detail(row).setStockId(object.getModel().getStockId());
             Detail(row).setModelId(object.getModel().getModelId());
+            Detail(row).setModelVarianId(object.getModel().getVariantId());
             Detail(row).setColorId(object.getModel().getColorId());
         }
         
@@ -692,42 +696,57 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    private JSONObject checkExistingDetail(int row,String modelId, String modelVariantId, String colorId, String stockId){
+    private JSONObject checkExistingDetail(int row,String brandId, String modelId, String modelVariantId, String colorId, String stockId){
         poJSON = new JSONObject();
         poJSON.put("row", row);
+        if(brandId == null){
+            brandId = "";
+        }
+        if(modelId == null){
+            modelId = "";
+        }
+        if(modelVariantId == null){
+            modelVariantId = "";
+        }
+        if(colorId == null){
+            colorId = "";
+        }
+        if(stockId == null){
+            stockId = "";
+        }
         
         for (int lnCtr = 0; lnCtr <= getDetailCount()- 1; lnCtr++) {
             if (lnCtr != row) {
                 //Check Existing Stock ID
-                if(stockId != null && !"".equals(stockId)){
+                if(!"".equals(stockId)){
                     if(stockId.equals(Detail(lnCtr).getStockId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+lnCtr+".");
+                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+Detail(lnCtr).getPriority()+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
                 } 
                 
                 //Check Existing Brand and Model
-                if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
-                    && Detail(lnCtr).getModelId().equals(modelId)
-                    && Detail(lnCtr).getModelVarianId().equals(modelVariantId)){
+                if(brandId.equals(Detail(lnCtr).getBrandId())
+                    && modelId.equals(Detail(lnCtr).getModelId())
+                    && modelVariantId.equals(Detail(lnCtr).getModelVarianId())){
                     
                     //Check if there is brand and model without color Id
                     if(Detail(lnCtr).getColorId() == null || "".equals(Detail(lnCtr).getColorId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Brand, model and variant already exists without color at row "+lnCtr+".");
+                        poJSON.put("message", "Brand, model and variant already exists without color at row "+Detail(lnCtr).getPriority()+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
                     
                     //Check if brand, model and color already exists in the transaction detail
-                    if(Detail(lnCtr).getBrandId().equals(Detail(row).getBrandId())
-                        && Detail(lnCtr).getModelId().equals(modelId)
-                        && Detail(lnCtr).getModelVarianId().equals(modelVariantId)
-                        && Detail(lnCtr).getColorId().equals(colorId)){
+                    if(brandId.equals(Detail(lnCtr).getBrandId())
+                        && modelId.equals(Detail(lnCtr).getModelId())
+                        && modelVariantId.equals(Detail(lnCtr).getModelVarianId())
+                        && colorId.equals(Detail(lnCtr).getColorId())){
                         poJSON.put("result", "error");
-                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+lnCtr+".");
+                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+Detail(lnCtr).getPriority()+".");
                         poJSON.put("row", lnCtr);
                         return poJSON;
                     }
@@ -1020,6 +1039,46 @@ public class SalesInquiry extends Transaction {
         
         paDetailRemoved.add(item);
     }
+    
+    public void loadDetail() throws CloneNotSupportedException{
+        String lsBrandId = "";
+        int lnCtr = getDetailCount() - 1;
+        while (lnCtr >= 0) {
+            if ((Detail(lnCtr).getStockId() == null || "".equals(Detail(lnCtr).getStockId()))
+                    && (Detail(lnCtr).getModelId()== null || "".equals(Detail(lnCtr).getModelId()))) {
+                
+                if (Detail(lnCtr).getBrandId() != null
+                    && !"".equals(Detail(lnCtr).getBrandId())) {
+                    lsBrandId = Detail(lnCtr).getBrandId();
+                }
+                
+                if (Detail(lnCtr).getEditMode() == EditMode.UPDATE) {
+                    removeDetail(Detail(lnCtr));
+                }
+
+                Detail().remove(lnCtr);
+            }
+            lnCtr--;
+        }
+
+        if ((getDetailCount() - 1) >= 0) {
+            if ((Detail(getDetailCount() - 1).getStockId() != null
+                    && !"".equals(Detail(getDetailCount() - 1).getStockId()))
+                || (Detail(getDetailCount() - 1).getModelId()!= null
+                    && !"".equals(Detail(getDetailCount() - 1).getModelId()))) {
+                AddDetail();
+            }
+        }
+
+        if ((getDetailCount() - 1) < 0) {
+            AddDetail();
+        }
+        
+        //Set brand Id to last row
+        if (!lsBrandId.isEmpty()) {
+            Detail(getDetailCount() - 1).setBrandId(lsBrandId);
+        }
+    }
 
     @Override
     public JSONObject willSave()
@@ -1054,7 +1113,8 @@ public class SalesInquiry extends Transaction {
         Iterator<Model> detail = Detail().iterator();
         while (detail.hasNext()) {
             Model item = detail.next();
-            if (item.getValue("sModelIDx") == null || "".equals(item.getValue("sModelIDx"))) {
+            if ((item.getValue("sModelIDx") == null || "".equals(item.getValue("sModelIDx")))
+                  &&  (item.getValue("sStockIDx") == null || "".equals(item.getValue("sStockIDx")))) {
                 detail.remove();
 
                 if (item.getEditMode() == EditMode.UPDATE) {
