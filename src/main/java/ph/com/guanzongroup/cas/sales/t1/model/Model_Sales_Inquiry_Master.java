@@ -40,6 +40,7 @@ public class Model_Sales_Inquiry_Master extends Model {
     Model_Client_Mobile poClientMobile;
     Model_Client_Master poAgent;
     Model_Client_Master poSalesPerson;
+    Model_Client_Master poSource;
 
 
     @Override
@@ -82,6 +83,7 @@ public class Model_Sales_Inquiry_Master extends Model {
             poSalesPerson = clientModel.ClientMaster();
             poClientAddress = clientModel.ClientAddress();
             poClientMobile = clientModel.ClientMobile();
+            poSource = clientModel.ClientMaster();
             
 //            end - initialize reference objects
 
@@ -466,6 +468,27 @@ public class Model_Sales_Inquiry_Master extends Model {
         } else {
             poAgent.initialize();
             return poAgent;
+        }
+    }
+    
+    public Model_Client_Master Source() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sSourceNo"))) {
+            if (poSource.getEditMode() == EditMode.READY
+                    && poSource.getClientId().equals((String) getValue("sSourceNo"))) {
+                return poSource;
+            } else {
+                poJSON = poSource.openRecord((String) getValue("sSourceNo"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poSource;
+                } else {
+                    poSource.initialize();
+                    return poSource;
+                }
+            }
+        } else {
+            poSource.initialize();
+            return poSource;
         }
     }
     //end - reference object models

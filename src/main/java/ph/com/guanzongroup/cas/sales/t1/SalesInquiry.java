@@ -639,6 +639,22 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    public JSONObject SearchSource(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Client object = new ClientControllers(poGRider, logwrapr).Client();
+        object.Master().setRecordStatus(RecordStatus.ACTIVE);
+        object.Master().setClientType(Master().getClientType());
+        poJSON = object.Master().searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            Master().setSourceNo(object.Master().getModel().getClientId());
+        }
+
+        return poJSON;
+    }
+    
     public JSONObject SearchBrand(String value, boolean byCode, int row)
             throws ExceptionInInitializerError,
             SQLException,
@@ -922,9 +938,9 @@ public class SalesInquiry extends Transaction {
                     + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                     + " AND a.cProcessd = '0' "
-                    + " AND ( a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
-                    + " OR a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
-                    + " ) "
+//                    + " AND ( a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
+//                    + " OR a.cTranStat = "  + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+//                    + " ) "
             );
             
             //If current user is an ordinary user load only its inquiries
@@ -1248,13 +1264,11 @@ public class SalesInquiry extends Transaction {
 
         //assign other info on detail
         int lnEntryNo = 1;
-        boolean lbMulti = false;
         System.out.println("Total Detail : " + getDetailCount());
         sortEntryNo();
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             System.out.println("Ctr "+ lnCtr + " Entry No : " + Detail(lnCtr).getEntryNo());
-            Detail(lnCtr).setEntryNo(lnCtr+1);
             
             lnEntryNo = 1;
             //Update entry no if equal to 0
