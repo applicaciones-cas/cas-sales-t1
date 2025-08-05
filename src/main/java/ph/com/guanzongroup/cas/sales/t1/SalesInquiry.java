@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.guanzon.cas.inv.services.InvControllers;
 import org.guanzon.cas.parameter.Brand;
 import org.guanzon.cas.parameter.Color;
 import org.guanzon.cas.parameter.ModelVariant;
-//import org.guanzon.cas.parameter.Model;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -678,12 +676,13 @@ public class SalesInquiry extends Transaction {
         poJSON = object.searchRecord(value, byCode, Master().getIndustryId());
         if ("success".equals((String) poJSON.get("result"))) {
             if (!object.getModel().getBrandId().equals(Detail(row).getBrandId())) {
+                Detail(row).setModelId("");
+                Detail(row).setModelVarianId("");
+                Detail(row).setColorId("");
                 Detail(row).setStockId("");
             }
 
             Detail(row).setBrandId(object.getModel().getBrandId());
-            Detail(row).setModelId("");
-            Detail(row).setColorId("");
         }
         return poJSON;
     }
@@ -716,13 +715,13 @@ public class SalesInquiry extends Transaction {
                 return poJSON;
             }
             
+            if (!object.getModel().getModelId().equals(Detail(row).getModelId())) {
+                Detail(row).setColorId("");
+                Detail(row).setStockId("");
+            }
+            
             Detail(row).setModelId(object.getModel().getModelId());
             Detail(row).setModelVarianId(object.getModel().getVariantId());
-            Detail(row).setStockId("");
-            Detail(row).setColorId("");
-            
-            System.out.println("Variant ID : " +  Detail(row).getModelVarianId());
-            System.out.println("Variant Desc : " +  Detail(row).ModelVariant().getDescription());
         }
 
         return poJSON;
@@ -743,7 +742,6 @@ public class SalesInquiry extends Transaction {
         
         Color object = new ParamControllers(poGRider, logwrapr).Color();
         object.setRecordStatus(RecordStatus.ACTIVE);
-        System.out.println("Model ID : "  + Detail(row).getModelId());
         poJSON = object.searchRecord(value, byCode);
         poJSON.put("row", row);
         if ("success".equals((String) poJSON.get("result"))) {
@@ -896,8 +894,8 @@ public class SalesInquiry extends Transaction {
                 || Master().getCategoryCode().equals(SalesInquiryStatic.APPLIANCES)
                 || Master().getCategoryCode().equals(SalesInquiryStatic.MOBILEPHONE)){
             
-            //TODO Corporate
-            if(Master().getClientType().equals("1")){
+            //Corporate
+            if(Master().getClientType().equals(SalesInquiryStatic.CORPORATE)){
                 if(getDetailCount() > 5){
                     poJSON.put("result", "error");
                     poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
@@ -1015,19 +1013,6 @@ public class SalesInquiry extends Transaction {
         return (Model_Sales_Inquiry_Master) paMasterList.get(row);
     }
     
-    public JSONObject removeSalesInquiryDetails() {
-        poJSON = new JSONObject();
-        Iterator<Model> detail = Detail().iterator();
-        while (detail.hasNext()) {
-            Model item = detail.next();
-            detail.remove();
-        }
-
-        poJSON.put("result", "success");
-        poJSON.put("message", "success");
-        return poJSON;
-    }
-    
     public void sortPriority(){
         Detail().sort((item1, item2) -> {
             Integer lnPriority1 = (Integer) item1.getValue("nPriority");
@@ -1138,12 +1123,16 @@ public class SalesInquiry extends Transaction {
     public void resetMaster() {
         poMaster = new SalesModels(poGRider).SalesInquiryMaster();
     }
-
+    
     public JSONObject removeDetails() {
         poJSON = new JSONObject();
         Iterator<Model> detail = Detail().iterator();
         while (detail.hasNext()) {
             Model item = detail.next();
+            if (item.getEditMode() == EditMode.UPDATE) {
+                paDetailRemoved.add(item);
+            }
+            
             detail.remove();
         }
 
@@ -1327,7 +1316,7 @@ public class SalesInquiry extends Transaction {
             Master().setCategoryCode(psCategorCd);
             Master().setTransactionDate(poGRider.getServerDate());
             Master().setTransactionStatus(SalesInquiryStatic.OPEN);
-            Master().setInquiryStatus(SalesInquiryStatic.OPEN);
+            Master().setInquiryStatus(SalesInquiryStatic.OPEN); 
             
             LocalDate currentDate = strToDate(xsDateShort(poGRider.getServerDate())).plusMonths(1);
             String formattedDate = currentDate.format(DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));

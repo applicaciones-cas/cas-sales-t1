@@ -28,4 +28,8 @@ public class SalesInquiryStatic {
     public static final String GENERAL     = "0007";   //General      
     public static final String FOOD        = "0008";   //Food         
     public static final String HOSPITALITY = "0009";   //Hospitality 
+    
+    //Client Type
+    public static final  String INDIVIDUAL = "0"; //Individual
+    public static final  String CORPORATE = "1";  //Corporate
 }
