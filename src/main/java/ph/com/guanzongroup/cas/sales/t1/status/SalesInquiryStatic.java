@@ -18,7 +18,14 @@ public class SalesInquiryStatic {
     public static final  String SALE = "4"; //Converted TO Sale
     public static final  String LOST = "6"; //Lost/Declined
     
-    public static final  String CATEGORY_APPLIANCES = "0002"; 
-    public static final  String CATEGORY_MC = "0003";
-    public static final  String CATEGORY_CAR = "0005";
+    //Category
+    public static final String MOBILEPHONE = "0001";   //Cellphone    
+    public static final String APPLIANCES  = "0002";   //Appliances   
+    public static final String MOTORCYCLE  = "0003";   //Motorcycle   
+    public static final String SPMC        = "0004";   //Motorcycle SP
+    public static final String CAR         = "0005";   //CAR          
+    public static final String SPCAR       = "0006";   //CAR SP       
+    public static final String GENERAL     = "0007";   //General      
+    public static final String FOOD        = "0008";   //Food         
+    public static final String HOSPITALITY = "0009";   //Hospitality 
 }

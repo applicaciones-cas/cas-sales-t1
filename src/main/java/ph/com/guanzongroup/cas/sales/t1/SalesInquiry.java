@@ -891,9 +891,10 @@ public class SalesInquiry extends Transaction {
     public JSONObject checkMaximumInqDetail(){
         poJSON = new JSONObject();
         //Check if client type is corporate allow only 5 inquiry detail
-        if(Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_CAR)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_MC)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.CATEGORY_APPLIANCES)){
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CAR)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.MOTORCYCLE)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.APPLIANCES)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.MOBILEPHONE)){
             
             //TODO Corporate
             if(Master().getClientType().equals("1")){

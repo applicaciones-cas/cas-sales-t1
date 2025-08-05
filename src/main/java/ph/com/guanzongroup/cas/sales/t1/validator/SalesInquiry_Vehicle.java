@@ -141,7 +141,7 @@ public class SalesInquiry_Vehicle implements GValidator{
             poJSON.put("message", "Source Code is not set.");
             return poJSON;
         }
-        if(SalesInquiryStatic.CATEGORY_CAR.equals(poMaster.getCategoryCode())){
+        if(SalesInquiryStatic.CAR.equals(poMaster.getCategoryCode())){
             if (poMaster.getSalesMan()== null || "".equals(poMaster.getSalesMan())) {
                 poJSON.put("message", "Sales Person is not set.");
                 return poJSON;
