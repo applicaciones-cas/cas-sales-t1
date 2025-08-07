@@ -141,6 +141,10 @@ public class SalesInquiry_MC implements GValidator{
             poJSON.put("message", "Source Code is not set.");
             return poJSON;
         }
+        if (poMaster.getSalesMan()== null || "".equals(poMaster.getSalesMan())) {
+            poJSON.put("message", "Sales Person is not set.");
+            return poJSON;
+        }
         if (poMaster.getClientId() == null || "".equals(poMaster.getClientId())) {
             poJSON.put("message", "Client is not set.");
             return poJSON;
@@ -153,12 +157,6 @@ public class SalesInquiry_MC implements GValidator{
 //            poJSON.put("message", "Contact Number is not set.");
 //            return poJSON;
 //        }
-        if(poMaster.getSourceCode().equals("")){
-            if (poMaster.getAgentId()== null || "".equals(poMaster.getAgentId())) {
-                poJSON.put("message", "Referral is not set.");
-                return poJSON;
-            }
-        }
         if (poMaster.getInquiryStatus()== null || "".equals(poMaster.getInquiryStatus())) {
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;

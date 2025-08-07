@@ -121,15 +121,18 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
-        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-            poJSON = ShowDialogFX.getUserApproval(poGRider);
-            if (!"success".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            } else {
-                if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                    poJSON.put("result", "error");
-                    poJSON.put("message", "User is not an authorized approving officer.");
+        //Require approval when user is not equal to sales man and user is not supervisor
+        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                poJSON = ShowDialogFX.getUserApproval(poGRider);
+                if (!"success".equals((String) poJSON.get("result"))) {
                     return poJSON;
+                } else {
+                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "User is not an authorized approving officer.");
+                        return poJSON;
+                    }
                 }
             }
         }
@@ -330,15 +333,17 @@ public class SalesInquiry extends Transaction {
         }
 
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
+            if(!Master().getSalesMan().equals(poGRider.getUserID())){
+                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                    poJSON = ShowDialogFX.getUserApproval(poGRider);
+                    if (!"success".equals((String) poJSON.get("result"))) {
                         return poJSON;
+                    } else {
+                        if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "User is not an authorized approving officer.");
+                            return poJSON;
+                        }
                     }
                 }
             }
@@ -390,15 +395,17 @@ public class SalesInquiry extends Transaction {
         }
 
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
+            if(!Master().getSalesMan().equals(poGRider.getUserID())){
+                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                    poJSON = ShowDialogFX.getUserApproval(poGRider);
+                    if (!"success".equals((String) poJSON.get("result"))) {
                         return poJSON;
+                    } else {
+                        if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "User is not an authorized approving officer.");
+                            return poJSON;
+                        }
                     }
                 }
             }
@@ -443,12 +450,10 @@ public class SalesInquiry extends Transaction {
                                             + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
                                             + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
         //If current user is an ordinary user load only its inquiries
-//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
-//                lsSQL = MiscUtil.addCondition(lsSQL, 
-//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-//            }
-//        }
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL, 
+                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+        }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -499,12 +504,10 @@ public class SalesInquiry extends Transaction {
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
         
         //If current user is an ordinary user load only its inquiries
-//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
-//                lsSQL = MiscUtil.addCondition(lsSQL, 
-//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-//            }
-//        }
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL, 
+                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+        }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -556,12 +559,10 @@ public class SalesInquiry extends Transaction {
                  + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+fsTransNo));
         
         //If current user is an ordinary user load only its inquiries
-//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-//            if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
-//                lsSQL = MiscUtil.addCondition(lsSQL, 
-//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-//            }
-//        }
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL, 
+                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+        }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -947,12 +948,10 @@ public class SalesInquiry extends Transaction {
             );
             
             //If current user is an ordinary user load only its inquiries
-//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-//                if(psCategorCd.equals(SalesInquiryStatic.CATEGORY_CAR)){
-//                    lsSQL = MiscUtil.addCondition(lsSQL, 
-//                            " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-//                }
-//            }
+            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                lsSQL = MiscUtil.addCondition(lsSQL, 
+                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+            }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
                 lsSQL = lsSQL + lsTransStat;
@@ -1214,15 +1213,17 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
         
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
+            if(!Master().getSalesMan().equals(poGRider.getUserID())){
+                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                    poJSON = ShowDialogFX.getUserApproval(poGRider);
+                    if (!"success".equals((String) poJSON.get("result"))) {
                         return poJSON;
+                    } else {
+                        if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "User is not an authorized approving officer.");
+                            return poJSON;
+                        }
                     }
                 }
             }
@@ -1325,7 +1326,7 @@ public class SalesInquiry extends Transaction {
             LocalDate currentDate = strToDate(xsDateShort(poGRider.getServerDate())).plusMonths(1);
             String formattedDate = currentDate.format(DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
             Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
-//            Master().setSalesMan(poGRider.getUserID());
+            Master().setSalesMan(poGRider.getUserID());
             Master().setSourceCode("0"); //TODO
             Master().setPurchaseType("0");
             Master().setCategoryType("0");
