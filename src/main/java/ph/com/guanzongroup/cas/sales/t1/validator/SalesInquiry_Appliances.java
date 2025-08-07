@@ -146,14 +146,14 @@ public class SalesInquiry_Appliances implements GValidator{
             poJSON.put("message", "Client is not set.");
             return poJSON;
         }
-        if (poMaster.getAddressId()== null || "".equals(poMaster.getAddressId())) {
-            poJSON.put("message", "Address is not set.");
-            return poJSON;
-        }
-        if (poMaster.getContactId()== null || "".equals(poMaster.getContactId())) {
-            poJSON.put("message", "Contact Number is not set.");
-            return poJSON;
-        }
+//        if (poMaster.getAddressId()== null || "".equals(poMaster.getAddressId())) {
+//            poJSON.put("message", "Address is not set.");
+//            return poJSON;
+//        }
+//        if (poMaster.getContactId()== null || "".equals(poMaster.getContactId())) {
+//            poJSON.put("message", "Contact Number is not set.");
+//            return poJSON;
+//        }
         if(poMaster.getSourceCode().equals("")){
             if (poMaster.getAgentId()== null || "".equals(poMaster.getAgentId())) {
                 poJSON.put("message", "Referral is not set.");

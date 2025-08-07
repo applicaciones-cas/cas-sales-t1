@@ -598,9 +598,13 @@ public class SalesInquiry extends Transaction {
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setClientId(object.Master().getModel().getClientId());
-            Master().setAddressId("address"); //TODO
-            Master().setContactId("contact"); //TODO
+            Master().setAddressId(object.ClientAddress().getModel().getAddressId()); //TODO
+            Master().setContactId(""); //TODO
         }
+        
+        System.out.println("Client ID : " + Master().getClientId());
+        System.out.println("Address ID : " + Master().getAddressId());
+        System.out.println("Contact ID : " + Master().getContactId());
 
         return poJSON;
     }

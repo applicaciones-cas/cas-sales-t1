@@ -157,14 +157,14 @@ public class SalesInquiry_Vehicle implements GValidator{
             poJSON.put("message", "Client is not set.");
             return poJSON;
         }
-        if (poMaster.getAddressId()== null || "".equals(poMaster.getAddressId())) {
-            poJSON.put("message", "Address is not set.");
-            return poJSON;
-        }
-        if (poMaster.getContactId()== null || "".equals(poMaster.getContactId())) {
-            poJSON.put("message", "Contact Number is not set.");
-            return poJSON;
-        }
+//        if (poMaster.getAddressId()== null || "".equals(poMaster.getAddressId())) {
+//            poJSON.put("message", "Address is not set.");
+//            return poJSON;
+//        }
+//        if (poMaster.getContactId()== null || "".equals(poMaster.getContactId())) {
+//            poJSON.put("message", "Contact Number is not set.");
+//            return poJSON;
+//        }
         if (poMaster.getInquiryStatus()== null || "".equals(poMaster.getInquiryStatus())) {
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;
