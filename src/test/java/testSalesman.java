@@ -134,7 +134,7 @@ public class testSalesman {
         
         try {
             poSalesmanController.initialize();
-            loJSON = poSalesmanController.openRecord("001");
+            loJSON = poSalesmanController.openRecord("A00120000016");
             if (!"success".equals((String) loJSON.get("result"))){
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -159,7 +159,7 @@ public class testSalesman {
         try {
             
             poSalesmanController.initialize();
-            loJSON = poSalesmanController.openRecord("001");
+            loJSON = poSalesmanController.openRecord("A00120000016");
             if (!"success".equals((String) loJSON.get("result"))){
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -190,7 +190,7 @@ public class testSalesman {
         try {
             
             poSalesmanController.initialize();
-            loJSON = poSalesmanController.openRecord("001");
+            loJSON = poSalesmanController.openRecord("A00120000016");
             if (!"success".equals((String) loJSON.get("result"))){
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
