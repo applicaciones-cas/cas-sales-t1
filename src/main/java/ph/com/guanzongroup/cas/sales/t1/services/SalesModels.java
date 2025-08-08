@@ -6,8 +6,11 @@
 package ph.com.guanzongroup.cas.sales.t1.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Sources;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
 
 /**
  *
@@ -53,12 +56,65 @@ public class SalesModels {
         return poSalesInquiryDetail;
     }
     
+    public Model_Sales_Inquiry_Sources SalesInquirySources(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesInquirySources: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesInquirySources == null){
+            poSalesInquirySources = new Model_Sales_Inquiry_Sources();
+            poSalesInquirySources.setApplicationDriver(poGRider);
+            poSalesInquirySources.setXML("Model_Sales_Inquiry_Sources");
+            poSalesInquirySources.setTableName("Sales_Inquiry_Sources");
+            poSalesInquirySources.initialize();
+        }
+
+        return poSalesInquirySources;
+    }
+    
+    public Model_Salesman Salesman(){
+        if (poGRider == null){
+            System.err.println("SalesModels.Salesman: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesman == null){
+            poSalesman = new Model_Salesman();
+            poSalesman.setApplicationDriver(poGRider);
+            poSalesman.setXML("Model_Salesman");
+            poSalesman.setTableName("Salesman");
+            poSalesman.initialize();
+        }
+
+        return poSalesman;
+    }
+    
+    public Model_Sales_Agent SalesAgent(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesAgent: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesAgent == null){
+            poSalesAgent = new Model_Sales_Agent();
+            poSalesAgent.setApplicationDriver(poGRider);
+            poSalesAgent.setXML("Model_Sales_Agent");
+            poSalesAgent.setTableName("Sales_Agent");
+            poSalesAgent.initialize();
+        }
+
+        return poSalesAgent;
+    }
     
     @Override
     protected void finalize() throws Throwable {
         try {                    
             poSalesInquiryMaster = null;
             poSalesInquiryDetail = null;
+            poSalesInquirySources = null;
+            poSalesman = null;
+            poSalesAgent = null;
 
             poGRider = null;
         } finally {
@@ -70,4 +126,7 @@ public class SalesModels {
 
     private Model_Sales_Inquiry_Master poSalesInquiryMaster;
     private Model_Sales_Inquiry_Detail poSalesInquiryDetail;
+    private Model_Sales_Inquiry_Sources poSalesInquirySources;
+    private Model_Salesman poSalesman;
+    private Model_Sales_Agent poSalesAgent;
 }

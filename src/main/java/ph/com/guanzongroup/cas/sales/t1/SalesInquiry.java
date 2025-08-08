@@ -38,6 +38,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
+import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryValidatorFactory;
@@ -615,12 +616,11 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
 
-        Client object = new ClientControllers(poGRider, logwrapr).Client();
-        object.Master().setRecordStatus(RecordStatus.ACTIVE);
-//        object.Master().setClientType(Master().getClientType());
-        poJSON = object.Master().searchRecord(value, byCode);
+        SalesAgent object = new SalesControllers(poGRider, logwrapr).SalesAgent();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setAgentId(object.Master().getModel().getClientId());
+            Master().setAgentId(object.getModel().getClientId());
         }
 
         return poJSON;
@@ -631,12 +631,11 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
 
-        Client object = new ClientControllers(poGRider, logwrapr).Client();
-        object.Master().setRecordStatus(RecordStatus.ACTIVE);
-//        object.Master().setClientType(Master().getClientType());
-        poJSON = object.Master().searchRecord(value, byCode);
+        Salesman object = new SalesControllers(poGRider, logwrapr).Salesman();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setSalesMan(object.Master().getModel().getClientId());
+            Master().setSalesMan(object.getModel().getEmployeeId());
         }
 
         return poJSON;
@@ -647,12 +646,11 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
 
-        Client object = new ClientControllers(poGRider, logwrapr).Client();
-        object.Master().setRecordStatus(RecordStatus.ACTIVE);
-        object.Master().setClientType(Master().getClientType());
-        poJSON = object.Master().searchRecord(value, byCode);
+        SalesInquirySources object = new SalesControllers(poGRider, logwrapr).SalesInquirySources();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setSourceNo(object.Master().getModel().getClientId());
+            Master().setSourceNo(object.getModel().getSourceId());
         }
 
         return poJSON;

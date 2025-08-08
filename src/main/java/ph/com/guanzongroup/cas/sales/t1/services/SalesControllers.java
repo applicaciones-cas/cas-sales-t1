@@ -5,9 +5,14 @@
  */
 package ph.com.guanzongroup.cas.sales.t1.services;
 
+import java.sql.SQLException;
 import org.guanzon.appdriver.base.GRiderCAS;
+import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
+import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
+import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
+import ph.com.guanzongroup.cas.sales.t1.Salesman;
 
 /**
  *
@@ -39,10 +44,63 @@ public class SalesControllers {
         return poSalesInquiry;
     }
     
+    public SalesInquirySources SalesInquirySources() throws SQLException, GuanzonException {
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.SalesInquirySources: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesInquirySources != null) {
+            return poSalesInquirySources;
+        }
+
+        poSalesInquirySources = new SalesInquirySources();
+        poSalesInquirySources.setApplicationDriver(poGRider);
+        poSalesInquirySources.setWithParentClass(false);
+        poSalesInquirySources.setLogWrapper(poLogWrapper);
+        poSalesInquirySources.initialize();
+        return poSalesInquirySources;
+    }
+    
+    public Salesman Salesman() throws SQLException, GuanzonException {
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.Salesman: Application driver is not set.");
+            return null;
+        } 
+        if (poSalesman != null){
+            return poSalesman; 
+        }
+        poSalesman = new Salesman();
+        poSalesman.setApplicationDriver(poGRider);
+        poSalesman.setWithParentClass(false);
+        poSalesman.setLogWrapper(poLogWrapper);
+        poSalesman.initialize();
+        return poSalesman;
+    }
+    
+    public SalesAgent SalesAgent() throws SQLException, GuanzonException {
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.SalesAgent: Application driver is not set.");
+            return null;
+        } 
+        if (poSalesAgent != null){
+            return poSalesAgent; 
+        }
+        poSalesAgent = new SalesAgent();
+        poSalesAgent.setApplicationDriver(poGRider);
+        poSalesAgent.setWithParentClass(false);
+        poSalesAgent.setLogWrapper(poLogWrapper);
+        poSalesAgent.initialize();
+        return poSalesAgent;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {
             poSalesInquiry = null;
+            poSalesInquirySources = null;
+            poSalesman = null;
+            poSalesAgent = null;
             poLogWrapper = null;
             poGRider = null;
         } finally {
@@ -54,4 +112,7 @@ public class SalesControllers {
     private LogWrapper poLogWrapper;
 
     private SalesInquiry poSalesInquiry;
+    private SalesInquirySources poSalesInquirySources;
+    private Salesman poSalesman;
+    private SalesAgent poSalesAgent;
 }
