@@ -12,6 +12,7 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.Logical;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Sources;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
@@ -26,7 +27,7 @@ public class SalesInquirySources extends Parameter {
 
     @Override
     public void initialize() throws SQLException, GuanzonException {
-      psRecdStat = Logical.YES;
+      psRecdStat = RecordStatus.ACTIVE;
       poModel = new SalesModels(poGRider).SalesInquirySources();
       
       super.initialize();

@@ -11,6 +11,7 @@ import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
@@ -24,7 +25,7 @@ public class SalesAgent extends Parameter {
 
     @Override
     public void initialize() throws SQLException, GuanzonException {
-      psRecdStat = "1";
+      psRecdStat = RecordStatus.ACTIVE;
       poModel = new SalesModels(poGRider).SalesAgent();
       super.initialize();
     }

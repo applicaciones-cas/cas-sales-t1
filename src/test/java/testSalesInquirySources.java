@@ -65,13 +65,13 @@ public class testSalesInquirySources {
         }
     }
     
-//    @Test
+    @Test
     public void testUpdateTransaction() {
         JSONObject loJSON;
 
         try { 
             poSalesInquirySourcesController.initialize();
-            loJSON = poSalesInquirySourcesController.openRecord("001");
+            loJSON = poSalesInquirySourcesController.openRecord("003");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -83,7 +83,7 @@ public class testSalesInquirySources {
                 Assert.fail();
             }
             
-            poSalesInquirySourcesController.getModel().setDescription("Update Source");
+            poSalesInquirySourcesController.getModel().setDescription("Facebook");
             
             loJSON = poSalesInquirySourcesController.saveRecord();
             if (!"success".equals((String) loJSON.get("result"))) {

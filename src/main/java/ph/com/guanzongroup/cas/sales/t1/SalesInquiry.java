@@ -633,7 +633,7 @@ public class SalesInquiry extends Transaction {
 
         Salesman object = new SalesControllers(poGRider, logwrapr).Salesman();
         object.setRecordStatus(RecordStatus.ACTIVE);
-        poJSON = object.searchRecord(value, byCode);
+        poJSON = object.searchRecord(value, byCode, Master().getBranchCode());
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setSalesMan(object.getModel().getEmployeeId());
         }
@@ -650,7 +650,7 @@ public class SalesInquiry extends Transaction {
         object.setRecordStatus(RecordStatus.ACTIVE);
         poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setSourceNo(object.getModel().getSourceId());
+            Master().setSourceCode(object.getModel().getSourceId());
         }
 
         return poJSON;

@@ -6,9 +6,12 @@
 package ph.com.guanzongroup.cas.sales.t1.services;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
+import org.guanzon.appdriver.base.MiscUtil;
 import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
@@ -62,19 +65,24 @@ public class SalesControllers {
         return poSalesInquirySources;
     }
     
-    public Salesman Salesman() throws SQLException, GuanzonException {
-        if (poGRider == null) {
-            poLogWrapper.severe("SalesControllers.Salesman: Application driver is not set.");
-            return null;
-        } 
-        if (poSalesman != null){
-            return poSalesman; 
+    public Salesman Salesman() {
+        try {
+            if (poGRider == null) {
+                poLogWrapper.severe("SalesControllers.Salesman: Application driver is not set.");
+                return null;
+            }
+            if (poSalesman != null){ 
+                return poSalesman;
+            }
+            poSalesman = new Salesman();
+            poSalesman.setApplicationDriver(poGRider);
+            poSalesman.setWithParentClass(false);
+            poSalesman.setLogWrapper(poLogWrapper);
+            poSalesman.initialize();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
         }
-        poSalesman = new Salesman();
-        poSalesman.setApplicationDriver(poGRider);
-        poSalesman.setWithParentClass(false);
-        poSalesman.setLogWrapper(poLogWrapper);
-        poSalesman.initialize();
+        
         return poSalesman;
     }
     

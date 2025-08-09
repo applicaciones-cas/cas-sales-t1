@@ -11,6 +11,9 @@ import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.constant.RecordStatus;
+import org.guanzon.cas.parameter.Branch;
+import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
@@ -24,7 +27,7 @@ public class Salesman extends Parameter {
 
     @Override
     public void initialize() throws SQLException, GuanzonException {
-      psRecdStat = "1";
+      psRecdStat = RecordStatus.ACTIVE;
       poModel = new SalesModels(poGRider).Salesman();
       super.initialize();
     }
@@ -110,6 +113,44 @@ public class Salesman extends Parameter {
         }
     }
     
+    
+    public JSONObject searchRecord(String value, boolean byCode, String branch) throws SQLException, GuanzonException {
+        String lsCondition = "";
+        if (psRecdStat != null) {
+            if (psRecdStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
+                    lsCondition += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
+                }
+                lsCondition = " AND a.cRecdStat IN (" + lsCondition.substring(2) + ")";
+            } else {
+                lsCondition = " AND a.cRecdStat = " + SQLUtil.toSQL(psRecdStat);
+            }
+        }
+        
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), "a.sBranchCd = " + SQLUtil.toSQL(branch));
+        if(lsCondition != null && !"".equals(lsCondition)){
+            lsSQL = lsSQL + lsCondition;
+        }
+
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Employee ID»Salesman",
+                "sEmployID»sFullName",
+                "a.sEmployID»concat(a.sLastName,', ',a.sFrstName, ' ',a.sMiddName)",
+                byCode ? 0 : 1);
+
+        if (poJSON != null) {
+            return poModel.openRecord((String) poJSON.get("sEmployID"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+    
     public JSONObject searchEmployee(String value, boolean byCode) throws SQLException, GuanzonException {
         String lsCondition = "";
         if (psRecdStat != null) {
@@ -145,6 +186,21 @@ public class Salesman extends Parameter {
             poJSON.put("message", "No record loaded.");
             return poJSON;
         }
+    }
+    
+    public JSONObject SearchBranch(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Branch object = new ParamControllers(poGRider, logwrapr).Branch();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setBranchCode(object.getModel().getBranchCode());
+        }
+
+        return poJSON;
     }
     
     @Override

@@ -41,8 +41,7 @@ public class Model_Sales_Inquiry_Master extends Model {
     Model_Client_Mobile poClientMobile;
     Model_Client_Master poAgent;
     Model_Salesman poSalesPerson;
-    Model_Client_Master poSource;
-
+    Model_Sales_Inquiry_Sources poSource;
 
     @Override
     public void initialize() {
@@ -83,10 +82,10 @@ public class Model_Sales_Inquiry_Master extends Model {
             poAgent = clientModel.ClientMaster();
             poClientAddress = clientModel.ClientAddress();
             poClientMobile = clientModel.ClientMobile();
-            poSource = clientModel.ClientMaster();
             
             SalesModels sales = new SalesModels(poGRider);
             poSalesPerson = sales.Salesman();
+            poSource = sales.SalesInquirySources();
             
 //            end - initialize reference objects
 
@@ -474,13 +473,13 @@ public class Model_Sales_Inquiry_Master extends Model {
         }
     }
     
-    public Model_Client_Master Source() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sSourceNo"))) {
+    public Model_Sales_Inquiry_Sources Source() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sSourceCd"))) {
             if (poSource.getEditMode() == EditMode.READY
-                    && poSource.getClientId().equals((String) getValue("sSourceNo"))) {
+                    && poSource.getSourceId().equals((String) getValue("sSourceCd"))) {
                 return poSource;
             } else {
-                poJSON = poSource.openRecord((String) getValue("sSourceNo"));
+                poJSON = poSource.openRecord((String) getValue("sSourceCd"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poSource;

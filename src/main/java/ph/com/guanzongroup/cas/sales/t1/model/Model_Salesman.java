@@ -13,8 +13,11 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.services.ClientModels;
+import org.guanzon.cas.parameter.model.Model_Branch;
+import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 
 /**
@@ -25,6 +28,7 @@ public class Model_Salesman extends Model {
     
     //reference objects
     Model_Client_Master poClient;
+    Model_Branch poBranch;
 
     @Override
     public void initialize() {
@@ -38,7 +42,7 @@ public class Model_Salesman extends Model {
 
             //assign default values
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateString("cRecdStat", Logical.YES);
+            poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
             //end - assign default values
 
             poEntity.insertRow();
@@ -50,6 +54,9 @@ public class Model_Salesman extends Model {
             //initialize reference objects
             ClientModels clientModel = new ClientModels(poGRider);
             poClient = clientModel.ClientMaster();
+            
+            ParamModels model = new ParamModels(poGRider);
+            poBranch = model.Branch();
             
 //            end - initialize reference objects
 
@@ -162,6 +169,28 @@ public class Model_Salesman extends Model {
         } else {
             poClient.initialize();
             return poClient;
+        }
+    }
+    
+    
+    public Model_Branch Branch() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sBranchCd"))) {
+            if (poBranch.getEditMode() == EditMode.READY
+                    && poBranch.getBranchCode().equals((String) getValue("sBranchCd"))) {
+                return poBranch;
+            } else {
+                poJSON = poBranch.openRecord((String) getValue("sBranchCd"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poBranch;
+                } else {
+                    poBranch.initialize();
+                    return poBranch;
+                }
+            }
+        } else {
+            poBranch.initialize();
+            return poBranch;
         }
     }
     //end - reference object models
