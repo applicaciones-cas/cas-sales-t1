@@ -179,7 +179,12 @@ public class Salesman extends Parameter {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            return poModel.openRecord((String) poJSON.get("sClientID"));
+            poModel.setEmployeeId((String) poJSON.get("sEmployID"));
+            poModel.setLastName((String) poJSON.get("sLastName"));
+            poModel.setFirstName((String) poJSON.get("sFrstName"));
+            poModel.setMiddleName((String) poJSON.get("sMiddName"));
+            poJSON.put("result", "success");
+            return poJSON;
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -223,7 +228,10 @@ public class Salesman extends Parameter {
                 + " , a.sBranchCd "                                                      
                 + " , a.dFiredxxx "                                                      
                 + " , a.cRecdStat "                                                      
-                + " , b.sCompnyNm "
+                + " , b.sCompnyNm "                                                      
+                + " , b.sLastName "                                                      
+                + " , b.sFrstName "                                                      
+                + " , b.sMiddName "
                 + " , c.sBranchNm "                                                      
                 + " FROM ggc_isysdbf.employee_master001 a "                              
                 + " LEFT JOIN ggc_isysdbf.client_master b ON b.sClientID = a.sEmployID "

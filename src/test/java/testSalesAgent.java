@@ -36,12 +36,12 @@ public class testSalesAgent {
         poSalesAgentController = new SalesControllers(instance, null).SalesAgent();
     }
 
-//    @Test
+    @Test
     public void testNewRecord() {
-        String actual = "M00125000005";
-        String actual2 = "Manager";
-        String actual3 = "Accountant";
-        String actual4 = "BDO";
+        String actual = "M00125000011";
+        String actual2 = "Artist";
+        String actual3 = "Singer";
+        String actual4 = "ABS-CBN";
         JSONObject loJSON;
 
         try {

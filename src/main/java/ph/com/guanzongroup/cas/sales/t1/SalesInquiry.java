@@ -600,7 +600,8 @@ public class SalesInquiry extends Transaction {
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setClientId(object.Master().getModel().getClientId());
-            Master().setAddressId(object.ClientAddress().getModel().getAddressId()); //TODO
+            System.out.println("Get Address " + Master().ClientAddress().getAddressId());
+            Master().setAddressId(Master().ClientAddress().getAddressId()); //TODO
             Master().setContactId(""); //TODO
         }
         
@@ -1325,7 +1326,6 @@ public class SalesInquiry extends Transaction {
             String formattedDate = currentDate.format(DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
             Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
             Master().setSalesMan(poGRider.getUserID());
-            Master().setSourceCode("0"); //TODO
             Master().setPurchaseType("0");
             Master().setCategoryType("0");
             Master().setClientType("0");

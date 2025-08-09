@@ -390,12 +390,12 @@ public class Model_Sales_Inquiry_Master extends Model {
     }
     
     public Model_Client_Address ClientAddress() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sAddrssID"))) {
+        if (!"".equals((String) getValue("sClientID"))) {
             if (poClientAddress.getEditMode() == EditMode.READY
-                    && poClientAddress.getClientId().equals((String) getValue("sAddrssID"))) {
+                    && poClientAddress.getClientId().equals((String) getValue("sClientID"))) {
                 return poClientAddress;
             } else {
-                poJSON = poClientAddress.openRecord((String) getValue("sAddrssID"));
+                poJSON = poClientAddress.openRecord((String) getValue("sClientID")); //sAddrssID
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poClientAddress;

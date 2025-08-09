@@ -37,12 +37,12 @@ public class testSalesman {
         poSalesmanController = new SalesControllers(instance, null).Salesman();
     }
 
-//    @Test
+    @Test
     public void testNewRecord() {
-        String actual = "A00120000016";
-        String actual2 = "Juan";
-        String actual3 = "Abalos";
-        String actual4 = "Dela Cruz";
+        String actual = "M001000001";
+        String actual2 = "Michael";
+        String actual3 = "Torres";
+        String actual4 = "Cuison";
         String actual5 = instance.getBranchCode();
         JSONObject loJSON;
 
