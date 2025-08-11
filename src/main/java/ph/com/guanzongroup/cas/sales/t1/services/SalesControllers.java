@@ -86,19 +86,24 @@ public class SalesControllers {
         return poSalesman;
     }
     
-    public SalesAgent SalesAgent() throws SQLException, GuanzonException {
-        if (poGRider == null) {
-            poLogWrapper.severe("SalesControllers.SalesAgent: Application driver is not set.");
-            return null;
-        } 
-        if (poSalesAgent != null){
-            return poSalesAgent; 
+    public SalesAgent SalesAgent(){
+        try {
+            if (poGRider == null) {
+                poLogWrapper.severe("SalesControllers.SalesAgent: Application driver is not set.");
+                return null;
+            }
+            if (poSalesAgent != null){ 
+                return poSalesAgent;
+            }
+            poSalesAgent = new SalesAgent();
+            poSalesAgent.setApplicationDriver(poGRider);
+            poSalesAgent.setWithParentClass(false);
+            poSalesAgent.setLogWrapper(poLogWrapper);
+            poSalesAgent.initialize();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
         }
-        poSalesAgent = new SalesAgent();
-        poSalesAgent.setApplicationDriver(poGRider);
-        poSalesAgent.setWithParentClass(false);
-        poSalesAgent.setLogWrapper(poLogWrapper);
-        poSalesAgent.initialize();
+        
         return poSalesAgent;
     }
     

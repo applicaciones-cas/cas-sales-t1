@@ -5,7 +5,12 @@
  */
 package ph.com.guanzongroup.cas.sales.t1;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
@@ -24,17 +29,23 @@ import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
  */
 public class Salesman extends Parameter {
     Model_Salesman poModel;
+    List<Model_Salesman> paModelList;
 
     @Override
     public void initialize() throws SQLException, GuanzonException {
-      psRecdStat = RecordStatus.ACTIVE;
-      poModel = new SalesModels(poGRider).Salesman();
-      super.initialize();
+        psRecdStat = RecordStatus.ACTIVE;
+        poModel = new SalesModels(poGRider).Salesman();
+        paModelList = new ArrayList<>();
+        super.initialize();
     }
 
     @Override
     public Model_Salesman getModel() {
       return poModel;
+    }
+    
+    public void resetModel() {
+        poModel = new SalesModels(poGRider).Salesman();
     }
 
     @Override
@@ -97,7 +108,7 @@ public class Salesman extends Parameter {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "",
+                value,
                 "Employee ID»Salesman",
                 "sEmployID»sFullName",
                 "a.sEmployID»concat(a.sLastName,', ',a.sFrstName, ' ',a.sMiddName)",
@@ -135,7 +146,7 @@ public class Salesman extends Parameter {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "",
+                value,
                 "Employee ID»Salesman",
                 "sEmployID»sFullName",
                 "a.sEmployID»concat(a.sLastName,', ',a.sFrstName, ' ',a.sMiddName)",
@@ -149,6 +160,68 @@ public class Salesman extends Parameter {
             poJSON.put("message", "No record loaded.");
             return poJSON;
         }
+    }
+    
+    public JSONObject loadModelList() {
+        try {
+
+            String lsSQL = MiscUtil.addCondition(getSQ_Browse()," a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+            lsSQL = lsSQL + " ORDER BY a.sLastName DESC ";
+
+            System.out.println("Executing SQL: " + lsSQL);
+            ResultSet loRS = poGRider.executeQuery(lsSQL);
+            poJSON = new JSONObject();
+
+            int lnctr = 0;
+
+            if (MiscUtil.RecordCount(loRS) >= 0) {
+                paModelList = new ArrayList<>();
+                while (loRS.next()) {
+                    // Print the result set
+                    System.out.println("sEmployID: " + loRS.getString("sEmployID"));
+                    System.out.println("sFullName: " + loRS.getString("sFullName"));
+                    System.out.println("------------------------------------------------------------------------------");
+
+                    paModelList.add(SalesmanModel());
+                    paModelList.get(paModelList.size() - 1).openRecord(loRS.getString("sEmployID"));
+                    lnctr++;
+                }
+
+                System.out.println("Records found: " + lnctr);
+                poJSON.put("result", "success");
+                poJSON.put("message", "Record loaded successfully.");
+            } else {
+                paModelList = new ArrayList<>();
+                paModelList.add(SalesmanModel());
+                poJSON.put("result", "error");
+                poJSON.put("continue", true);
+                poJSON.put("message", "No record found.");
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        } catch (GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON.put("result", "error");
+            poJSON.put("message", MiscUtil.getException(ex));
+        }
+        return poJSON;
+    }
+
+    private Model_Salesman SalesmanModel() {
+        return new SalesModels(poGRider).Salesman();
+    }
+    public int getModelCount() {
+        if (paModelList == null) {
+            paModelList = new ArrayList<>();
+        }
+
+        return paModelList.size();
+    }
+    
+    public Model_Salesman ModelList(int row) {
+        return (Model_Salesman) paModelList.get(row);
     }
     
     public JSONObject searchEmployee(String value, boolean byCode) throws SQLException, GuanzonException {
