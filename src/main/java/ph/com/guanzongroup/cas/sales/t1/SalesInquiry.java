@@ -464,9 +464,9 @@ public class SalesInquiry extends Transaction {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Client",
-                "dTransact»sTransNox»sClientNm",
-                "a.dTransact»a.sTransNox»b.sCompnyNm",
+                "Transaction Date»Transaction No»Client»Sales Person",
+                "dTransact»sTransNox»sClientNm»sSalePrsn",
+                "a.dTransact»a.sTransNox»b.sCompnyNm»concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName)",
                 1);
 
         if (poJSON != null) {
@@ -518,9 +518,9 @@ public class SalesInquiry extends Transaction {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Client",
-                "dTransact»sTransNox»sClientNm",
-                "a.dTransact»a.sTransNox»b.sCompnyNm",
+                "Transaction Date»Transaction No»Client»Sales Person",
+                "dTransact»sTransNox»sClientNm»sSalePrsn",
+                "a.dTransact»a.sTransNox»b.sCompnyNm»concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName)",
                 1);
 
         if (poJSON != null) {
@@ -573,9 +573,9 @@ public class SalesInquiry extends Transaction {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Client",
-                "dTransact»sTransNox»sClientNm",
-                "a.dTransact»a.sTransNox»b.sCompnyNm",
+                "Transaction Date»Transaction No»Client»Sales Person",
+                "dTransact»sTransNox»sClientNm»sSalePrsn",
+                "a.dTransact»a.sTransNox»b.sCompnyNm»concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName)",
                 1);
 
         if (poJSON != null) {
@@ -599,6 +599,12 @@ public class SalesInquiry extends Transaction {
         object.Master().setClientType(Master().getClientType());
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
+            
+//            poJSON = checkPendingInquiry(object.Master().getModel().getClientId());
+//            if ("error".equals((String) poJSON.get("result"))) {
+//                return poJSON;
+//            }
+            
             Master().setClientId(object.Master().getModel().getClientId());
             System.out.println("Get Address " + Master().ClientAddress().getAddressId());
             Master().setAddressId(Master().ClientAddress().getAddressId()); //TODO
@@ -1202,6 +1208,54 @@ public class SalesInquiry extends Transaction {
             Detail(getDetailCount() - 1).setBrandId(lsBrandId);
         }
     }
+    
+    private JSONObject checkPendingInquiry(String clientId){
+        try {
+            poJSON = new JSONObject();
+            initSQL();
+            String lsSQL = MiscUtil.addCondition(SQL_BROWSE, 
+                       " a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
+                     + " AND a.sCompnyID = " + SQLUtil.toSQL(Master().getCompanyId())
+                     + " AND a.sCategrCd = " + SQLUtil.toSQL(Master().getCategoryCode())
+                     + " AND a.sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
+                     + " AND a.sClientID = " + SQLUtil.toSQL(clientId)
+                     + " AND a.sTransNox <> " + SQLUtil.toSQL(Master().getTransactionNo())
+                     + " AND ( a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+                     + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.QUOTED)
+                     + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
+                     + " ) ");
+            lsSQL = lsSQL + " ORDER BY a.dTransact ASC ";
+            System.out.println("Executing SQL: " + lsSQL);
+            ResultSet loRS = poGRider.executeQuery(lsSQL);
+            if (MiscUtil.RecordCount(loRS) >= 0) {
+                while (loRS.next()) {
+                    // Print the result set
+                    System.out.println("sTransNox: " + loRS.getString("sTransNox"));
+                    System.out.println("dTransact: " + loRS.getDate("dTransact"));
+                    System.out.println("sCompnyNm: " + loRS.getString("sClientNm"));
+                    System.out.println("------------------------------------------------------------------------------");
+                    
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "There is an ongoing sales inquiry for client " + loRS.getString("sClientNm").toUpperCase()
+                                    + "\nfrom sales person " + loRS.getString("sSalePrsn").toUpperCase() + ".\n\n"
+                                    + "Transaction No. : " + loRS.getString("sTransNox") + "\n"
+                                    + "Inquiry Date : " + loRS.getDate("dTransact"));
+                    return poJSON;
+                }
+            } else {
+                poJSON.put("result", "success");
+                poJSON.put("continue", true);
+                poJSON.put("message", "No record found.");
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+      
+        return poJSON;
+    
+    }
 
     @Override
     public JSONObject willSave()
@@ -1230,6 +1284,16 @@ public class SalesInquiry extends Transaction {
 
         if (paDetailRemoved == null) {
             paDetailRemoved = new ArrayList<>();
+        }
+        
+        //Set Original Client
+        if(Master().getEditMode() == EditMode.UPDATE){
+            SalesInquiry object = new SalesControllers(poGRider, logwrapr).SalesInquiry();
+            object.InitTransaction();
+            object.OpenTransaction(Master().getTransactionNo());
+            Master().setClientId(object.Master().getClientId());
+            Master().setAddressId(object.Master().getAddressId());
+            Master().setContactId(object.Master().getContactId());
         }
 
         Master().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
@@ -1347,15 +1411,16 @@ public class SalesInquiry extends Transaction {
                     + " a.sTransNox "
                     + " , a.dTransact "
                     + " , a.cTranStat "
+                    + " , a.sClientID "
                     + " , b.sCompnyNm AS sClientNm "
-                    + " , c.sCompnyNm AS sSalePrsn "
+                    + " , concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName) AS sSalePrsn "
                     + " , d.sCompnyNm AS sAgentNme "
                     + " , e.sBranchNm "
                     + " , f.sCompnyNm "
                     + " , g.sDescript "
                     + " FROM sales_inquiry_master a "
                     + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                    + " LEFT JOIN client_master c ON c.sClientID = a.sSalesman "
+                    + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
                     + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
                     + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
                     + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
