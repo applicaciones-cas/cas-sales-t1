@@ -139,7 +139,11 @@ public class SalesInquiry_LP implements GValidator{
             return poJSON;
         }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
-            poJSON.put("message", "Source Code is not set.");
+            poJSON.put("message", "Inquiry Type is not set.");
+            return poJSON;
+        }
+        if (poMaster.getSalesMan()== null || "".equals(poMaster.getSalesMan())) {
+            poJSON.put("message", "Sales Person is not set.");
             return poJSON;
         }
         if (poMaster.getClientId() == null || "".equals(poMaster.getClientId())) {
@@ -154,12 +158,6 @@ public class SalesInquiry_LP implements GValidator{
 //            poJSON.put("message", "Contact Number is not set.");
 //            return poJSON;
 //        }
-        if(poMaster.getSourceCode().equals("")){
-            if (poMaster.getAgentId()== null || "".equals(poMaster.getAgentId())) {
-                poJSON.put("message", "Referral is not set.");
-                return poJSON;
-            }
-        }
         if (poMaster.getInquiryStatus()== null || "".equals(poMaster.getInquiryStatus())) {
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;
