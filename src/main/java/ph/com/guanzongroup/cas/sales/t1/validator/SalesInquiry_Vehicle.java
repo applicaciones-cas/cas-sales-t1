@@ -138,7 +138,7 @@ public class SalesInquiry_Vehicle implements GValidator{
             return poJSON;
         }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
-            poJSON.put("message", "Source Code is not set.");
+            poJSON.put("message", "Inquiry Type is not set.");
             return poJSON;
         }
         if (poMaster.getSalesMan()== null || "".equals(poMaster.getSalesMan())) {
