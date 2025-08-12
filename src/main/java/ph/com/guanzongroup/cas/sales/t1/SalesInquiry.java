@@ -1286,6 +1286,11 @@ public class SalesInquiry extends Transaction {
             paDetailRemoved = new ArrayList<>();
         }
         
+        if(Master().getEditMode() == EditMode.ADDNEW){
+            System.out.println("Will Save : " + Master().getNextCode());
+            Master().setTransactionNo(Master().getNextCode());
+        }
+        
         //Set Original Client
         if(Master().getEditMode() == EditMode.UPDATE){
             SalesInquiry object = new SalesControllers(poGRider, logwrapr).SalesInquiry();
@@ -1295,7 +1300,7 @@ public class SalesInquiry extends Transaction {
             Master().setAddressId(object.Master().getAddressId());
             Master().setContactId(object.Master().getContactId());
         }
-
+        
         Master().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
         Master().setModifiedDate(poGRider.getServerDate());
 
