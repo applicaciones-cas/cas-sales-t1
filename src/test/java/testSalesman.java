@@ -11,14 +11,11 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
-import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
 import ph.com.guanzongroup.cas.sales.t1.Salesman;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 /**
@@ -39,10 +36,10 @@ public class testSalesman {
 
     @Test
     public void testNewRecord() {
-        String actual = "M001000001";
-        String actual2 = "Michael";
+        String actual = "M001000002";
+        String actual2 = "Jose";
         String actual3 = "Torres";
-        String actual4 = "Cuison";
+        String actual4 = "Rizal";
         String actual5 = instance.getBranchCode();
         JSONObject loJSON;
 
