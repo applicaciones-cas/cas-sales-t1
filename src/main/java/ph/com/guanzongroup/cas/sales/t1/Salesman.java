@@ -253,6 +253,13 @@ public class Salesman extends Parameter {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
+            for(int lnCtr = 0; lnCtr <= getModelCount() - 1; lnCtr++){
+                if(((String) poJSON.get("sEmployID")).equals(ModelList(lnCtr).getEmployeeId())){
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Employee already exists in the list.");
+                    return poJSON;
+                }
+            }
             poModel.setEmployeeId((String) poJSON.get("sEmployID"));
             poModel.setLastName((String) poJSON.get("sLastName"));
             poModel.setFirstName((String) poJSON.get("sFrstName"));
