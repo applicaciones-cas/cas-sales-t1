@@ -1396,7 +1396,12 @@ public class SalesInquiry extends Transaction {
             Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
             Master().setSalesMan(poGRider.getUserID());
             Master().setPurchaseType("0");
-            Master().setCategoryType("0");
+            if(SalesInquiryStatic.APPLIANCES.equals(Master().getCategoryCode()) 
+                    || SalesInquiryStatic.MOBILEPHONE.equals(Master().getCategoryCode()) 
+                    || SalesInquiryStatic.CAR.equals(Master().getCategoryCode()) || 
+                       SalesInquiryStatic.MOTORCYCLE.equals(Master().getCategoryCode())){
+                Master().setCategoryType("0");
+            }
             Master().setClientType("0");
 
         } catch (SQLException ex) {
