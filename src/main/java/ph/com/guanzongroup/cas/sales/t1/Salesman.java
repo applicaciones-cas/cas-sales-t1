@@ -165,7 +165,8 @@ public class Salesman extends Parameter {
     public JSONObject loadModelList() {
         try {
 
-            String lsSQL = MiscUtil.addCondition(getSQ_Browse()," a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+//            String lsSQL = MiscUtil.addCondition(getSQ_Browse()," a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+            String lsSQL = getSQ_Browse();
             lsSQL = lsSQL + " ORDER BY a.sLastName DESC ";
 
             System.out.println("Executing SQL: " + lsSQL);
@@ -275,7 +276,7 @@ public class Salesman extends Parameter {
         object.setRecordStatus(RecordStatus.ACTIVE);
         poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            getModel().setBranchCode(object.getModel().getBranchCode());
+            poModel.setBranchCode(object.getModel().getBranchCode());
         }
 
         return poJSON;
