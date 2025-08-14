@@ -134,10 +134,10 @@ public class SalesInquiry_LP implements GValidator{
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
-            poJSON.put("message", "Category Type is not set.");
-            return poJSON;
-        }
+//        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
+//            poJSON.put("message", "Category Type is not set.");
+//            return poJSON;
+//        }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
             poJSON.put("message", "Inquiry Type is not set.");
             return poJSON;

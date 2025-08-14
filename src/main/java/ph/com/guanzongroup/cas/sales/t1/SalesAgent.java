@@ -189,6 +189,13 @@ public class SalesAgent extends Parameter {
         object.Master().setClientType("0");
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
+            for(int lnCtr = 0; lnCtr <= getModelCount() - 1; lnCtr++){
+                if(object.Master().getModel().getClientId().equals(ModelList(lnCtr).getClientId())){
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Sales Agent already exists in the list.");
+                    return poJSON;
+                }
+            }
             getModel().setClientId(object.Master().getModel().getClientId());
         }
         

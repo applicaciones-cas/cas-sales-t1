@@ -165,7 +165,8 @@ public class Salesman extends Parameter {
     public JSONObject loadModelList() {
         try {
 
-            String lsSQL = MiscUtil.addCondition(getSQ_Browse()," a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+//            String lsSQL = MiscUtil.addCondition(getSQ_Browse()," a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+            String lsSQL = getSQ_Browse();
             lsSQL = lsSQL + " ORDER BY a.sLastName DESC ";
 
             System.out.println("Executing SQL: " + lsSQL);
@@ -252,6 +253,13 @@ public class Salesman extends Parameter {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
+            for(int lnCtr = 0; lnCtr <= getModelCount() - 1; lnCtr++){
+                if(((String) poJSON.get("sEmployID")).equals(ModelList(lnCtr).getEmployeeId())){
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Employee already exists in the list.");
+                    return poJSON;
+                }
+            }
             poModel.setEmployeeId((String) poJSON.get("sEmployID"));
             poModel.setLastName((String) poJSON.get("sLastName"));
             poModel.setFirstName((String) poJSON.get("sFrstName"));
@@ -275,7 +283,7 @@ public class Salesman extends Parameter {
         object.setRecordStatus(RecordStatus.ACTIVE);
         poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            getModel().setBranchCode(object.getModel().getBranchCode());
+            poModel.setBranchCode(object.getModel().getBranchCode());
         }
 
         return poJSON;
