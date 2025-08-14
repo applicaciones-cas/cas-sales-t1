@@ -121,11 +121,9 @@ public class SalesInquiry_MC implements GValidator{
             poJSON.put("message", "Company is not set.");
             return poJSON;
         }
-        if(SalesInquiryStatic.MOTORCYCLE.equals(poMaster.getCategoryCode())){
-            if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
-                poJSON.put("message", "Category is not set.");
-                return poJSON;
-            }
+        if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
+            poJSON.put("message", "Category is not set.");
+            return poJSON;
         }
         if (poMaster.getBranchCode()== null || "".equals(poMaster.getBranchCode())) {
             poJSON.put("message", "Branch is not set.");
@@ -135,9 +133,11 @@ public class SalesInquiry_MC implements GValidator{
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
-            poJSON.put("message", "Category Type is not set.");
-            return poJSON;
+        if(SalesInquiryStatic.MOTORCYCLE.equals(poMaster.getCategoryCode())){
+            if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
+                poJSON.put("message", "Category Type is not set.");
+                return poJSON;
+            }
         }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
             poJSON.put("message", "Inquiry Type is not set.");
