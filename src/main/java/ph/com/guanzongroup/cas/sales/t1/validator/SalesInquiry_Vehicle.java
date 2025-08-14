@@ -133,7 +133,7 @@ public class SalesInquiry_Vehicle implements GValidator{
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if(SalesInquiryStatic.CAR.equals(poMaster.getCategoryCode())){
+        if(SalesInquiryStatic.CategoryCode.CAR.equals(poMaster.getCategoryCode())){
             if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
                 poJSON.put("message", "Category Type is not set.");
                 return poJSON;

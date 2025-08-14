@@ -18,18 +18,22 @@ public class SalesInquiryStatic {
     public static final  String SALE = "4"; //Converted TO Sale
     public static final  String LOST = "6"; //Lost/Declined
     
-    //Category
-    public static final String MOBILEPHONE = "0001";   //Cellphone    
-    public static final String APPLIANCES  = "0002";   //Appliances   
-    public static final String MOTORCYCLE  = "0003";   //Motorcycle   
-    public static final String SPMC        = "0004";   //Motorcycle SP
-    public static final String CAR         = "0005";   //CAR          
-    public static final String SPCAR       = "0006";   //CAR SP       
-    public static final String GENERAL     = "0007";   //General      
-    public static final String FOOD        = "0008";   //Food         
-    public static final String HOSPITALITY = "0009";   //Hospitality 
+    public static class CategoryCode  {
+        //Category
+        public static final String MOBILEPHONE = "0001";   //Cellphone    
+        public static final String APPLIANCES  = "0002";   //Appliances   
+        public static final String MOTORCYCLE  = "0003";   //Motorcycle   
+        public static final String SPMC        = "0004";   //Motorcycle SP
+        public static final String CAR         = "0005";   //CAR          
+        public static final String SPCAR       = "0006";   //CAR SP       
+        public static final String GENERAL     = "0007";   //General      
+        public static final String FOOD        = "0008";   //Food         
+        public static final String HOSPITALITY = "0009";   //Hospitality 
+    }
     
-    //Client Type
-    public static final  String INDIVIDUAL = "0"; //Individual
-    public static final  String CORPORATE = "1";  //Corporate
+    public static class ClientType  {
+        //Client Type
+        public static final  String INDIVIDUAL = "0"; //Individual
+        public static final  String CORPORATE = "1";  //Corporate
+    }
 }

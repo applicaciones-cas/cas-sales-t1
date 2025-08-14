@@ -899,13 +899,13 @@ public class SalesInquiry extends Transaction {
     public JSONObject checkMaximumInqDetail(){
         poJSON = new JSONObject();
         //Check if client type is corporate allow only 5 inquiry detail
-        if(Master().getCategoryCode().equals(SalesInquiryStatic.CAR)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.MOTORCYCLE)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.APPLIANCES)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.MOBILEPHONE)){
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.APPLIANCES)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOBILEPHONE)){
             
             //Corporate
-            if(Master().getClientType().equals(SalesInquiryStatic.CORPORATE)){
+            if(Master().getClientType().equals(SalesInquiryStatic.ClientType.CORPORATE)){
                 if(getDetailCount() > 5){
                     poJSON.put("result", "error");
                     poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
@@ -1396,10 +1396,10 @@ public class SalesInquiry extends Transaction {
             Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
             Master().setSalesMan(poGRider.getUserID());
             Master().setPurchaseType("0");
-            if(SalesInquiryStatic.APPLIANCES.equals(Master().getCategoryCode()) 
-                    || SalesInquiryStatic.MOBILEPHONE.equals(Master().getCategoryCode()) 
-                    || SalesInquiryStatic.CAR.equals(Master().getCategoryCode()) || 
-                       SalesInquiryStatic.MOTORCYCLE.equals(Master().getCategoryCode())){
+            if(SalesInquiryStatic.CategoryCode.APPLIANCES.equals(Master().getCategoryCode()) 
+                    || SalesInquiryStatic.CategoryCode.MOBILEPHONE.equals(Master().getCategoryCode()) 
+                    || SalesInquiryStatic.CategoryCode.CAR.equals(Master().getCategoryCode()) || 
+                       SalesInquiryStatic.CategoryCode.MOTORCYCLE.equals(Master().getCategoryCode())){
                 Master().setCategoryType("0");
             }
             Master().setClientType("0");
