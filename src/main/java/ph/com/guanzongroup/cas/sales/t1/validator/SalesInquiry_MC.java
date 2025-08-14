@@ -121,9 +121,11 @@ public class SalesInquiry_MC implements GValidator{
             poJSON.put("message", "Company is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
-            poJSON.put("message", "Category is not set.");
-            return poJSON;
+        if(SalesInquiryStatic.MOTORCYCLE.equals(poMaster.getCategoryCode())){
+            if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
+                poJSON.put("message", "Category is not set.");
+                return poJSON;
+            }
         }
         if (poMaster.getBranchCode()== null || "".equals(poMaster.getBranchCode())) {
             poJSON.put("message", "Branch is not set.");
