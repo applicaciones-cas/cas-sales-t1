@@ -55,9 +55,11 @@ public class Model_Bank_Application extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
+            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dAppliedx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dApproved", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dCancelld", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cTranStat", SalesInquiryStatic.OPEN);
             //end - assign default values
 
@@ -99,6 +101,17 @@ public class Model_Bank_Application extends Model {
 
     public String getTransactionNo() {
         return (String) getValue("sTransNox");
+    }
+
+    public JSONObject setEntryNo(int entryNo) {
+        return setValue("nEntryNox", entryNo);
+    }
+
+    public int getEntryNo() {
+        if (getValue("nEntryNox") == null || "".equals(getValue("nEntryNox"))) {
+            return 0;
+        }
+        return (int) getValue("nEntryNox");
     }
 
     public JSONObject setApplicationNo(String applicationNo) {
@@ -189,7 +202,21 @@ public class Model_Bank_Application extends Model {
         return (Date) getValue("dCancelld");
     }
     
-    
+    public JSONObject setModifyingId(String modifiedBy) {
+        return setValue("sModified", modifiedBy);
+    }
+
+    public String getModifyingId() {
+        return (String) getValue("sModified");
+    }
+
+    public JSONObject setModifiedDate(Date modifiedDate) {
+        return setValue("dModified", modifiedDate);
+    }
+
+    public Date getModifiedDate() {
+        return (Date) getValue("dModified");
+    }
     
 //    public JSONObject isProcessed(boolean isProcessed) {
 //        return setValue("cProcessd", isProcessed ? "1" : "0");
@@ -197,22 +224,6 @@ public class Model_Bank_Application extends Model {
 //
 //    public boolean isProcessed() {
 //        return ((String) getValue("cProcessd")).equals("1");
-//    }
-//
-//    public JSONObject setModifyingId(String modifiedBy) {
-//        return setValue("sModified", modifiedBy);
-//    }
-//
-//    public String getModifyingId() {
-//        return (String) getValue("sModified");
-//    }
-//
-//    public JSONObject setModifiedDate(Date modifiedDate) {
-//        return setValue("dModified", modifiedDate);
-//    }
-//
-//    public Date getModifiedDate() {
-//        return (Date) getValue("dModified");
 //    }
 
     

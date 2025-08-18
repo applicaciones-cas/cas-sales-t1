@@ -7,12 +7,12 @@ package ph.com.guanzongroup.cas.sales.t1.model;
 
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.List;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.cas.client.model.Model_Client_Address;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.model.Model_Client_Mobile;
@@ -30,20 +30,10 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
  *
  * @author Arsiela
  */
-public class Model_Sales_Inquiry_Requirements extends Model {
+public class Model_Requirement_Source_PerGroup extends Model {
     
     //reference objects
-    Model_Branch poBranch;
-    Model_Industry poIndustry;
-    Model_Company poCompany;
-    Model_Client_Master poClient;
-    Model_Client_Address poClientAddress;
-    Model_Client_Mobile poClientMobile;
-    Model_Client_Master poAgent;
-    Model_Salesman poSalesPerson;
-    Model_Sales_Inquiry_Sources poSource;
-    
-    Model_Banks poBank;
+    Model_Requirement_Source poRequirementSource;
 
     @Override
     public void initialize() {
@@ -57,33 +47,18 @@ public class Model_Sales_Inquiry_Requirements extends Model {
 
             //assign default values
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dReceived", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("nEntryNox", 0);
+            poEntity.updateObject("cRecdStat", RecordStatus.ACTIVE);
             //end - assign default values
 
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
             poEntity.absolute(1);
 
-            ID = "sTransNox";
-            ID2 = "nEntryNox";
+            ID = "sRqrmtIDx";
 
             //initialize reference objects
-            ParamModels model = new ParamModels(poGRider);
-            poBranch = model.Branch();
-            poIndustry = model.Industry();
-            poCompany = model.Company();
-            poBank = model.Banks();
-
-            ClientModels clientModel = new ClientModels(poGRider);
-            poClient = clientModel.ClientMaster();
-            poAgent = clientModel.ClientMaster();
-            poClientAddress = clientModel.ClientAddress();
-            poClientMobile = clientModel.ClientMobile();
-            
-            SalesModels sales = new SalesModels(poGRider);
-            poSalesPerson = sales.Salesman();
-            poSource = sales.SalesInquirySources();
+            SalesModels salesModel = new SalesModels(poGRider); 
+            poRequirementSource = salesModel.RequirementSource();
             
 //            end - initialize reference objects
 
@@ -94,23 +69,28 @@ public class Model_Sales_Inquiry_Requirements extends Model {
         }
     }
 
-    public JSONObject setTransactionNo(String transactionNo) {
-        return setValue("sTransNox", transactionNo);
+    public JSONObject setRequirementId(String requirementId) {
+        return setValue("sRqrmtIDx", requirementId);
     }
 
-    public String getTransactionNo() {
-        return (String) getValue("sTransNox");
+    public String getRequirementId() {
+        return (String) getValue("sRqrmtIDx");
     }
 
-    public JSONObject setEntryNo(int entryNo) {
-        return setValue("nEntryNox", entryNo);
+    public JSONObject setPaymentMode(String paymentMode) {
+        return setValue("cPayModex", paymentMode);
     }
 
-    public int getEntryNo() {
-        if (getValue("nEntryNox") == null || "".equals(getValue("nEntryNox"))) {
-            return 0;
-        }
-        return (int) getValue("nEntryNox");
+    public String getPaymentMode() {
+        return (String) getValue("cPayModex");
+    }
+
+    public JSONObject setCustomerGroup(String customerGroup) {
+        return setValue("cCustGrpx", customerGroup);
+    }
+
+    public String getCustomerGroup() {
+        return (String) getValue("cCustGrpx");
     }
 
     public JSONObject setRequirementCode(String requirementCode) {
@@ -129,30 +109,14 @@ public class Model_Sales_Inquiry_Requirements extends Model {
         return ((String) getValue("cRequired")).equals("1");
     }
     
-    public JSONObject isSubmitted(boolean isSubmitted) {
-        return setValue("cSubmittd", isSubmitted ? "1" : "0");
+    public JSONObject isActive(boolean isRequired) {
+        return setValue("cRecdStat", isRequired ? "1" : "0");
     }
 
-    public boolean isSubmitted() {
-        return ((String) getValue("cSubmittd")).equals("1");
+    public boolean isActive() {
+        return ((String) getValue("cRecdStat")).equals("1");
     }
 
-    public JSONObject setReceivedBy(String receivedBy) {
-        return setValue("sReceived", receivedBy);
-    }
-
-    public String getReceivedBy() {
-        return (String) getValue("sReceived");
-    }
-    
-    public JSONObject setReceivedDate(Date receivedDate) {
-        return setValue("dReceived", receivedDate);
-    }
-
-    public Date getReceivedDate() {
-        return (Date) getValue("dReceived");
-    }
-    
     public JSONObject setModifyingId(String modifiedBy) {
         return setValue("sModified", modifiedBy);
     }
@@ -168,13 +132,33 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     public Date getModifiedDate() {
         return (Date) getValue("dModified");
     }
-
+    
     @Override
     public String getNextCode() {
         return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
 
     //reference object models
+    public Model_Requirement_Source RequirementSource() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sRqrmtCde"))) {
+            if (poRequirementSource.getEditMode() == EditMode.READY
+                    && poRequirementSource.getRequirementCode().equals((String) getValue("sRqrmtCde"))) {
+                return poRequirementSource;
+            } else {
+                poJSON = poRequirementSource.openRecord((String) getValue("sRqrmtCde"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poRequirementSource;
+                } else {
+                    poRequirementSource.initialize();
+                    return poRequirementSource;
+                }
+            }
+        } else {
+            poRequirementSource.initialize();
+            return poRequirementSource;
+        }
+    }
     //end - reference object models
 
 }

@@ -192,6 +192,8 @@ public class Model_Sales_Inquiry_Detail extends Model {
     public Model_Brand Brand() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sModelIDx")) && (String) getValue("sModelIDx") != null) {
             setBrandId(Model().getBrandId());
+        } else if (!"".equals((String) getValue("sStockIDx")) && (String) getValue("sStockIDx") != null) {
+            setBrandId(Inventory().getBrandId());
         }
         
         if (!"".equals(getBrandId())) {
