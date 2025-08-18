@@ -31,6 +31,7 @@ import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
 import org.guanzon.cas.parameter.Brand;
+import org.guanzon.cas.parameter.CategoryLevel2;
 import org.guanzon.cas.parameter.Color;
 import org.guanzon.cas.parameter.ModelVariant;
 import org.guanzon.cas.parameter.services.ParamControllers;
@@ -686,6 +687,7 @@ public class SalesInquiry extends Transaction {
         poJSON = object.searchRecord(value, byCode, Master().getIndustryId());
         if ("success".equals((String) poJSON.get("result"))) {
             if (!object.getModel().getBrandId().equals(Detail(row).getBrandId())) {
+                Detail(row).setCategory("");
                 Detail(row).setModelId("");
                 Detail(row).setModelVarianId("");
                 Detail(row).setColorId("");
@@ -732,11 +734,11 @@ public class SalesInquiry extends Transaction {
             
             Detail(row).setModelId(object.getModel().getModelId());
             Detail(row).setModelVarianId(object.getModel().getVariantId());
+            Detail(row).setCategory("");
         }
 
         return poJSON;
     }
-    
     
     public JSONObject SearchColor(String value, boolean byCode, int row)
             throws SQLException,
@@ -764,11 +766,13 @@ public class SalesInquiry extends Transaction {
             
             //Set stock ID
             String lsStockId = "";
+            String lsCategory = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
             inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
             inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
+                lsCategory = inventory.getModel().getCategoryIdSecondLevel();
             }
             poJSON = checkExistingDetail(row,
                     Detail(row).getBrandId(),
@@ -782,17 +786,15 @@ public class SalesInquiry extends Transaction {
             
             Detail(row).setColorId(object.getModel().getColorId());
             Detail(row).setStockId(lsStockId);
+            Detail(row).setCategory(lsCategory);
             
         }
 
         return poJSON;
     }
     
-    public JSONObject SearchInventory(String value, boolean byCode, int row)
-            throws SQLException,
-            GuanzonException {
+    public JSONObject SearchCategory(String value, boolean byCode, int row) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
-        poJSON.put("row", row);
         
         if(Master().getClientId()== null || "".equals(Master().getClientId())){
             poJSON.put("result", "error");
@@ -800,39 +802,214 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
-        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
-        object.setRecordStatus(RecordStatus.ACTIVE);
+        CategoryLevel2 object = new ParamControllers(poGRider, logwrapr).CategoryLevel2();
+        String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), "cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                                            + " AND sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId()));
         
-        poJSON = object.searchRecord(value, byCode, 
-                null,
-                null, 
-                Master().getIndustryId(),  
-                Master().getCategoryCode());
-        
-        poJSON.put("row", row);
-        System.out.println("result" + (String) poJSON.get("result"));
-        if ("success".equals((String) poJSON.get("result"))) {
-            poJSON = checkExistingDetail(row,
-                    Detail(row).getBrandId(),
-                    object.getModel().getModelId(),
-                    object.getModel().getVariantId(),
-                    object.getModel().getColorId(),
-                    object.getModel().getStockId() 
-                    );
-            if ("error".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            }
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                value,
+                "Category ID»Description",
+                "sCategrCd»sDescript",
+                "sCategrCd»sDescript",
+                byCode ? 0 : 1);
 
-            Detail(row).setStockId(object.getModel().getStockId());
-            Detail(row).setModelId(object.getModel().getModelId());
-            Detail(row).setModelVarianId(object.getModel().getVariantId());
-            Detail(row).setColorId(object.getModel().getColorId());
+        if (poJSON != null) {
+            poJSON = object.openRecord((String) poJSON.get("sCategrCd"));
+            if ("success".equals((String) poJSON.get("result"))) {
+                Detail(row).setCategory(object.getModel().getCategoryId());
+            }
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
         }
         
-        System.out.println("StockID : " + Detail(row).Inventory().getStockId());
-        System.out.println("Description  : " + Detail(row).Inventory().getDescription());
         return poJSON;
     }
+    
+    public JSONObject SearchInventory(String value, boolean byCode, int row) throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        
+        if(Master().getClientId()== null || "".equals(Master().getClientId())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client is not set.");
+            return poJSON;
+        }
+        
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.APPLIANCES)
+            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOBILEPHONE)){
+            if(Detail(row).getCategory()== null || "".equals(Detail(row).getCategory())){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Category is not set.");
+                return poJSON;
+            }
+        }
+        
+        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
+        String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), 
+                                            " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                                            + Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
+                                                    ? " AND a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
+                                                    : ""
+                                            + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
+                                            + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
+                                            + Detail(row).getCategory() != null && !"".equals(Detail(row).getCategory()) 
+                                                    ? " AND a.sCategCd2 = " + SQLUtil.toSQL(Detail(row).getCategory())
+                                                    : ""
+                                            );
+        
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                value,
+                "Barcode»Description»Brand»Model»Variant»UOM",
+                "sBarCodex»sDescript»xBrandNme»xModelNme»xVrntName»xMeasurNm",
+                "a.sBarCodex»a.sDescript»IFNULL(b.sDescript, '')»IFNULL(c.sDescript, '')»IFNULL(f.sDescript, '')»IFNULL(e.sDescript, '')",
+                byCode ? 0 : 1);
+
+        if (poJSON != null) {
+            poJSON = object.openRecord((String) poJSON.get("sStockIDx"));
+            if ("success".equals((String) poJSON.get("result"))) {
+                poJSON = checkExistingDetail(row,
+                        Detail(row).getBrandId(),
+                        object.getModel().getModelId(),
+                        object.getModel().getVariantId(),
+                        object.getModel().getColorId(),
+                        object.getModel().getStockId() 
+                        );
+                if ("error".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+
+                Detail(row).setStockId(object.getModel().getStockId());
+                Detail(row).setModelId(object.getModel().getModelId());
+                Detail(row).setModelVarianId(object.getModel().getVariantId());
+                Detail(row).setColorId(object.getModel().getColorId());
+                if(object.getModel().Variant().getSellingPrice() == 0.0000){
+                    Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
+                } else {
+                    if(object.getModel().getSellingPrice() != null){
+                        Detail(row).setSellPrice(object.getModel().getSellingPrice().doubleValue());
+                    } else {
+                        Detail(row).setSellPrice(null);
+                    }
+                }
+            }
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+        }
+        
+        return poJSON;
+    }
+    
+//    public JSONObject SearchCategory(String value, boolean byCode, int row)
+//            throws SQLException,
+//            GuanzonException {
+//        poJSON = new JSONObject();
+//        poJSON.put("row", row);
+//        
+//        if(Master().getClientId()== null || "".equals(Master().getClientId())){
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Client is not set.");
+//            return poJSON;
+//        }
+//        
+//        CategoryLevel2 object = new ParamControllers(poGRider, logwrapr).CategoryLevel2();
+//        object.setRecordStatus(RecordStatus.ACTIVE);
+//        
+//        poJSON = object.searchRecord(value, byCode);
+////        poJSON = object.searchRecord(value, byCode, Master().getIndustryId()); TODO
+//        
+//        poJSON.put("row", row);
+//        System.out.println("result" + (String) poJSON.get("result"));
+//        if ("success".equals((String) poJSON.get("result"))) {
+//            Detail(row).setCategory(object.getModel().getCategoryId());
+//            Detail(row).setStockId("");
+//            Detail(row).setModelId("");
+//            Detail(row).setModelVarianId("");
+//            Detail(row).setColorId("");
+//        }
+//        
+//        System.out.println("Category ID : " + Detail(row).getCategory());
+//        System.out.println("Description  : " + Detail(row).Category2().getDescription());
+//        return poJSON;
+//    }
+    
+//    public JSONObject SearchInventory(String value, boolean byCode, int row)
+//            throws SQLException,
+//            GuanzonException {
+//        
+//        poJSON = new JSONObject();
+//        poJSON.put("row", row);
+//        
+//        if(Master().getClientId()== null || "".equals(Master().getClientId())){
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Client is not set.");
+//            return poJSON;
+//        }
+//        
+//        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
+//        object.setRecordStatus(RecordStatus.ACTIVE);
+//        
+//        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.APPLIANCES)
+//            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOBILEPHONE)){
+//            if(Detail(row).getCategory()== null || "".equals(Detail(row).getCategory())){
+//                poJSON.put("result", "error");
+//                poJSON.put("message", "Category is not set.");
+//                return poJSON;
+//            }
+//    //        poJSON = object.searchRecord(value, byCode, 
+//    //                null,
+//    //                "".equals(Detail(row).getBrandId()) ?  null : Detail(row).getBrandId(), 
+//    //                Master().getIndustryId(),  
+//    //                Master().getCategoryCode(),
+//    //                        Detail(row).getCategory());
+//        } else {
+//        
+//            poJSON = object.searchRecord(value, byCode, 
+//                    null,
+//                    "".equals(Detail(row).getBrandId()) ?  null : Detail(row).getBrandId(), 
+//                    Master().getIndustryId(),  
+//                    Master().getCategoryCode());
+//        }
+//        
+//        poJSON.put("row", row);
+//        System.out.println("result" + (String) poJSON.get("result"));
+//        if ("success".equals((String) poJSON.get("result"))) {
+//            poJSON = checkExistingDetail(row,
+//                    Detail(row).getBrandId(),
+//                    object.getModel().getModelId(),
+//                    object.getModel().getVariantId(),
+//                    object.getModel().getColorId(),
+//                    object.getModel().getStockId() 
+//                    );
+//            if ("error".equals((String) poJSON.get("result"))) {
+//                return poJSON;
+//            }
+//
+//            Detail(row).setStockId(object.getModel().getStockId());
+//            Detail(row).setModelId(object.getModel().getModelId());
+//            Detail(row).setModelVarianId(object.getModel().getVariantId());
+//            Detail(row).setColorId(object.getModel().getColorId());
+//            if(object.getModel().Variant().getSellingPrice() == 0.0000){
+//                Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
+//            } else {
+//                if(object.getModel().getSellingPrice() != null){
+//                    Detail(row).setSellPrice(object.getModel().getSellingPrice().doubleValue());
+//                } else {
+//                    Detail(row).setSellPrice(null);
+//                }
+//            }
+//        }
+//        
+//        System.out.println("StockID : " + Detail(row).Inventory().getStockId());
+//        System.out.println("Description  : " + Detail(row).Inventory().getDescription());
+//        return poJSON;
+//    }
     
     private JSONObject checkExistingDetail(int row,String brandId, String modelId, String modelVariantId, String colorId, String stockId){
         poJSON = new JSONObject();
@@ -1414,6 +1591,20 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
+    
+    @Override
+    protected JSONObject isEntryOkay(String status) {
+        GValidator loValidator = SalesInquiryValidatorFactory.make(Master().getIndustryId());
+
+        loValidator.setApplicationDriver(poGRider);
+        loValidator.setTransactionStatus(status);
+        loValidator.setMaster(poMaster);
+//        loValidator.setDetail(paDetail);
+
+        poJSON = loValidator.validate();
+
+        return poJSON;
+    }
 
     @Override
     public void initSQL() {
@@ -1437,19 +1628,4 @@ public class SalesInquiry extends Transaction {
                     + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx " ;
         
     }
-    
-    @Override
-    protected JSONObject isEntryOkay(String status) {
-        GValidator loValidator = SalesInquiryValidatorFactory.make(Master().getIndustryId());
-
-        loValidator.setApplicationDriver(poGRider);
-        loValidator.setTransactionStatus(status);
-        loValidator.setMaster(poMaster);
-//        loValidator.setDetail(paDetail);
-
-        poJSON = loValidator.validate();
-
-        return poJSON;
-    }
-    
 }
