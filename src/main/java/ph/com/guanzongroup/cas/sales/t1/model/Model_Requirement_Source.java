@@ -104,7 +104,7 @@ public class Model_Requirement_Source extends Model {
     
     @Override
     public String getNextCode() {
-        return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
+        return MiscUtil.getNextCode(this.getTable(), ID, false, poGRider.getGConnection().getConnection(), "");
     }
 
     //reference object models

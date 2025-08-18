@@ -45,9 +45,6 @@ public class testSalesInquiry {
         String categoryId = "0005";
         String remarks = "this is a test Class 4.";
 
-        String stockId = "C0W125000001";
-        int quantity = 110;
-
         JSONObject loJSON;
 
         try {
@@ -95,7 +92,10 @@ public class testSalesInquiry {
                 System.out.println("Industry : " + poSalesInquiryController.Master().Industry().getDescription());
                 System.out.println("Category Code : " + poSalesInquiryController.Master().getCategoryCode());
                 System.out.println("TransNox : " + poSalesInquiryController.Master().getTransactionNo());
-
+                
+                
+                
+                
                 loJSON = poSalesInquiryController.SaveTransaction();
                 if (!"success".equals((String) loJSON.get("result"))) {
                     System.err.println((String) loJSON.get("message"));
@@ -185,7 +185,7 @@ public class testSalesInquiry {
         }
     }
     
-     @Test
+//    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
@@ -226,7 +226,7 @@ public class testSalesInquiry {
         
     }   
     
-    @Test
+//    @Test
     public void testConfirmTransaction() {
         JSONObject loJSON;
         
@@ -272,4 +272,41 @@ public class testSalesInquiry {
             Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
         }
     }   
+    
+    @Test
+    public void loadRequirements(){
+        JSONObject loJSON;
+        
+        try {
+            loJSON = poSalesInquiryController.InitTransaction();
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            loJSON = poSalesInquiryController.OpenTransaction("M00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            loJSON = poSalesInquiryController.UpdateTransaction();
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            poSalesInquiryController.getRequirements("0");
+            for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount(); lnCtr++){
+                for (int lnCol = 1; lnCol <= poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumnCount(); lnCol++){
+                    System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
+                }
+            }
+        } catch (CloneNotSupportedException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

@@ -823,7 +823,7 @@ public class SalesInquiry extends Transaction {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            poJSON = object.openRecord((String) poJSON.get("sCategrCd"));
+            poJSON = object.getModel().openRecord((String) poJSON.get("sCategrCd"));
             if ("success".equals((String) poJSON.get("result"))) {
                 Detail(row).setCategory(object.getModel().getCategoryId());
             }
@@ -856,9 +856,8 @@ public class SalesInquiry extends Transaction {
         
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
         String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), 
-                                            " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
-                                            + Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
-                                                    ? " AND a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
+                                             Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
+                                                    ? " a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
                                                     : ""
                                             + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
                                             + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
@@ -877,7 +876,7 @@ public class SalesInquiry extends Transaction {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            poJSON = object.openRecord((String) poJSON.get("sStockIDx"));
+            poJSON = object.getModel().openRecord((String) poJSON.get("sStockIDx"));
             if ("success".equals((String) poJSON.get("result"))) {
                 poJSON = checkExistingDetail(row,
                         Detail(row).getBrandId(),
@@ -894,16 +893,16 @@ public class SalesInquiry extends Transaction {
                 Detail(row).setModelId(object.getModel().getModelId());
                 Detail(row).setModelVarianId(object.getModel().getVariantId());
                 Detail(row).setColorId(object.getModel().getColorId());
-                if(object.getModel().Variant().getSellingPrice() == 0.0000){
-                    Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
-                } else {
+//                if(object.getModel().Variant().getSellingPrice() == 0.0000){
+//                    Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
+//                } else {
                     if(object.getModel().getSellingPrice() != null){
                         Detail(row).setSellPrice(object.getModel().getSellingPrice().doubleValue());
                     } else {
                         Detail(row).setSellPrice(null);
                     }
-                }
-            }
+//                }
+            } 
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -1216,6 +1215,33 @@ public class SalesInquiry extends Transaction {
 
         poJSON.put("result", "success");  
         return poJSON;
+    }
+    
+    public JSONObject addBankApplication()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        
+        if (paBankApplications == null) {
+            paBankApplications = new ArrayList<>();
+        }
+
+        if (paBankApplications.isEmpty()) {
+            paBankApplications.add(BankApplication());
+            poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
+        } else {
+            if (!paBankApplications.get(paBankApplications.size() - 1).getTransactionNo().isEmpty()) {
+                paBankApplications.add(BankApplication());
+            } else {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Unable to add bank application.");
+                return poJSON;
+            }
+        }
+
+        poJSON.put("result", "success");
+        return poJSON;
+
     }
     
     public JSONObject loadBankApplications()
