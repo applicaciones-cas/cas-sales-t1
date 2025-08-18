@@ -824,6 +824,11 @@ public class SalesInquiry extends Transaction {
         if (poJSON != null) {
             poJSON = object.getModel().openRecord((String) poJSON.get("sCategrCd"));
             if ("success".equals((String) poJSON.get("result"))) {
+                
+                if(!Detail(row).getCategory().equals(object.getModel().getCategoryId())){
+                    Detail(row).setBrandId("");
+                }
+                
                 Detail(row).setCategory(object.getModel().getCategoryId());
             }
         } else {
