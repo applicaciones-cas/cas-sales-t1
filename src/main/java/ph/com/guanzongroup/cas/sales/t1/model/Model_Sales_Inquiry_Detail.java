@@ -180,7 +180,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
         if (getValue("nSelPrice") == null || "".equals(getValue("nSelPrice"))) {
             return 0.0000;
         }
-        return (Double) getValue("nSelPrice");
+        return Double.valueOf(getValue("nSelPrice").toString());
     }
 
     @Override
