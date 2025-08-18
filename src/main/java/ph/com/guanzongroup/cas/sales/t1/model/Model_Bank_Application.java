@@ -55,6 +55,7 @@ public class Model_Bank_Application extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
+            poEntity.updateObject("dEntryDte", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dAppliedx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dApproved", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
@@ -162,12 +163,12 @@ public class Model_Bank_Application extends Model {
         return (String) getValue("sSourceNo");
     }
 
-    public JSONObject setBankCode(String bankCode) {
-        return setValue("sBankCode", bankCode);
+    public JSONObject setBankId(String bankCode) {
+        return setValue("sBankIDxx", bankCode);
     }
 
-    public String getBankCode() {
-        return (String) getValue("sBankCode");
+    public String getBankId() {
+        return (String) getValue("sBankIDxx");
     }
 
     public JSONObject setRemarks(String remarks) {
@@ -202,6 +203,22 @@ public class Model_Bank_Application extends Model {
         return (Date) getValue("dCancelld");
     }
     
+    public JSONObject setEntryBy(String modifiedBy) {
+        return setValue("sEntryByx", modifiedBy);
+    }
+
+    public String getEntryBy() {
+        return (String) getValue("sEntryByx");
+    }
+
+    public JSONObject setEntryDate(Date entryDate) {
+        return setValue("dEntryDte", entryDate);
+    }
+
+    public Date getEntryDate() {
+        return (Date) getValue("dEntryDte");
+    }
+    
     public JSONObject setModifyingId(String modifiedBy) {
         return setValue("sModified", modifiedBy);
     }
@@ -229,7 +246,7 @@ public class Model_Bank_Application extends Model {
     
     @Override
     public String getNextCode() {
-        return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
+        return ""; //MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
 
     //reference object models

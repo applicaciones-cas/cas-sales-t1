@@ -7,24 +7,13 @@ package ph.com.guanzongroup.cas.sales.t1.model;
 
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.List;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.cas.client.model.Model_Client_Address;
-import org.guanzon.cas.client.model.Model_Client_Master;
-import org.guanzon.cas.client.model.Model_Client_Mobile;
-import org.guanzon.cas.client.services.ClientModels;
-import org.guanzon.cas.parameter.model.Model_Banks;
-import org.guanzon.cas.parameter.model.Model_Branch;
-import org.guanzon.cas.parameter.model.Model_Company;
-import org.guanzon.cas.parameter.model.Model_Industry;
-import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
-import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
@@ -33,17 +22,8 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 public class Model_Sales_Inquiry_Requirements extends Model {
     
     //reference objects
-    Model_Branch poBranch;
-    Model_Industry poIndustry;
-    Model_Company poCompany;
-    Model_Client_Master poClient;
-    Model_Client_Address poClientAddress;
-    Model_Client_Mobile poClientMobile;
-    Model_Client_Master poAgent;
-    Model_Salesman poSalesPerson;
-    Model_Sales_Inquiry_Sources poSource;
     
-    Model_Banks poBank;
+    Model_Requirement_Source_PerGroup poRequirementsPerGroup;
 
     @Override
     public void initialize() {
@@ -69,21 +49,8 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             ID2 = "nEntryNox";
 
             //initialize reference objects
-            ParamModels model = new ParamModels(poGRider);
-            poBranch = model.Branch();
-            poIndustry = model.Industry();
-            poCompany = model.Company();
-            poBank = model.Banks();
-
-            ClientModels clientModel = new ClientModels(poGRider);
-            poClient = clientModel.ClientMaster();
-            poAgent = clientModel.ClientMaster();
-            poClientAddress = clientModel.ClientAddress();
-            poClientMobile = clientModel.ClientMobile();
-            
             SalesModels sales = new SalesModels(poGRider);
-            poSalesPerson = sales.Salesman();
-            poSource = sales.SalesInquirySources();
+            poRequirementsPerGroup = sales.RequirementSourcePerGroup();
             
 //            end - initialize reference objects
 
@@ -171,10 +138,30 @@ public class Model_Sales_Inquiry_Requirements extends Model {
 
     @Override
     public String getNextCode() {
-        return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
+        return  ""; //MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
 
     //reference object models
+    public Model_Requirement_Source_PerGroup RequirementSourcePerGroup() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sRqrmtCde"))) {
+            if (poRequirementsPerGroup.getEditMode() == EditMode.READY
+                    && poRequirementsPerGroup.getRequirementCode().equals((String) getValue("sRqrmtCde"))) {
+                return poRequirementsPerGroup;
+            } else {
+                poJSON = poRequirementsPerGroup.openRecord((String) getValue("sRqrmtCde"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poRequirementsPerGroup;
+                } else {
+                    poRequirementsPerGroup.initialize();
+                    return poRequirementsPerGroup;
+                }
+            }
+        } else {
+            poRequirementsPerGroup.initialize();
+            return poRequirementsPerGroup;
+        }
+    }
     //end - reference object models
 
 }

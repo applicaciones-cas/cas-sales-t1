@@ -694,7 +694,6 @@ public class SalesInquiry extends Transaction {
         poJSON = object.searchRecord(value, byCode, Master().getIndustryId());
         if ("success".equals((String) poJSON.get("result"))) {
             if (!object.getModel().getBrandId().equals(Detail(row).getBrandId())) {
-                Detail(row).setCategory("");
                 Detail(row).setModelId("");
                 Detail(row).setModelVarianId("");
                 Detail(row).setColorId("");
@@ -1145,11 +1144,9 @@ public class SalesInquiry extends Transaction {
                                             ) + " ORDER BY b.sDescript ASC ";
 
             System.out.println("Executing SQL: " + lsSQL);
-
             ResultSet loRS = poGRider.executeQuery(lsSQL);
 
             int lnctr = 0;
-
             if (MiscUtil.RecordCount(loRS) >= 0) {
                 while (loRS.next()) {
                     // Print the result set
@@ -1159,7 +1156,10 @@ public class SalesInquiry extends Transaction {
                     System.out.println("sDescript: " + loRS.getString("sDescript"));
                     System.out.println("------------------------------------------------------------------------------");
                     
-                    populateRequirements(loRS.getString("sRqrmtIDx"));
+                    poJSON = populateRequirements(loRS.getString("sRqrmtIDx"));
+                    if ("error".equals((String) poJSON.get("result"))) {
+                        break;
+                    }
                     lnctr++;
                 }
 
@@ -1549,14 +1549,21 @@ public class SalesInquiry extends Transaction {
     
     public void loadDetail() throws CloneNotSupportedException{
         String lsBrandId = "";
+        String lsCategory = "";
         int lnCtr = getDetailCount() - 1;
         while (lnCtr >= 0) {
             if ((Detail(lnCtr).getStockId() == null || "".equals(Detail(lnCtr).getStockId()))
                     && (Detail(lnCtr).getModelId()== null || "".equals(Detail(lnCtr).getModelId()))) {
-                
+                System.out.println("Brand : " + Detail(lnCtr).getBrandId());
+                System.out.println("Category : " + Detail(lnCtr).getCategory());
                 if (Detail(lnCtr).getBrandId() != null
                     && !"".equals(Detail(lnCtr).getBrandId())) {
                     lsBrandId = Detail(lnCtr).getBrandId();
+                }
+                
+                if (Detail(lnCtr).getCategory()!= null
+                    && !"".equals(Detail(lnCtr).getCategory())) {
+                    lsCategory = Detail(lnCtr).getCategory();
                 }
                 
                 if (Detail(lnCtr).getEditMode() == EditMode.UPDATE) {
@@ -1584,6 +1591,9 @@ public class SalesInquiry extends Transaction {
         //Set brand Id to last row
         if (!lsBrandId.isEmpty()) {
             Detail(getDetailCount() - 1).setBrandId(lsBrandId);
+        }
+        if (!lsCategory.isEmpty()) {
+            Detail(getDetailCount() - 1).setCategory(lsCategory);
         }
     }
     
@@ -1712,16 +1722,6 @@ public class SalesInquiry extends Transaction {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             System.out.println("Ctr "+ lnCtr + " Entry No : " + Detail(lnCtr).getEntryNo());
             
-            for(lnRow = 0; lnRow <= getSalesInquiryRequirementsCount()- 1; lnRow++){
-                SalesInquiryRequimentsList(lnCtr).setTransactionNo(Master().getTransactionNo());
-                SalesInquiryRequimentsList(lnCtr).setEntryNo(lnRow+1);
-            }
-            
-            for(lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
-                BankApplicationsList(lnCtr).setTransactionNo(Master().getTransactionNo());
-                BankApplicationsList(lnCtr).setEntryNo(lnRow+1);
-            }
-            
             lnEntryNo = 1;
             //Update entry no if equal to 0
             if(Detail(lnCtr).getEntryNo() == 0){
@@ -1746,6 +1746,16 @@ public class SalesInquiry extends Transaction {
                     Detail(lnCtr).setEntryNo(lnEntryNo);
                 } 
             }     
+        }
+        
+        for(lnRow = 0; lnRow <= getSalesInquiryRequirementsCount()- 1; lnRow++){
+            SalesInquiryRequimentsList(lnRow).setTransactionNo(Master().getTransactionNo());
+            SalesInquiryRequimentsList(lnRow).setEntryNo(lnRow+1);
+        }
+
+        for(lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
+            BankApplicationsList(lnRow).setTransactionNo(Master().getTransactionNo());
+            BankApplicationsList(lnRow).setEntryNo(lnRow+1);
         }
         
         poJSON.put("result", "success");
@@ -1783,7 +1793,11 @@ public class SalesInquiry extends Transaction {
             }
             
             //Save Bank Applications
-            for (int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount()- 1; lnCtr++) {
+            for (int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++) {
+                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW){
+                    paBankApplications.get(lnCtr).setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
+                    paBankApplications.get(lnCtr).setEntryDate(poGRider.getServerDate());
+                }
                 if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW || paBankApplications.get(lnCtr).getEditMode() == EditMode.UPDATE) {
                     paBankApplications.get(lnCtr).setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
                     paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
@@ -1886,6 +1900,7 @@ public class SalesInquiry extends Transaction {
               + " , a.cRecdStat "
               + " , a.sModified "
               + " , a.dModified "
+              + " , b.sDescript "
               + "  FROM requirement_source_pergroup a "
               + " LEFT JOIN requirement_source b ON b.sRqrmtCde = a.sRqrmtCde ";
     }

@@ -35,10 +35,10 @@ public class testRequirementSourcePerGroup {
         poController = new SalesControllers(instance, null).RequirementsSourcePerGroup();
     }
 
-//    @Test
+    @Test
     public void testNewRecord() {
-        String actual = "0003";
-        String actual2 = "1";
+        String actual = "0001";
+        String actual2 = "2";
         String actual3 = "0";
         JSONObject loJSON;
 

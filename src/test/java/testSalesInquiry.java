@@ -37,12 +37,12 @@ public class testSalesInquiry {
         poSalesInquiryController = new SalesControllers(instance, null).SalesInquiry();
     }
 
-//    @Test
+    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
-        String industryId = "01";
+        String industryId = "05";
         String companyId = "0002";
-        String categoryId = "0005";
+        String categoryId = "0008";
         String remarks = "this is a test Class 4.";
 
         JSONObject loJSON;
@@ -76,25 +76,31 @@ public class testSalesInquiry {
                 Assert.assertEquals(poSalesInquiryController.Master().getTransactionDate(), instance.getServerDate());
                 poSalesInquiryController.Master().setBranchCode(branchCd); 
                 Assert.assertEquals(poSalesInquiryController.Master().getBranchCode(), branchCd);
+                poSalesInquiryController.Master().setSourceCode("0"); 
+                Assert.assertEquals(poSalesInquiryController.Master().getSourceCode(), "0");
                 poSalesInquiryController.Master().setClientId("C00124000020"); 
                 Assert.assertEquals(poSalesInquiryController.Master().getClientId(), "C00124000020");
 
                 poSalesInquiryController.Master().setRemarks(remarks);
                 Assert.assertEquals(poSalesInquiryController.Master().getRemarks(), remarks);
 
-                poSalesInquiryController.Detail(0).setModelId("V0001");
-                poSalesInquiryController.Detail(0).setColorId("00001");
+                poSalesInquiryController.Detail(0).setStockId("P0W125000002");
                 poSalesInquiryController.AddDetail();
-                poSalesInquiryController.Detail(1).setModelId("V0002");
-                poSalesInquiryController.Detail(1).setColorId("00001");
+//                poSalesInquiryController.Detail(1).setStockId("P0W125000001");
 
                 System.out.println("Industry ID : " + instance.getIndustry());
                 System.out.println("Industry : " + poSalesInquiryController.Master().Industry().getDescription());
                 System.out.println("Category Code : " + poSalesInquiryController.Master().getCategoryCode());
                 System.out.println("TransNox : " + poSalesInquiryController.Master().getTransactionNo());
                 
+                poSalesInquiryController.getRequirements("2");
                 
-                
+                poSalesInquiryController.addBankApplication();
+                poSalesInquiryController.BankApplicationsList(0).setApplicationNo("0001");
+                poSalesInquiryController.BankApplicationsList(0).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
+                poSalesInquiryController.BankApplicationsList(0).setBankId("M00125001");
+                poSalesInquiryController.BankApplicationsList(0).setAppliedDate(instance.getServerDate());
+                poSalesInquiryController.BankApplicationsList(0).setRemarks("Test Bank Application");
                 
                 loJSON = poSalesInquiryController.SaveTransaction();
                 if (!"success".equals((String) loJSON.get("result"))) {
@@ -215,6 +221,8 @@ public class testSalesInquiry {
                 for (int lnCol = 1; lnCol <= poSalesInquiryController.Detail(lnCtr).getColumnCount(); lnCol++){
                     System.out.println(poSalesInquiryController.Detail(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.Detail(lnCtr).getValue(lnCol));
                 }
+                System.out.println("Category Description " +  poSalesInquiryController.Detail(lnCtr).Category2().getDescription());
+                System.out.println("Brand Description " +  poSalesInquiryController.Detail(lnCtr).Brand().getDescription());
             }
         } catch (CloneNotSupportedException e) {
             System.err.println(MiscUtil.getException(e));
@@ -273,7 +281,7 @@ public class testSalesInquiry {
         }
     }   
     
-    @Test
+//    @Test
     public void loadRequirements(){
         JSONObject loJSON;
         
@@ -297,7 +305,7 @@ public class testSalesInquiry {
             } 
 
             poSalesInquiryController.getRequirements("0");
-            for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount(); lnCtr++){
+            for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount() - 1; lnCtr++){
                 for (int lnCol = 1; lnCol <= poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumnCount(); lnCol++){
                     System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
                 }
