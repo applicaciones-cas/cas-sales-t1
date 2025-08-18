@@ -135,7 +135,7 @@ public class SalesInquiry_MC implements GValidator{
         }
         if(SalesInquiryStatic.CategoryCode.MOTORCYCLE.equals(poMaster.getCategoryCode())){
             if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
-                poJSON.put("message", "Category Type is not set.");
+                poJSON.put("message", "Unit Type is not set.");
                 return poJSON;
             }
         }
