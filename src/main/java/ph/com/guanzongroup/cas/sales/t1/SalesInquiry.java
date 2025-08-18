@@ -772,13 +772,11 @@ public class SalesInquiry extends Transaction {
             
             //Set stock ID
             String lsStockId = "";
-            String lsCategory = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
             inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
             inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
-                lsCategory = inventory.getModel().getCategoryIdSecondLevel();
             }
             poJSON = checkExistingDetail(row,
                     Detail(row).getBrandId(),
@@ -792,7 +790,6 @@ public class SalesInquiry extends Transaction {
             
             Detail(row).setColorId(object.getModel().getColorId());
             Detail(row).setStockId(lsStockId);
-            Detail(row).setCategory(lsCategory);
             
         }
 
