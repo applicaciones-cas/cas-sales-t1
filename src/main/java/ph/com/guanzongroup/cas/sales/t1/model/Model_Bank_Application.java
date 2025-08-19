@@ -32,16 +32,6 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 public class Model_Bank_Application extends Model {
     
     //reference objects
-    Model_Branch poBranch;
-    Model_Industry poIndustry;
-    Model_Company poCompany;
-    Model_Client_Master poClient;
-    Model_Client_Address poClientAddress;
-    Model_Client_Mobile poClientMobile;
-    Model_Client_Master poAgent;
-    Model_Salesman poSalesPerson;
-    Model_Sales_Inquiry_Sources poSource;
-    
     Model_Banks poBank;
 
     @Override
@@ -73,20 +63,7 @@ public class Model_Bank_Application extends Model {
 
             //initialize reference objects
             ParamModels model = new ParamModels(poGRider);
-            poBranch = model.Branch();
-            poIndustry = model.Industry();
-            poCompany = model.Company();
             poBank = model.Banks();
-
-            ClientModels clientModel = new ClientModels(poGRider);
-            poClient = clientModel.ClientMaster();
-            poAgent = clientModel.ClientMaster();
-            poClientAddress = clientModel.ClientAddress();
-            poClientMobile = clientModel.ClientMobile();
-            
-            SalesModels sales = new SalesModels(poGRider);
-            poSalesPerson = sales.Salesman();
-            poSource = sales.SalesInquirySources();
             
 //            end - initialize reference objects
 
@@ -262,202 +239,13 @@ public class Model_Bank_Application extends Model {
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poBank;
                 } else {
-                    poBranch.initialize();
+                    poBank.initialize();
                     return poBank;
                 }
             }
         } else {
             poBank.initialize();
             return poBank;
-        }
-    }
-    
-    public Model_Branch Branch() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sBranchCd"))) {
-            if (poBranch.getEditMode() == EditMode.READY
-                    && poBranch.getBranchCode().equals((String) getValue("sBranchCd"))) {
-                return poBranch;
-            } else {
-                poJSON = poBranch.openRecord((String) getValue("sBranchCd"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poBranch;
-                } else {
-                    poBranch.initialize();
-                    return poBranch;
-                }
-            }
-        } else {
-            poBranch.initialize();
-            return poBranch;
-        }
-    }
-
-    public Model_Industry Industry() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sIndstCdx"))) {
-            if (poIndustry.getEditMode() == EditMode.READY
-                    && poIndustry.getIndustryId().equals((String) getValue("sIndstCdx"))) {
-                return poIndustry;
-            } else {
-                poJSON = poIndustry.openRecord((String) getValue("sIndstCdx"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poIndustry;
-                } else {
-                    poIndustry.initialize();
-                    return poIndustry;
-                }
-            }
-        } else {
-            poIndustry.initialize();
-            return poIndustry;
-        }
-    }
-
-    public Model_Company Company() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sCompnyID"))) {
-            if (poCompany.getEditMode() == EditMode.READY
-                    && poCompany.getCompanyId().equals((String) getValue("sCompnyID"))) {
-                return poCompany;
-            } else {
-                poJSON = poCompany.openRecord((String) getValue("sCompnyID"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poCompany;
-                } else {
-                    poCompany.initialize();
-                    return poCompany;
-                }
-            }
-        } else {
-            poCompany.initialize();
-            return poCompany;
-        }
-    }
-
-    public Model_Client_Master Client() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sClientID"))) {
-            if (poClient.getEditMode() == EditMode.READY
-                    && poClient.getClientId().equals((String) getValue("sClientID"))) {
-                return poClient;
-            } else {
-                poJSON = poClient.openRecord((String) getValue("sClientID"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poClient;
-                } else {
-                    poClient.initialize();
-                    return poClient;
-                }
-            }
-        } else {
-            poClient.initialize();
-            return poClient;
-        }
-    }
-    
-    public Model_Client_Address ClientAddress() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sClientID"))) {
-            if (poClientAddress.getEditMode() == EditMode.READY
-                    && poClientAddress.getClientId().equals((String) getValue("sClientID"))) {
-                return poClientAddress;
-            } else {
-                poJSON = poClientAddress.openRecord((String) getValue("sClientID")); //sAddrssID
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poClientAddress;
-                } else {
-                    poClientAddress.initialize();
-                    return poClientAddress;
-                }
-            }
-        } else {
-            poClientAddress.initialize();
-            return poClientAddress;
-        }
-    }
-    
-    public Model_Client_Mobile ClientMobile() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sContctID"))) {
-            if (poClientMobile.getEditMode() == EditMode.READY
-                    && poClientMobile.getClientId().equals((String) getValue("sContctID"))) {
-                return poClientMobile;
-            } else {
-                poJSON = poClientMobile.openRecord((String) getValue("sContctID"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poClientMobile;
-                } else {
-                    poClientMobile.initialize();
-                    return poClientMobile;
-                }
-            }
-        } else {
-            poClientMobile.initialize();
-            return poClientMobile;
-        }
-    }
-
-    public Model_Salesman SalesPerson() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sSalesman"))) {
-            if (poSalesPerson.getEditMode() == EditMode.READY
-                    && poSalesPerson.getEmployeeId().equals((String) getValue("sSalesman"))) {
-                return poSalesPerson;
-            } else {
-                poJSON = poSalesPerson.openRecord((String) getValue("sSalesman"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poSalesPerson;
-                } else {
-                    poSalesPerson.initialize();
-                    return poSalesPerson;
-                }
-            }
-        } else {
-            poSalesPerson.initialize();
-            return poSalesPerson;
-        }
-    }
-
-    public Model_Client_Master ReferralAgent() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sAgentIDx"))) {
-            if (poAgent.getEditMode() == EditMode.READY
-                    && poAgent.getClientId().equals((String) getValue("sAgentIDx"))) {
-                return poAgent;
-            } else {
-                poJSON = poAgent.openRecord((String) getValue("sAgentIDx"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poAgent;
-                } else {
-                    poAgent.initialize();
-                    return poAgent;
-                }
-            }
-        } else {
-            poAgent.initialize();
-            return poAgent;
-        }
-    }
-    
-    public Model_Sales_Inquiry_Sources Source() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sSourceCd"))) {
-            if (poSource.getEditMode() == EditMode.READY
-                    && poSource.getSourceId().equals((String) getValue("sSourceCd"))) {
-                return poSource;
-            } else {
-                poJSON = poSource.openRecord((String) getValue("sSourceCd"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poSource;
-                } else {
-                    poSource.initialize();
-                    return poSource;
-                }
-            }
-        } else {
-            poSource.initialize();
-            return poSource;
         }
     }
     //end - reference object models

@@ -1216,11 +1216,6 @@ public class SalesInquiry extends Transaction {
                     System.out.println("sDescript: " + loRS.getString("sDescript"));
                     System.out.println("------------------------------------------------------------------------------");
                     
-//                    paRequirements.add(SalesInquiryRequirement());
-//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
-//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(loRS.getString("sRqrmtCde")); 
-//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(true);
-                    
                     poJSON = populateRequirements(loRS.getString("sRqrmtCde"));
                     if ("error".equals((String) poJSON.get("result"))) {
                         break;

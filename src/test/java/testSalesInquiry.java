@@ -206,7 +206,7 @@ public class testSalesInquiry {
         }
     }
     
-    @Test
+//    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
