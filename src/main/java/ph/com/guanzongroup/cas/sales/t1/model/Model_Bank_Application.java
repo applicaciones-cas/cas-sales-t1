@@ -222,12 +222,12 @@ public class Model_Bank_Application extends Model {
 
     //reference object models
     public Model_Banks Bank() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sBankCode"))) {
+        if (!"".equals((String) getValue("sBankIDxx"))) {
             if (poBank.getEditMode() == EditMode.READY
-                    && poBank.getBankCode().equals((String) getValue("sBankCode"))) {
+                    && poBank.getBankCode().equals((String) getValue("sBankIDxx"))) {
                 return poBank;
             } else {
-                poJSON = poBank.openRecord((String) getValue("sBankCode"));
+                poJSON = poBank.openRecord((String) getValue("sBankIDxx"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poBank;

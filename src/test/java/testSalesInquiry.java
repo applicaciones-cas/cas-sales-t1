@@ -206,7 +206,7 @@ public class testSalesInquiry {
         }
     }
     
-//    @Test
+    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
@@ -258,10 +258,16 @@ public class testSalesInquiry {
                     System.out.println(poSalesInquiryController.BankApplicationsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.BankApplicationsList(lnCtr).getValue(lnCol));
                 }
             }
+            
+            loJSON = poSalesInquiryController.CancelBankApplication("", 0);
+            System.out.println("Bank : " + (String) loJSON.get("message"));
+            
         } catch (CloneNotSupportedException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
             Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
         }
         
