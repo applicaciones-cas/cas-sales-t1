@@ -25,6 +25,7 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     
     Model_Requirement_Source_PerGroup poRequirementsPerGroup;
     Model_Requirement_Source poRequirementsSource;
+    Model_Salesman poSalesPerson;
 
     @Override
     public void initialize() {
@@ -53,6 +54,7 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             SalesModels sales = new SalesModels(poGRider);
             poRequirementsPerGroup = sales.RequirementSourcePerGroup();
             poRequirementsSource = sales.RequirementSource();
+            poSalesPerson = sales.Salesman();
             
 //            end - initialize reference objects
 
@@ -165,7 +167,6 @@ public class Model_Sales_Inquiry_Requirements extends Model {
         }
     }
     
-    
     public Model_Requirement_Source RequirementSource() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sRqrmtCde"))) {
             if (poRequirementsSource.getEditMode() == EditMode.READY
@@ -186,6 +187,27 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             return poRequirementsSource;
         }
     }
+    public Model_Salesman SalesPerson() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sReceived"))) {
+            if (poSalesPerson.getEditMode() == EditMode.READY
+                    && poSalesPerson.getEmployeeId().equals((String) getValue("sReceived"))) {
+                return poSalesPerson;
+            } else {
+                poJSON = poSalesPerson.openRecord((String) getValue("sReceived"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poSalesPerson;
+                } else {
+                    poSalesPerson.initialize();
+                    return poSalesPerson;
+                }
+            }
+        } else {
+            poSalesPerson.initialize();
+            return poSalesPerson;
+        }
+    }
+    
     //end - reference object models
     
 //    public JSONObject deleteRecord() throws SQLException, GuanzonException{

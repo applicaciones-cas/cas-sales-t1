@@ -30,6 +30,7 @@ import org.guanzon.cas.client.Client;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
+import org.guanzon.cas.parameter.Banks;
 import org.guanzon.cas.parameter.Brand;
 import org.guanzon.cas.parameter.CategoryLevel2;
 import org.guanzon.cas.parameter.Color;
@@ -1120,6 +1121,36 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    public JSONObject SearchReceivedBy(String value, boolean byCode, int row)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Salesman object = new SalesControllers(poGRider, logwrapr).Salesman();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode, Master().getBranchCode());
+        if ("success".equals((String) poJSON.get("result"))) {
+            SalesInquiryRequimentsList(row).setReceivedBy(object.getModel().getEmployeeId());
+        }
+
+        return poJSON;
+    }
+    
+    public JSONObject SearchBank(String value, boolean byCode, int row)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Banks object = new ParamControllers(poGRider, logwrapr).Banks();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            BankApplicationsList(row).setBankId(object.getModel().getBankID());
+        }
+
+        return poJSON;
+    }
+    
     public JSONObject loadRequirements()
             throws SQLException,
             GuanzonException {
@@ -1233,6 +1264,13 @@ public class SalesInquiry extends Transaction {
     
     public List<Model_Sales_Inquiry_Requirements> SalesInquiryRequimentsList() {
         return paRequirements;
+    }
+    
+    public String getCustomerGroup() throws SQLException, GuanzonException {
+        if(getSalesInquiryRequirementsCount() == 0){
+            return "0"; //Default falue
+        }
+        return paRequirements.get(0).RequirementSourcePerGroup(Master().getPurchaseType()).getCustomerGroup();
     }
     
 //    private JSONObject populateRequirements(String requirementCode) throws SQLException, GuanzonException{

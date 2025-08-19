@@ -37,7 +37,7 @@ public class testSalesInquiry {
         poSalesInquiryController = new SalesControllers(instance, null).SalesInquiry();
     }
 
-    @Test
+//    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
         String industryId = "05";
@@ -206,7 +206,7 @@ public class testSalesInquiry {
         }
     }
     
-//    @Test
+    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
@@ -217,7 +217,7 @@ public class testSalesInquiry {
                 Assert.fail();
             } 
 
-            loJSON = poSalesInquiryController.OpenTransaction("A00125000034");
+            loJSON = poSalesInquiryController.OpenTransaction("A00125000041");
             if (!"success".equals((String) loJSON.get("result"))){
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -241,14 +241,19 @@ public class testSalesInquiry {
             }
             
             poSalesInquiryController.loadRequirements();
+            System.out.println("Customer Group " + poSalesInquiryController.getCustomerGroup());
             for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount() - 1; lnCtr++){
+                System.out.println("Requirements : " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).RequirementSource().getDescription());
+                System.out.println("Received By : " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).SalesPerson().getFullName());
                 for (int lnCol = 1; lnCol <= poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumnCount(); lnCol++){
                     System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
                 }
+                
             }
             
             poSalesInquiryController.loadBankApplications();
             for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getBankApplicationsCount()- 1; lnCtr++){
+                System.out.println("Bank : " + poSalesInquiryController.BankApplicationsList(lnCtr).Bank().getBankName());
                 for (int lnCol = 1; lnCol <= poSalesInquiryController.BankApplicationsList(lnCtr).getColumnCount(); lnCol++){
                     System.out.println(poSalesInquiryController.BankApplicationsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.BankApplicationsList(lnCtr).getValue(lnCol));
                 }
