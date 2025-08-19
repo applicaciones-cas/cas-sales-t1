@@ -12,17 +12,10 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.cas.client.model.Model_Client_Address;
-import org.guanzon.cas.client.model.Model_Client_Master;
-import org.guanzon.cas.client.model.Model_Client_Mobile;
-import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.parameter.model.Model_Banks;
-import org.guanzon.cas.parameter.model.Model_Branch;
-import org.guanzon.cas.parameter.model.Model_Company;
-import org.guanzon.cas.parameter.model.Model_Industry;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
-import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
+import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
@@ -51,7 +44,7 @@ public class Model_Bank_Application extends Model {
             poEntity.updateObject("dApproved", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dCancelld", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateString("cTranStat", SalesInquiryStatic.OPEN);
+            poEntity.updateString("cTranStat", BankApplicationStatus.OPEN);
             //end - assign default values
 
             poEntity.insertRow();
@@ -181,8 +174,8 @@ public class Model_Bank_Application extends Model {
         return (Date) getValue("dCancelld");
     }
     
-    public JSONObject setEntryBy(String modifiedBy) {
-        return setValue("sEntryByx", modifiedBy);
+    public JSONObject setEntryBy(String entryBy) {
+        return setValue("sEntryByx", entryBy);
     }
 
     public String getEntryBy() {

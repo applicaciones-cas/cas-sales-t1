@@ -1445,7 +1445,7 @@ public class SalesInquiry extends Transaction {
            SQLException, 
            GuanzonException{     
        
-        int lnRow = getDetailCount() - 1;
+        int lnRow = getBankApplicationsCount() - 1;
         while (lnRow >= 0) {
             if ((paBankApplications.get(lnRow).getApplicationNo() == null || "".equals(paBankApplications.get(lnRow).getApplicationNo()))
                     && (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId()))) {
@@ -1482,6 +1482,7 @@ public class SalesInquiry extends Transaction {
     private Model_Bank_Application BankApplication() {
         return new SalesModels(poGRider).BankApplication();
     }
+    
     public int getBankApplicationsCount() {
         if (paBankApplications == null) {
             paBankApplications = new ArrayList<>();
