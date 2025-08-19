@@ -72,6 +72,8 @@ public class testSalesInquiry {
                 Assert.assertEquals(poSalesInquiryController.Master().getCompanyId(), companyId);
                 poSalesInquiryController.Master().setCategoryCode(categoryId); 
                 Assert.assertEquals(poSalesInquiryController.Master().getCategoryCode(), categoryId);
+                poSalesInquiryController.Master().setPurchaseType("0"); 
+                Assert.assertEquals(poSalesInquiryController.Master().getPurchaseType(), "0");
                 poSalesInquiryController.Master().setTransactionDate(instance.getServerDate()); 
                 Assert.assertEquals(poSalesInquiryController.Master().getTransactionDate(), instance.getServerDate());
                 poSalesInquiryController.Master().setBranchCode(branchCd); 

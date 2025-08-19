@@ -24,6 +24,7 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     //reference objects
     
     Model_Requirement_Source_PerGroup poRequirementsPerGroup;
+    Model_Requirement_Source poRequirementsSource;
 
     @Override
     public void initialize() {
@@ -51,6 +52,7 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             //initialize reference objects
             SalesModels sales = new SalesModels(poGRider);
             poRequirementsPerGroup = sales.RequirementSourcePerGroup();
+            poRequirementsSource = sales.RequirementSource();
             
 //            end - initialize reference objects
 
@@ -142,13 +144,13 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
 
     //reference object models
-    public Model_Requirement_Source_PerGroup RequirementSourcePerGroup() throws SQLException, GuanzonException {
+    public Model_Requirement_Source_PerGroup RequirementSourcePerGroup(String paymentMode) throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sRqrmtCde"))) {
             if (poRequirementsPerGroup.getEditMode() == EditMode.READY
                     && poRequirementsPerGroup.getRequirementCode().equals((String) getValue("sRqrmtCde"))) {
                 return poRequirementsPerGroup;
             } else {
-                poJSON = poRequirementsPerGroup.openRecord((String) getValue("sRqrmtCde"));
+                poJSON = poRequirementsPerGroup.openRecord((String) getValue("sRqrmtCde"), paymentMode);
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poRequirementsPerGroup;
@@ -162,6 +164,47 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             return poRequirementsPerGroup;
         }
     }
-    //end - reference object models
+    
+    
+    public Model_Requirement_Source RequirementSource() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sRqrmtCde"))) {
+            if (poRequirementsSource.getEditMode() == EditMode.READY
+                    && poRequirementsSource.getRequirementCode().equals((String) getValue("sRqrmtCde"))) {
+                return poRequirementsSource;
+            } else {
+                poJSON = poRequirementsSource.openRecord((String) getValue("sRqrmtCde"));
 
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poRequirementsSource;
+                } else {
+                    poRequirementsSource.initialize();
+                    return poRequirementsSource;
+                }
+            }
+        } else {
+            poRequirementsSource.initialize();
+            return poRequirementsSource;
+        }
+    }
+    //end - reference object models
+    
+//    public JSONObject deleteRecord() throws SQLException, GuanzonException{
+//        poJSON = new JSONObject();
+//        
+//        String lsSQL = " DELETE FROM "+getTable()+" WHERE "
+//                    + " sTransNox = " + SQLUtil.toSQL(getTransactionNo())
+//                    + " AND sRqrmtCde = " + SQLUtil.toSQL(getRequirementCode());
+//        if (!lsSQL.isEmpty()) {
+//            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "", "") <= 0L) {
+//                poJSON.put("result", "success");
+//                poJSON.put("message", "Record deleted successfully.");
+//            } else {
+//                poJSON.put("result", "error");
+//                poJSON.put("continue", true);
+//                poJSON.put("message", poGRider.getMessage());
+//            }
+//        }
+//        return poJSON;
+//    }
+    
 }

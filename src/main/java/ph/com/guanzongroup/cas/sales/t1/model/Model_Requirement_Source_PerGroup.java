@@ -5,6 +5,7 @@
  */
 package ph.com.guanzongroup.cas.sales.t1.model;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
@@ -158,6 +159,36 @@ public class Model_Requirement_Source_PerGroup extends Model {
             poRequirementSource.initialize();
             return poRequirementSource;
         }
+    }
+    
+    public JSONObject openRecord(String requirementCode, String paymentMode) throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsSQL = MiscUtil.makeSelect(this);
+        lsSQL = MiscUtil.addCondition(lsSQL, " sRqrmtCde = " + SQLUtil.toSQL(requirementCode) 
+                                        + " AND cPayModex = " + SQLUtil.toSQL(paymentMode));
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (loRS.next()) {
+                for (int lnCtr = 1; lnCtr <= loRS.getMetaData().getColumnCount(); lnCtr++){
+                    setValue(lnCtr, loRS.getObject(lnCtr)); 
+                }
+                MiscUtil.close(loRS);
+                pnEditMode = EditMode.READY;
+                poJSON = new JSONObject();
+                poJSON.put("result", "success");
+                poJSON.put("message", "Record loaded successfully.");
+            } else {
+                poJSON = new JSONObject();
+                poJSON.put("result", "error");
+                poJSON.put("message", "No record to load.");
+            } 
+        } catch (SQLException e) {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        } 
+        return poJSON;
     }
     //end - reference object models
 

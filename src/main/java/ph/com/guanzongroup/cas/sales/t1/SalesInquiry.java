@@ -59,7 +59,7 @@ public class SalesInquiry extends Transaction {
     List<Model_Sales_Inquiry_Master> paMasterList;
     List<Model> paDetailRemoved;
     List<Model_Sales_Inquiry_Requirements> paRequirements;
-    List<Model> paRequirementsRemoved;
+    List<Model_Sales_Inquiry_Requirements> paRequirementsRemoved;
     List<Model_Bank_Application> paBankApplications;
     
     public JSONObject InitTransaction() {
@@ -1185,16 +1185,11 @@ public class SalesInquiry extends Transaction {
                     System.out.println("sDescript: " + loRS.getString("sDescript"));
                     System.out.println("------------------------------------------------------------------------------");
                     
-                    poJSON = populateRequirements(loRS.getString("sRqrmtIDx"));
+                    poJSON = populateRequirements(loRS.getString("sRqrmtCde"));
                     if ("error".equals((String) poJSON.get("result"))) {
                         break;
                     }
                     lnctr++;
-                }
-                
-                poJSON = removeRequirements(loRS.getString("cCustGrpx"), loRS.getString("cPayModex"));
-                if ("error".equals((String) poJSON.get("result"))) {
-                    return poJSON;
                 }
                 
                 System.out.println("Records found: " + lnctr);
@@ -1235,10 +1230,10 @@ public class SalesInquiry extends Transaction {
         return paRequirements;
     }
     
-    private JSONObject populateRequirements(String requirementId) throws SQLException, GuanzonException{
+    private JSONObject populateRequirements(String requirementCode) throws SQLException, GuanzonException{
         poJSON = new JSONObject ();
         Model_Requirement_Source_PerGroup object = new SalesModels(poGRider).RequirementSourcePerGroup();
-        poJSON = object.openRecord(requirementId);
+        poJSON = object.openRecord(requirementCode, Master().getPurchaseType());
         if ("error".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -1261,44 +1256,65 @@ public class SalesInquiry extends Transaction {
                 }
             }
             
-            if(!paRequirements.get(lnCtr).getRequirementCode().equals(requirementId)
-                    && paRequirements.get(lnCtr).RequirementSourcePerGroup().getRequirementCode().equals(object.getRequirementCode())){
-                //Update requirement ID
-                paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); 
-                paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
-                return poJSON;
-            }
+//            if(paRequirements.get(lnCtr).getRequirementCode().equals(requirementCode)){
+//                return poJSON;
+//            }
+            
+//            if(!paRequirements.get(lnCtr).getRequirementCode().equals(requirementId)
+//                    && paRequirements.get(lnCtr).RequirementSourcePerGroup().getRequirementCode().equals(object.getRequirementCode())){
+//                //Update requirement ID
+//                paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); 
+//                paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
+//                return poJSON;
+//            }
         }
         
         paRequirements.add(SalesInquiryRequirement());
         paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
-        paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); //TODO
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementCode); //TODO
         paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
 
         poJSON.put("result", "success");  
         return poJSON;
     }
     
-    public JSONObject removeRequirements(String customerGroup, String paymentMode) throws SQLException, GuanzonException {
+    public JSONObject removeRequirements() throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         Iterator<Model_Sales_Inquiry_Requirements> requirements = SalesInquiryRequimentsList().iterator();
         while (requirements.hasNext()) {
             Model_Sales_Inquiry_Requirements item = requirements.next();
-            if ( !customerGroup.equals(item.RequirementSourcePerGroup().getCustomerGroup())
-                    &&  !paymentMode.equals(item.RequirementSourcePerGroup().getPaymentMode())){
-                if (item.getEditMode() == EditMode.UPDATE) {
-                    paRequirementsRemoved.add(item);
-                }
-                
-                requirements.remove();
+            if (item.getEditMode() == EditMode.UPDATE) {
+                paRequirementsRemoved.add(item);
             }
-            
+
+            requirements.remove();
         }
 
         poJSON.put("result", "success");
         poJSON.put("message", "success");
         return poJSON;
     }
+    
+//    public JSONObject removeRequirements(String customerGroup, String paymentMode) throws SQLException, GuanzonException {
+//        poJSON = new JSONObject();
+//        Iterator<Model_Sales_Inquiry_Requirements> requirements = SalesInquiryRequimentsList().iterator();
+//        while (requirements.hasNext()) {
+//            Model_Sales_Inquiry_Requirements item = requirements.next();
+//            if ( !customerGroup.equals(item.RequirementSourcePerGroup().getCustomerGroup())
+//                    &&  !paymentMode.equals(item.RequirementSourcePerGroup().getPaymentMode())){
+//                if (item.getEditMode() == EditMode.UPDATE) {
+//                    paRequirementsRemoved.add(item);
+//                }
+//                
+//                requirements.remove();
+//            }
+//            
+//        }
+//
+//        poJSON.put("result", "success");
+//        poJSON.put("message", "success");
+//        return poJSON;
+//    }
     
     public int getRequirementsRemovedCount() {
         if (paRequirementsRemoved == null) {
@@ -1362,9 +1378,21 @@ public class SalesInquiry extends Transaction {
                    poJSON = paBankApplications.get(getBankApplicationsCount() - 1).updateRecord();
                 }
             }
+            
         }
         return poJSON;
     }
+    
+    
+        
+//        int lnRow = getDetailCount() - 1;
+//        while (lnRow >= 0) {
+//            if ((paBankApplications.get(lnRow).getApplicationNo() == null || "".equals(paBankApplications.get(lnRow).getApplicationNo()))
+//                    && (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId()))) {
+//                paBankApplications.remove(lnRow);
+//            }
+//            lnRow--;
+//        }
     
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
@@ -1809,6 +1837,16 @@ public class SalesInquiry extends Transaction {
 
             }
         }
+        
+        //remove bank application without details
+        Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
+        while (bankApplication.hasNext()) {
+            Model_Bank_Application item = bankApplication.next();
+            if ((item.getApplicationNo() == null || "".equals(item.getApplicationNo()))
+                  &&  (item.getBankId() == null || "".equals(item.getBankId()))){
+                bankApplication.remove();
+            }
+        }
 
         //Validate detail after removing all zero qty and empty stock Id
         if (getDetailCount() <= 0) {
@@ -1911,6 +1949,14 @@ public class SalesInquiry extends Transaction {
                     }
                 }
             }
+            
+            //Delete Record
+//            for (int lnCtr = 0; lnCtr <= getRequirementsRemovedCount()- 1; lnCtr++) {
+//                poJSON = paRequirementsRemoved.get(lnCtr).deleteRecord();
+//                if ("error".equals((String) poJSON.get("result"))) {
+//                    return poJSON;
+//                }
+//            }
         } catch (SQLException | GuanzonException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
         }
