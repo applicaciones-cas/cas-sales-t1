@@ -1216,15 +1216,15 @@ public class SalesInquiry extends Transaction {
                     System.out.println("sDescript: " + loRS.getString("sDescript"));
                     System.out.println("------------------------------------------------------------------------------");
                     
-                    paRequirements.add(SalesInquiryRequirement());
-                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
-                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(loRS.getString("sRqrmtCde")); 
-                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(true);
+//                    paRequirements.add(SalesInquiryRequirement());
+//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
+//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(loRS.getString("sRqrmtCde")); 
+//                    paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(true);
                     
-//                    poJSON = populateRequirements(loRS.getString("sRqrmtCde"));
-//                    if ("error".equals((String) poJSON.get("result"))) {
-//                        break;
-//                    }
+                    poJSON = populateRequirements(loRS.getString("sRqrmtCde"));
+                    if ("error".equals((String) poJSON.get("result"))) {
+                        break;
+                    }
                     lnctr++;
                 }
                 
@@ -1273,32 +1273,23 @@ public class SalesInquiry extends Transaction {
         return paRequirements.get(0).RequirementSourcePerGroup(Master().getPurchaseType()).getCustomerGroup();
     }
     
-//    private JSONObject populateRequirements(String requirementCode) throws SQLException, GuanzonException{
-//        poJSON = new JSONObject ();
-////        Model_Requirement_Source_PerGroup object = new SalesModels(poGRider).RequirementSourcePerGroup();
-////        poJSON = object.openRecord(requirementCode, Master().getPurchaseType());
-////        if ("error".equals((String) poJSON.get("result"))) {
-////            return poJSON;
-////        }
-//        
-////        for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
-////            //Update Editmode
-////            if(Master().getEditMode() == EditMode.UPDATE){
-////                if(paRequirements.get(lnCtr).getEditMode() != EditMode.ADDNEW 
-////                        && paRequirements.get(lnCtr).getEditMode() != EditMode.UPDATE){
-////                    poJSON = paRequirements.get(lnCtr).updateRecord();
-////                }
-////            }
-////        }
-//        
-//        paRequirements.add(SalesInquiryRequirement());
-//        paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
-//        paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementCode); //TODO
-//        paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(true);
-//
-//        poJSON.put("result", "success");  
-//        return poJSON;
-//    }
+    private JSONObject populateRequirements(String requirementCode) throws SQLException, GuanzonException{
+        poJSON = new JSONObject ();
+        for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
+            if(requirementCode.equals(paRequirements.get(lnCtr).getRequirementCode())){
+                poJSON.put("result", "success");  
+                return poJSON;
+            }
+        }
+        
+        paRequirements.add(SalesInquiryRequirement());
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementCode); //TODO
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(true);
+
+        poJSON.put("result", "success");  
+        return poJSON;
+    }
     
 //    private JSONObject populateRequirements(String requirementCode) throws SQLException, GuanzonException{
 //        poJSON = new JSONObject ();
