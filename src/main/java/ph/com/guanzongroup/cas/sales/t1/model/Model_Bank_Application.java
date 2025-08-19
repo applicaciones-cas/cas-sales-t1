@@ -69,6 +69,7 @@ public class Model_Bank_Application extends Model {
             poEntity.absolute(1);
 
             ID = "sTransNox";
+            ID2 = "nEntryNox";
 
             //initialize reference objects
             ParamModels model = new ParamModels(poGRider);

@@ -59,6 +59,7 @@ public class SalesInquiry extends Transaction {
     List<Model_Sales_Inquiry_Master> paMasterList;
     List<Model> paDetailRemoved;
     List<Model_Sales_Inquiry_Requirements> paRequirements;
+    List<Model> paRequirementsRemoved;
     List<Model_Bank_Application> paBankApplications;
     
     public JSONObject InitTransaction() {
@@ -71,6 +72,7 @@ public class SalesInquiry extends Transaction {
         paDetail = new ArrayList<>();
         paDetailRemoved = new ArrayList<>();
         paRequirements = new ArrayList<>();
+        paRequirementsRemoved = new ArrayList<>();
         paBankApplications = new ArrayList<>();
 
         return initialize();
@@ -792,6 +794,14 @@ public class SalesInquiry extends Transaction {
             Detail(row).setStockId(lsStockId);
             
         }
+        
+        System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
+        System.out.println("Description : " + Detail(row).Inventory().getDescription());
+        System.out.println("Category : " + Detail(row).Category2().getDescription());
+        System.out.println("Brand : " + Detail(row).Brand().getDescription());
+        System.out.println("Model : " + Detail(row).Model().getDescription());
+        System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
+        System.out.println("Color : " + Detail(row).Color().getDescription());
 
         return poJSON;
     }
@@ -894,16 +904,26 @@ public class SalesInquiry extends Transaction {
                 Detail(row).setModelId(object.getModel().getModelId());
                 Detail(row).setModelVarianId(object.getModel().getVariantId());
                 Detail(row).setColorId(object.getModel().getColorId());
-//                if(object.getModel().Variant().getSellingPrice() == 0.0000){
+                
+//                if(object.getModel().Variant().getSellingPrice() != 0.0000){
 //                    Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
 //                } else {
                     if(object.getModel().getSellingPrice() != null){
                         Detail(row).setSellPrice(object.getModel().getSellingPrice().doubleValue());
                     } else {
-                        Detail(row).setSellPrice(null);
+                        Detail(row).setSellPrice(0.0000);
                     }
 //                }
-            } 
+            }
+            
+            System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
+            System.out.println("Description : " + Detail(row).Inventory().getDescription());
+            System.out.println("Category : " + Detail(row).Category2().getDescription());
+            System.out.println("Brand : " + Detail(row).Brand().getDescription());
+            System.out.println("Model : " + Detail(row).Model().getDescription());
+            System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
+            System.out.println("Color : " + Detail(row).Color().getDescription());
+            
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -1122,6 +1142,7 @@ public class SalesInquiry extends Transaction {
     private List getSalesInquiryRequirements() throws SQLException, GuanzonException {
         String lsSQL = salesInquiryRequirementSQL();
         lsSQL = MiscUtil.addCondition(lsSQL, "sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
+        System.out.println("Executing SQL: " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         List<String> loList = new ArrayList();
         while (loRS.next()) {
@@ -1138,10 +1159,16 @@ public class SalesInquiry extends Transaction {
         if (paRequirements == null) {
             paRequirements = new ArrayList<>();
         }
+        
+        if(Master().getEditMode() == EditMode.UPDATE || Master().getEditMode() == EditMode.ADDNEW){
+        } else {
+            return poJSON;
+        }
 
         try {
             String lsSQL = MiscUtil.addCondition(requirementPerGroupSQL(), 
                                                 " a.cCustGrpx = " + SQLUtil.toSQL(customerGroup)
+                                                + " AND a.cPayModex = " + SQLUtil.toSQL(Master().getPurchaseType())
                                                 + " AND a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
                                             ) + " ORDER BY b.sDescript ASC ";
 
@@ -1164,7 +1191,12 @@ public class SalesInquiry extends Transaction {
                     }
                     lnctr++;
                 }
-
+                
+                poJSON = removeRequirements(loRS.getString("cCustGrpx"), loRS.getString("cPayModex"));
+                if ("error".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+                
                 System.out.println("Records found: " + lnctr);
                 poJSON.put("result", "success");
                 poJSON.put("message", "Record loaded successfully.");
@@ -1199,24 +1231,93 @@ public class SalesInquiry extends Transaction {
         return (Model_Sales_Inquiry_Requirements) paRequirements.get(row);
     }
     
+    public List<Model_Sales_Inquiry_Requirements> SalesInquiryRequimentsList() {
+        return paRequirements;
+    }
+    
     private JSONObject populateRequirements(String requirementId) throws SQLException, GuanzonException{
         poJSON = new JSONObject ();
         Model_Requirement_Source_PerGroup object = new SalesModels(poGRider).RequirementSourcePerGroup();
-        object.openRecord(requirementId);
-            
-            for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
-                if(SalesInquiryRequimentsList(lnCtr).getRequirementCode().equals(requirementId)){
-                    return poJSON;
+        poJSON = object.openRecord(requirementId);
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
+//            if(paRequirements.get(lnCtr).getRequirementCode().equals(requirementId)){
+//                if(Master().getEditMode() == EditMode.UPDATE){
+//                    if(paRequirements.get(lnCtr).getEditMode() != EditMode.ADDNEW 
+//                            && paRequirements.get(lnCtr).getEditMode() != EditMode.UPDATE){
+//                        poJSON = paRequirements.get(lnCtr).updateRecord();
+//                    }
+//                }
+//                return poJSON;
+//            }
+            //Update Editmode
+            if(Master().getEditMode() == EditMode.UPDATE){
+                if(paRequirements.get(lnCtr).getEditMode() != EditMode.ADDNEW 
+                        && paRequirements.get(lnCtr).getEditMode() != EditMode.UPDATE){
+                    poJSON = paRequirements.get(lnCtr).updateRecord();
                 }
             }
             
-            paRequirements.add(SalesInquiryRequirement());
-            paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
-            paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); //TODO
-            paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
+            if(!paRequirements.get(lnCtr).getRequirementCode().equals(requirementId)
+                    && paRequirements.get(lnCtr).RequirementSourcePerGroup().getRequirementCode().equals(object.getRequirementCode())){
+                //Update requirement ID
+                paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); 
+                paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
+                return poJSON;
+            }
+        }
+        
+        paRequirements.add(SalesInquiryRequirement());
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).newRecord();
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).setRequirementCode(requirementId); //TODO
+        paRequirements.get(getSalesInquiryRequirementsCount() - 1).isRequired(object.isRequired());
 
         poJSON.put("result", "success");  
         return poJSON;
+    }
+    
+    public JSONObject removeRequirements(String customerGroup, String paymentMode) throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        Iterator<Model_Sales_Inquiry_Requirements> requirements = SalesInquiryRequimentsList().iterator();
+        while (requirements.hasNext()) {
+            Model_Sales_Inquiry_Requirements item = requirements.next();
+            if ( !customerGroup.equals(item.RequirementSourcePerGroup().getCustomerGroup())
+                    &&  !paymentMode.equals(item.RequirementSourcePerGroup().getPaymentMode())){
+                if (item.getEditMode() == EditMode.UPDATE) {
+                    paRequirementsRemoved.add(item);
+                }
+                
+                requirements.remove();
+            }
+            
+        }
+
+        poJSON.put("result", "success");
+        poJSON.put("message", "success");
+        return poJSON;
+    }
+    
+    public int getRequirementsRemovedCount() {
+        if (paRequirementsRemoved == null) {
+            paRequirementsRemoved = new ArrayList<>();
+        }
+
+        return paRequirementsRemoved.size();
+    }
+
+    public Model_Sales_Inquiry_Requirements RequirementsRemove(int row) {
+        return (Model_Sales_Inquiry_Requirements) paRequirementsRemoved.get(row);
+    }
+
+    public void RequirementsDetail(Model_Sales_Inquiry_Requirements item) {
+        if (paRequirementsRemoved == null) {
+            paRequirementsRemoved = new ArrayList<>();
+        }
+        
+        paRequirementsRemoved.add(item);
     }
     
     public JSONObject addBankApplication()
@@ -1267,7 +1368,8 @@ public class SalesInquiry extends Transaction {
     
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
-        lsSQL = MiscUtil.addCondition(lsSQL, "sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
+        System.out.println("Executing SQL: " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         List<String> loList = new ArrayList();
         while (loRS.next()) {
