@@ -47,6 +47,8 @@ import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
+import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
+import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryRequirements;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryValidatorFactory;
 
 /**
@@ -1445,25 +1447,55 @@ public class SalesInquiry extends Transaction {
     }
     
     
-   public void loadBankApplicationList() 
-           throws CloneNotSupportedException, 
-           SQLException, 
-           GuanzonException{     
-       
+//    public void loadBankApplicationList() 
+//            throws CloneNotSupportedException, 
+//            SQLException, 
+//            GuanzonException{     
+//
+//         int lnRow = getBankApplicationsCount() - 1;
+//         while (lnRow >= 0) {
+//             if ((paBankApplications.get(lnRow).getApplicationNo() == null || "".equals(paBankApplications.get(lnRow).getApplicationNo()))
+//                     && (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId()))) {
+//                 paBankApplications.remove(lnRow);
+//             }
+//             lnRow--;
+//         }
+//
+//         if ((getBankApplicationsCount()- 1) >= 0) {
+//             if ((paBankApplications.get(getBankApplicationsCount() - 1).getApplicationNo() != null
+//                     && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getApplicationNo()))
+//                 || (paBankApplications.get(getDetailCount() - 1).getBankId()!= null
+//                     && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId()))) {
+//                 addBankApplication();
+//             }
+//         }
+//
+//         if ((getBankApplicationsCount() - 1) < 0) {
+//             addBankApplication();
+//         }
+//    }
+    
+    public void loadBankApplicationList() 
+            throws CloneNotSupportedException, 
+            SQLException, 
+            GuanzonException{     
+        String lsBankApplicationNo = "";
         int lnRow = getBankApplicationsCount() - 1;
         while (lnRow >= 0) {
-            if ((paBankApplications.get(lnRow).getApplicationNo() == null || "".equals(paBankApplications.get(lnRow).getApplicationNo()))
-                    && (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId()))) {
+            if (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId())) {
+                System.out.println("Application No : " + paBankApplications.get(lnRow).getApplicationNo());
+                if (paBankApplications.get(lnRow).getApplicationNo()!= null
+                    && !"".equals(paBankApplications.get(lnRow).getApplicationNo())) {
+                    lsBankApplicationNo = paBankApplications.get(lnRow).getApplicationNo();
+                }
                 paBankApplications.remove(lnRow);
             }
             lnRow--;
         }
-        
+
         if ((getBankApplicationsCount()- 1) >= 0) {
-            if ((paBankApplications.get(getBankApplicationsCount() - 1).getApplicationNo() != null
-                    && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getApplicationNo()))
-                || (paBankApplications.get(getDetailCount() - 1).getBankId()!= null
-                    && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId()))) {
+            if (paBankApplications.get(getDetailCount() - 1).getBankId()!= null
+                    && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId())) {
                 addBankApplication();
             }
         }
@@ -1471,7 +1503,11 @@ public class SalesInquiry extends Transaction {
         if ((getBankApplicationsCount() - 1) < 0) {
             addBankApplication();
         }
-   }
+        
+        if (!lsBankApplicationNo.isEmpty()) {
+            paBankApplications.get(getBankApplicationsCount() - 1).setApplicationNo(lsBankApplicationNo);
+        }
+    }
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
         lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
@@ -1881,7 +1917,7 @@ public class SalesInquiry extends Transaction {
             poJSON.put("result", "error");
             poJSON.put("message", e.getMessage());
         } catch (GuanzonException ex) {
-            Logger.getLogger(SalesInquiry.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
             poJSON.put("result", "error");
             poJSON.put("message", MiscUtil.getException(ex));
         }
@@ -2219,9 +2255,17 @@ public class SalesInquiry extends Transaction {
         Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
         while (bankApplication.hasNext()) {
             Model_Bank_Application item = bankApplication.next();
-            if ((item.getApplicationNo() == null || "".equals(item.getApplicationNo()))
-                  &&  (item.getBankId() == null || "".equals(item.getBankId()))){
+            if (item.getBankId() == null || "".equals(item.getBankId())){
                 bankApplication.remove();
+            }
+        }
+        
+        //remove bank application without details
+        Iterator<Model_Sales_Inquiry_Requirements> requirements = paRequirements.iterator();
+        while (requirements.hasNext()) {
+            Model_Sales_Inquiry_Requirements item = requirements.next();
+            if (item.getRequirementCode()== null || "".equals(item.getRequirementCode())){
+                requirements.remove();
             }
         }
 
@@ -2270,11 +2314,21 @@ public class SalesInquiry extends Transaction {
         for(lnRow = 0; lnRow <= getSalesInquiryRequirementsCount()- 1; lnRow++){
             SalesInquiryRequimentsList(lnRow).setTransactionNo(Master().getTransactionNo());
             SalesInquiryRequimentsList(lnRow).setEntryNo(lnRow+1);
+            
+            poJSON = isEntryOkay_SalesInquiryRequirements( SalesInquiryRequimentsList(lnRow));
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            } 
         }
-
+        
         for(lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
             BankApplicationsList(lnRow).setTransactionNo(Master().getTransactionNo());
             BankApplicationsList(lnRow).setEntryNo(lnRow+1);
+            
+            poJSON = isEntryOkay_BankApplication(BankApplicationsList(lnRow).getTransactionStatus(), BankApplicationsList(lnRow));
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            } 
         }
         
         poJSON.put("result", "success");
@@ -2370,7 +2424,7 @@ public class SalesInquiry extends Transaction {
             Master().setClientType("0");
 
         } catch (SQLException ex) {
-            Logger.getLogger(SalesInquiry.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
             poJSON.put("result", "error");
             poJSON.put("message", MiscUtil.getException(ex));
             return poJSON;
@@ -2388,6 +2442,29 @@ public class SalesInquiry extends Transaction {
         loValidator.setTransactionStatus(status);
         loValidator.setMaster(poMaster);
 //        loValidator.setDetail(paDetail);
+
+        poJSON = loValidator.validate();
+
+        return poJSON;
+    }
+    
+    private JSONObject isEntryOkay_BankApplication(String status, Model_Bank_Application master) {
+        GValidator loValidator = new BankApplication();
+
+        loValidator.setApplicationDriver(poGRider);
+        loValidator.setTransactionStatus(status);
+        loValidator.setMaster(master);
+
+        poJSON = loValidator.validate();
+
+        return poJSON;
+    }
+    
+    private JSONObject isEntryOkay_SalesInquiryRequirements(Model_Sales_Inquiry_Requirements master) {
+        GValidator loValidator = new SalesInquiryRequirements();
+
+        loValidator.setApplicationDriver(poGRider);
+        loValidator.setMaster(master);
 
         poJSON = loValidator.validate();
 
