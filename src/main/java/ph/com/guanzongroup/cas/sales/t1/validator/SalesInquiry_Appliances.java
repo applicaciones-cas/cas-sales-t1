@@ -25,7 +25,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Arsiela
  */
 public class SalesInquiry_Appliances implements GValidator{
     GRiderCAS poGRider;

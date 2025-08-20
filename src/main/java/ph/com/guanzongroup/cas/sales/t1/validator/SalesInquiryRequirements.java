@@ -17,7 +17,7 @@ import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
 
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Arsiela
  */
 public class SalesInquiryRequirements implements GValidator{
     GRiderCAS poGRider;

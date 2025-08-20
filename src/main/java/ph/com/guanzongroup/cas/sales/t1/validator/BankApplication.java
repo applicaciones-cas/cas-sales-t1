@@ -17,14 +17,11 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.iface.GValidator;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
-import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Arsiela 
  */
 public class BankApplication implements GValidator{
     GRiderCAS poGRider;
@@ -100,11 +97,6 @@ public class BankApplication implements GValidator{
         }
         
         if (loEntryDate == null) {
-            poJSON.put("message", "Invalid Entry Date.");
-            return poJSON;
-        }
-
-        if ("1900-01-01".equals(xsDateShort(loEntryDate))) {
             poJSON.put("message", "Invalid Entry Date.");
             return poJSON;
         }

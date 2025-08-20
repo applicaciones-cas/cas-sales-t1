@@ -1479,6 +1479,12 @@ public class SalesInquiry extends Transaction {
             throws CloneNotSupportedException, 
             SQLException, 
             GuanzonException{     
+        
+        if(getEditMode() == EditMode.ADDNEW || getEditMode() == EditMode.UPDATE){
+        } else {
+            return;
+        }
+                   
         String lsBankApplicationNo = "";
         int lnRow = getBankApplicationsCount() - 1;
         while (lnRow >= 0) {
@@ -1494,7 +1500,7 @@ public class SalesInquiry extends Transaction {
         }
 
         if ((getBankApplicationsCount()- 1) >= 0) {
-            if (paBankApplications.get(getDetailCount() - 1).getBankId()!= null
+            if (paBankApplications.get(getBankApplicationsCount() - 1).getBankId()!= null
                     && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId())) {
                 addBankApplication();
             }
@@ -1507,6 +1513,8 @@ public class SalesInquiry extends Transaction {
         if (!lsBankApplicationNo.isEmpty()) {
             paBankApplications.get(getBankApplicationsCount() - 1).setApplicationNo(lsBankApplicationNo);
         }
+        
+        paBankApplications.get(getBankApplicationsCount() - 1).setPaymentMode(Master().getPurchaseType());
     }
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
@@ -1534,6 +1542,25 @@ public class SalesInquiry extends Transaction {
     
     public Model_Bank_Application BankApplicationsList(int row) {
         return (Model_Bank_Application) paBankApplications.get(row);
+    }
+    
+    public List<Model_Bank_Application> BankApplicationsList() {
+        return paBankApplications;
+    }
+    
+    public JSONObject checkPendingBankApplication(){
+        for(int lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
+            if(BankApplicationsList(lnRow).getEditMode() == EditMode.UPDATE){
+                if (BankApplicationsList(lnRow).getTransactionStatus().equals(BankApplicationStatus.OPEN)) {
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "You have a pending bank application. Update the status before changing the purchase type.");
+                    return poJSON;
+                } 
+            }
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
     }
     
     public JSONObject ApproveBankApplication(String remarks, int row)
@@ -2316,7 +2343,8 @@ public class SalesInquiry extends Transaction {
             SalesInquiryRequimentsList(lnRow).setEntryNo(lnRow+1);
             
             poJSON = isEntryOkay_SalesInquiryRequirements( SalesInquiryRequimentsList(lnRow));
-            if ("error".equals((String) poJSON.get("result"))) {
+            if (!"success".equals((String) poJSON.get("result"))) {
+                poJSON.put("result", "error");
                 return poJSON;
             } 
         }
@@ -2326,7 +2354,8 @@ public class SalesInquiry extends Transaction {
             BankApplicationsList(lnRow).setEntryNo(lnRow+1);
             
             poJSON = isEntryOkay_BankApplication(BankApplicationsList(lnRow).getTransactionStatus(), BankApplicationsList(lnRow));
-            if ("error".equals((String) poJSON.get("result"))) {
+            if (!"success".equals((String) poJSON.get("result"))) {
+                poJSON.put("result", "error");
                 return poJSON;
             } 
         }
