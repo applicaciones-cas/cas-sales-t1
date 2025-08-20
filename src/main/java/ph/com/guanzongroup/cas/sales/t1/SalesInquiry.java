@@ -1147,6 +1147,7 @@ public class SalesInquiry extends Transaction {
         poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             BankApplicationsList(row).setBankId(object.getModel().getBankID());
+            BankApplicationsList(row).setAppliedDate(poGRider.getServerDate());
         }
         
         System.out.println("Bank Name : " + BankApplicationsList(row).Bank().getBankName());
@@ -1408,7 +1409,8 @@ public class SalesInquiry extends Transaction {
             paBankApplications.add(BankApplication());
             poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
         } else {
-            if (!paBankApplications.get(paBankApplications.size() - 1).getTransactionNo().isEmpty()) {
+            if ((paBankApplications.get(paBankApplications.size() - 1).getApplicationNo() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getApplicationNo()))
+                && (paBankApplications.get(paBankApplications.size() - 1).getBankId()!= null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getBankId()))) {
                 paBankApplications.add(BankApplication());
             } else {
                 poJSON.put("result", "error");
@@ -1507,7 +1509,7 @@ public class SalesInquiry extends Transaction {
 
         String lsStatus = BankApplicationStatus.APPROVED;
         boolean lbStatus = true;
-
+        
         if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
             poJSON.put("message", "No bank application loaded.");
@@ -1651,7 +1653,12 @@ public class SalesInquiry extends Transaction {
 
         String lsStatus = BankApplicationStatus.CANCELLED;
         boolean lbStatus = true;
-
+        poJSON = paBankApplications.get(row).openRecord(paBankApplications.get(row).getTransactionNo(), row+1);
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        
         if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
             poJSON.put("message", "No bank application loaded.");
@@ -1695,8 +1702,8 @@ public class SalesInquiry extends Transaction {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-        
         paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.CANCELLED);
+        System.out.println("edit mode : " + paBankApplications.get(row).getEditMode());
         poJSON = paBankApplications.get(row).saveRecord();
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
@@ -1712,6 +1719,84 @@ public class SalesInquiry extends Transaction {
 
         return poJSON;
     }
+    
+//    public JSONObject CancelBankApplication(String remarks, int row)
+//            throws ParseException,
+//            SQLException,
+//            GuanzonException,
+//            CloneNotSupportedException {
+//        poJSON = new JSONObject();
+//
+//        String lsStatus = BankApplicationStatus.CANCELLED;
+//        boolean lbStatus = true;
+//        Model_Bank_Application object = new SalesModels(poGRider).BankApplication();
+//        object.initialize();
+//        poJSON = object.openRecord(paBankApplications.get(row).getTransactionNo(), row+1, paBankApplications.get(row).getApplicationNo());
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//        
+//        
+//        if (object.getEditMode() != EditMode.READY) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No bank application loaded.");
+//            return poJSON;
+//        }
+//
+//        if (lsStatus.equals((String) object.getValue("cTranStat"))) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Bank Application was already cancelled.");
+//            return poJSON;
+//        }
+//
+//        //validator
+////        poJSON = isEntryOkay(lsStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//        
+//        //Require approval when user is not equal to sales man and user is not supervisor
+//        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                poJSON = ShowDialogFX.getUserApproval(poGRider);
+//                if (!"success".equals((String) poJSON.get("result"))) {
+//                    return poJSON;
+//                } else {
+//                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", "User is not an authorized approving officer.");
+//                        return poJSON;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        //change status
+////        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//        poJSON = object.updateRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//        object.setTransactionStatus(BankApplicationStatus.CANCELLED);
+//        System.out.println("edit mode : " + object.getEditMode());
+//        poJSON = object.saveRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//
+//        poJSON = new JSONObject();
+//        poJSON.put("result", "success");
+//        if (lbStatus) {
+//            poJSON.put("message", "Bank Application cancelled successfully.");
+//        } else {
+//            poJSON.put("message", "Bank Application cancelation request submitted successfully.");
+//        }
+//
+//        return poJSON;
+//    }
     
     public JSONObject loadSalesInquiry(String industryId, String client, String referenceNo) {
         try {
