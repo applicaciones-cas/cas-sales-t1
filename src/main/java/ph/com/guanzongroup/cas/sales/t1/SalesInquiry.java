@@ -1489,7 +1489,6 @@ public class SalesInquiry extends Transaction {
         int lnRow = getBankApplicationsCount() - 1;
         while (lnRow >= 0) {
             if (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId())) {
-                System.out.println("Application No : " + paBankApplications.get(lnRow).getApplicationNo());
                 if (paBankApplications.get(lnRow).getApplicationNo()!= null
                     && !"".equals(paBankApplications.get(lnRow).getApplicationNo())) {
                     lsBankApplicationNo = paBankApplications.get(lnRow).getApplicationNo();
@@ -1568,69 +1567,73 @@ public class SalesInquiry extends Transaction {
             SQLException,
             GuanzonException,
             CloneNotSupportedException {
-        poJSON = new JSONObject();
-
-        String lsStatus = BankApplicationStatus.APPROVED;
-        boolean lbStatus = true;
         
-        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No bank application loaded.");
-            return poJSON;
-        }
+        poJSON = new JSONObject();
+        poJSON.put("result", "error");
+        poJSON.put("message", "Not supported yet.");
 
-        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Bank Application was already approved.");
-            return poJSON;
-        }
-
-        //validator
-//        poJSON = isEntryOkay(lsStatus);
+//        String lsStatus = BankApplicationStatus.APPROVED;
+//        boolean lbStatus = true;
+//        
+//        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No bank application loaded.");
+//            return poJSON;
+//        }
+//
+//        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Bank Application was already approved.");
+//            return poJSON;
+//        }
+//
+//        //validator
+//        paBankApplications.get(row).setApprovedDate(poGRider.getServerDate());
+//        poJSON = isEntryOkay_BankApplication(lsStatus, paBankApplications.get(row));
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-        
-        //Require approval when user is not equal to sales man and user is not supervisor
-        if(!Master().getSalesMan().equals(poGRider.getUserID())){
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
-                        return poJSON;
-                    }
-                }
-            }
-        }
-        
-        //change status
-//        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+//        
+//        //Require approval when user is not equal to sales man and user is not supervisor
+//        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                poJSON = ShowDialogFX.getUserApproval(poGRider);
+//                if (!"success".equals((String) poJSON.get("result"))) {
+//                    return poJSON;
+//                } else {
+//                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", "User is not an authorized approving officer.");
+//                        return poJSON;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        //change status
+////        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//
+//        poJSON = paBankApplications.get(row).updateRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-
-        poJSON = paBankApplications.get(row).updateRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-        
-        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.APPROVED);
-        poJSON = paBankApplications.get(row).saveRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        if (lbStatus) {
-            poJSON.put("message", "Bank Application approved successfully.");
-        } else {
-            poJSON.put("message", "Bank Application approval request submitted successfully.");
-        }
+//        
+//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.APPROVED);
+//        poJSON = paBankApplications.get(row).saveRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//
+//        poJSON = new JSONObject();
+//        poJSON.put("result", "success");
+//        if (lbStatus) {
+//            poJSON.put("message", "Bank Application approved successfully.");
+//        } else {
+//            poJSON.put("message", "Bank Application approval request submitted successfully.");
+//        }
 
         return poJSON;
     }
@@ -1641,68 +1644,70 @@ public class SalesInquiry extends Transaction {
             GuanzonException,
             CloneNotSupportedException {
         poJSON = new JSONObject();
+        poJSON.put("result", "error");
+        poJSON.put("message", "Not supported yet.");
 
-        String lsStatus = BankApplicationStatus.DISAPPROVED;
-        boolean lbStatus = true;
-
-        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No bank application loaded.");
-            return poJSON;
-        }
-
-        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Bank Application was already dis-approved.");
-            return poJSON;
-        }
-
-        //validator
-//        poJSON = isEntryOkay(lsStatus);
+//        String lsStatus = BankApplicationStatus.DISAPPROVED;
+//        boolean lbStatus = true;
+//
+//        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No bank application loaded.");
+//            return poJSON;
+//        }
+//
+//        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Bank Application was already dis-approved.");
+//            return poJSON;
+//        }
+//
+//        //validator
+////        poJSON = isEntryOkay(lsStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//        
+//        //Require approval when user is not equal to sales man and user is not supervisor
+//        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                poJSON = ShowDialogFX.getUserApproval(poGRider);
+//                if (!"success".equals((String) poJSON.get("result"))) {
+//                    return poJSON;
+//                } else {
+//                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", "User is not an authorized approving officer.");
+//                        return poJSON;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        //change status
+////        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//
+//        poJSON = paBankApplications.get(row).updateRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-        
-        //Require approval when user is not equal to sales man and user is not supervisor
-        if(!Master().getSalesMan().equals(poGRider.getUserID())){
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
-                        return poJSON;
-                    }
-                }
-            }
-        }
-        
-        //change status
-//        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+//        
+//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.DISAPPROVED);
+//        poJSON = paBankApplications.get(row).saveRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-
-        poJSON = paBankApplications.get(row).updateRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-        
-        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.DISAPPROVED);
-        poJSON = paBankApplications.get(row).saveRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        if (lbStatus) {
-            poJSON.put("message", "Bank Application dis-approve successfully.");
-        } else {
-            poJSON.put("message", "Bank Application dis-approval request submitted successfully.");
-        }
+//
+//        poJSON = new JSONObject();
+//        poJSON.put("result", "success");
+//        if (lbStatus) {
+//            poJSON.put("message", "Bank Application dis-approve successfully.");
+//        } else {
+//            poJSON.put("message", "Bank Application dis-approval request submitted successfully.");
+//        }
 
         return poJSON;
     }
@@ -1713,72 +1718,74 @@ public class SalesInquiry extends Transaction {
             GuanzonException,
             CloneNotSupportedException {
         poJSON = new JSONObject();
+        poJSON.put("result", "error");
+        poJSON.put("message", "Not supported yet.");
 
-        String lsStatus = BankApplicationStatus.CANCELLED;
-        boolean lbStatus = true;
-        poJSON = paBankApplications.get(row).openRecord(paBankApplications.get(row).getTransactionNo(), row+1);
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-        
-        
-        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No bank application loaded.");
-            return poJSON;
-        }
-
-        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Bank Application was already cancelled.");
-            return poJSON;
-        }
-
-        //validator
-//        poJSON = isEntryOkay(lsStatus);
+//        String lsStatus = BankApplicationStatus.CANCELLED;
+//        boolean lbStatus = true;
+//        poJSON = paBankApplications.get(row).openRecord(paBankApplications.get(row).getTransactionNo(), row+1);
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-        
-        //Require approval when user is not equal to sales man and user is not supervisor
-        if(!Master().getSalesMan().equals(poGRider.getUserID())){
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
-                        return poJSON;
-                    }
-                }
-            }
-        }
-        
-        //change status
-//        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+//        
+//        
+//        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No bank application loaded.");
+//            return poJSON;
+//        }
+//
+//        if (lsStatus.equals((String) paBankApplications.get(row).getValue("cTranStat"))) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Bank Application was already cancelled.");
+//            return poJSON;
+//        }
+//
+//        //validator
+////        poJSON = isEntryOkay(lsStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//        
+//        //Require approval when user is not equal to sales man and user is not supervisor
+//        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                poJSON = ShowDialogFX.getUserApproval(poGRider);
+//                if (!"success".equals((String) poJSON.get("result"))) {
+//                    return poJSON;
+//                } else {
+//                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", "User is not an authorized approving officer.");
+//                        return poJSON;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        //change status
+////        poJSON = statusChange(paBankApplications.get(row).getTable(), (String) paBankApplications.get(row).getValue("sTransNox"), remarks, lsStatus, !lbStatus);
+////        if (!"success".equals((String) poJSON.get("result"))) {
+////            return poJSON;
+////        }
+//        poJSON = paBankApplications.get(row).updateRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-        poJSON = paBankApplications.get(row).updateRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.CANCELLED);
-        System.out.println("edit mode : " + paBankApplications.get(row).getEditMode());
-        poJSON = paBankApplications.get(row).saveRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        if (lbStatus) {
-            poJSON.put("message", "Bank Application cancelled successfully.");
-        } else {
-            poJSON.put("message", "Bank Application cancelation request submitted successfully.");
-        }
+//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.CANCELLED);
+//        System.out.println("edit mode : " + paBankApplications.get(row).getEditMode());
+//        poJSON = paBankApplications.get(row).saveRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            return poJSON;
+//        }
+//
+//        poJSON = new JSONObject();
+//        poJSON.put("result", "success");
+//        if (lbStatus) {
+//            poJSON.put("message", "Bank Application cancelled successfully.");
+//        } else {
+//            poJSON.put("message", "Bank Application cancelation request submitted successfully.");
+//        }
 
         return poJSON;
     }
@@ -2389,6 +2396,7 @@ public class SalesInquiry extends Transaction {
                     paRequirements.get(lnCtr).setModifiedDate(poGRider.getServerDate());
                     poJSON = paRequirements.get(lnCtr).saveRecord();
                     if ("error".equals((String) poJSON.get("result"))) {
+                        System.out.println("Save Sales Inquiry Requirements " + (String) poJSON.get("message"));
                         return poJSON;
                     }
                 }
@@ -2405,6 +2413,7 @@ public class SalesInquiry extends Transaction {
                     paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
                     poJSON = paBankApplications.get(lnCtr).saveRecord();
                     if ("error".equals((String) poJSON.get("result"))) {
+                        System.out.println("Save Sales Inquiry Bank Application " + (String) poJSON.get("message"));
                         return poJSON;
                     }
                 }

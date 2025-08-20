@@ -108,6 +108,14 @@ public class Model_Sales_Inquiry_Requirements extends Model {
         return ((String) getValue("cSubmittd")).equals("1");
     }
 
+    public JSONObject setCustomerGroup(String customerGroup) {
+        return setValue("cCustGrpx", customerGroup);
+    }
+
+    public String getCustomerGroup() {
+        return (String) getValue("cCustGrpx");
+    }
+    
     public JSONObject setReceivedBy(String receivedBy) {
         return setValue("sReceived", receivedBy);
     }

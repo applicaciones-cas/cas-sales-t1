@@ -128,6 +128,26 @@ public class BankApplication implements GValidator{
     
     private JSONObject validateApproved()throws SQLException{
         poJSON = new JSONObject();
+        Date ldAppliedDate = poMaster.getAppliedDate();
+        Date ldApprovedDate = poMaster.getApprovedDate();
+        LocalDate loAppliedDate = strToDate(xsDateShort(poMaster.getAppliedDate()));
+        LocalDate loApprovedDate = strToDate(xsDateShort(poMaster.getApprovedDate()));
+        
+        if (ldApprovedDate == null) {
+            poJSON.put("message", "Invalid Approved Date.");
+            return poJSON;
+        }
+
+        if ("1900-01-01".equals(xsDateShort(ldApprovedDate))) {
+            poJSON.put("message", "Invalid Approved Date.");
+            return poJSON;
+        }
+        
+        if (loApprovedDate.isBefore(loAppliedDate)) {
+            poJSON.put("message", "Approve date cannot be before the applied date.");
+            return poJSON;
+        }
+        
         poJSON.put("result", "success");
         return poJSON;
     }
