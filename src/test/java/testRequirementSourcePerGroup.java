@@ -38,7 +38,7 @@ public class testRequirementSourcePerGroup {
     @Test
     public void testNewRecord() {
         String actual = "0001";
-        String actual2 = "2";
+        String actual2 = "3";
         String actual3 = "0";
         JSONObject loJSON;
 

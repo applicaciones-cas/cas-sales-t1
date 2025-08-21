@@ -2232,8 +2232,8 @@ public class SalesInquiry extends Transaction {
                 if (Detail(lnCtr).getEditMode() == EditMode.UPDATE) {
                     removeDetail(Detail(lnCtr));
                 }
-
-                Detail().remove(lnCtr);
+                deleteDetail(lnCtr); 
+                //Detail().remove(lnCtr);
             }
             lnCtr--;
         }

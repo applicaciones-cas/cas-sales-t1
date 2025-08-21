@@ -255,7 +255,7 @@ public class Model_Sales_Inquiry_Requirements extends Model {
                     + " AND sRqrmtCde = " + SQLUtil.toSQL(getRequirementCode());
         if (!lsSQL.isEmpty()) {
             System.out.println("Executing SQL: " + lsSQL);
-            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), null, null) <= 0L) {
+            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "", poGRider.getDivisionCode()) <= 0L) {
                 System.out.println("Record deleted successfully.");
                 poJSON.put("result", "success");
                 poJSON.put("message", "Record deleted successfully.");

@@ -98,11 +98,19 @@ public class testSalesInquiry {
                 poSalesInquiryController.getRequirements("2");
                 
                 poSalesInquiryController.addBankApplication();
-                poSalesInquiryController.BankApplicationsList(0).setApplicationNo("0001");
+                poSalesInquiryController.BankApplicationsList(0).setApplicationNo("00011");
                 poSalesInquiryController.BankApplicationsList(0).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
                 poSalesInquiryController.BankApplicationsList(0).setBankId("M00125001");
                 poSalesInquiryController.BankApplicationsList(0).setAppliedDate(instance.getServerDate());
                 poSalesInquiryController.BankApplicationsList(0).setRemarks("Test Bank Application");
+                
+                
+                poSalesInquiryController.addBankApplication();
+                poSalesInquiryController.BankApplicationsList(1).setApplicationNo("0002");
+                poSalesInquiryController.BankApplicationsList(1).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
+                poSalesInquiryController.BankApplicationsList(1).setBankId("M00125001");
+                poSalesInquiryController.BankApplicationsList(1).setAppliedDate(instance.getServerDate());
+                poSalesInquiryController.BankApplicationsList(1).setRemarks("Test Bank Application");
                 
                 loJSON = poSalesInquiryController.SaveTransaction();
                 if (!"success".equals((String) loJSON.get("result"))) {
@@ -121,7 +129,7 @@ public class testSalesInquiry {
         }
     }
 
-//    @Test
+    @Test
     public void testUpdateTransaction() {
         JSONObject loJSON;
 
@@ -132,7 +140,7 @@ public class testSalesInquiry {
                 Assert.fail();
             }
 
-            loJSON = poSalesInquiryController.OpenTransaction("A00125000034");
+            loJSON = poSalesInquiryController.OpenTransaction("A00125000055");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -150,7 +158,19 @@ public class testSalesInquiry {
                     System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
                 }
             }
+            
+//            String lsCustomerGroup = "0"; //For multiple requirements
+            String lsCustomerGroup = "3"; //For single requirements
+            poSalesInquiryController.getRequirements(lsCustomerGroup);
+            for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount() - 1; lnCtr++){
+                for (int lnCol = 1; lnCol <= poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumnCount(); lnCol++){
+                    System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
+                }
+            }
+            
             poSalesInquiryController.SalesInquiryRequimentsList(0).isSubmitted(true);
+            poSalesInquiryController.SalesInquiryRequimentsList(0).setReceivedBy(instance.getUserID());
+            poSalesInquiryController.SalesInquiryRequimentsList(0).setReceivedDate(instance.getServerDate());
             
             poSalesInquiryController.loadBankApplications();
             for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getBankApplicationsCount()- 1; lnCtr++){
@@ -206,7 +226,7 @@ public class testSalesInquiry {
         }
     }
     
-    @Test
+//    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
@@ -217,7 +237,7 @@ public class testSalesInquiry {
                 Assert.fail();
             } 
 
-            loJSON = poSalesInquiryController.OpenTransaction("A00125000041");
+            loJSON = poSalesInquiryController.OpenTransaction("A00125000055");
             if (!"success".equals((String) loJSON.get("result"))){
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -243,14 +263,17 @@ public class testSalesInquiry {
             poSalesInquiryController.loadRequirements();
             System.out.println("Customer Group " + poSalesInquiryController.getCustomerGroup());
             for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getSalesInquiryRequirementsCount() - 1; lnCtr++){
+                System.out.println("------------------------------------------------------------------------------------------------- ");
                 System.out.println("Requirements : " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).RequirementSource().getDescription());
                 System.out.println("Received By : " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).SalesPerson().getFullName());
+                System.out.println("Received Date : " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getReceivedDate());
+                System.out.println("------------------------------------------------------------------------------------------------- ");
                 for (int lnCol = 1; lnCol <= poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumnCount(); lnCol++){
                     System.out.println(poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.SalesInquiryRequimentsList(lnCtr).getValue(lnCol));
                 }
                 
             }
-            
+                
             poSalesInquiryController.loadBankApplications();
             for(int lnCtr = 0; lnCtr <= poSalesInquiryController.getBankApplicationsCount()- 1; lnCtr++){
                 System.out.println("Bank : " + poSalesInquiryController.BankApplicationsList(lnCtr).Bank().getBankName());
@@ -259,7 +282,12 @@ public class testSalesInquiry {
                 }
             }
             
-            loJSON = poSalesInquiryController.CancelBankApplication("", 0);
+//            try {
+//                poSalesInquiryController.CancelBankApplication("", 0);
+//            } catch (ParseException ex) {
+//                Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+            
             System.out.println("Bank : " + (String) loJSON.get("message"));
             
         } catch (CloneNotSupportedException e) {
@@ -267,12 +295,10 @@ public class testSalesInquiry {
             Assert.fail();
         } catch (SQLException | GuanzonException ex) {
             Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(testSalesInquiry.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         
-    }   
+    }      
     
 //    @Test
     public void testConfirmTransaction() {

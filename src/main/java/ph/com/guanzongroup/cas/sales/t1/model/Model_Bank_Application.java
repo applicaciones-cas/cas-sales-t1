@@ -16,7 +16,6 @@ import org.guanzon.cas.parameter.model.Model_Banks;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
-import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
@@ -38,11 +37,18 @@ public class Model_Bank_Application extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
-            poEntity.updateObject("dEntryDte", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dAppliedx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dApproved", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dCancelld", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dEntryDte", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dAppliedx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dApproved", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dCancelld", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+            
+            poEntity.updateNull("dEntryDte");
+            poEntity.updateNull("dModified");
+            poEntity.updateNull("dAppliedx");
+            poEntity.updateNull("dApproved");
+            poEntity.updateNull("dCancelld");
+            
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cTranStat", BankApplicationStatus.OPEN);
             //end - assign default values
@@ -242,5 +248,37 @@ public class Model_Bank_Application extends Model {
         }
     }
     //end - reference object models
-
+    
+    
+    
+//    public JSONObject openRecord(String transactionNo, int entryNo, String applicationNo) throws SQLException, GuanzonException {
+//        poJSON = new JSONObject();
+//        String lsSQL = MiscUtil.makeSelect(this);
+//        lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(transactionNo) 
+//                                        + " AND nEntryNox = " + SQLUtil.toSQL(entryNo)
+//                                        + " AND sApplicNo = " + SQLUtil.toSQL(applicationNo));
+//        System.out.println("Executing SQL: " + lsSQL);
+//        ResultSet loRS = poGRider.executeQuery(lsSQL);
+//        try {
+//            if (loRS.next()) {
+//                for (int lnCtr = 1; lnCtr <= loRS.getMetaData().getColumnCount(); lnCtr++){
+//                    setValue(lnCtr, loRS.getObject(lnCtr)); 
+//                }
+//                MiscUtil.close(loRS);
+//                pnEditMode = EditMode.READY;
+//                poJSON = new JSONObject();
+//                poJSON.put("result", "success");
+//                poJSON.put("message", "Record loaded successfully.");
+//            } else {
+//                poJSON = new JSONObject();
+//                poJSON.put("result", "error");
+//                poJSON.put("message", "No record to load.");
+//            } 
+//        } catch (SQLException e) {
+//            poJSON = new JSONObject();
+//            poJSON.put("result", "error");
+//            poJSON.put("message", e.getMessage());
+//        } 
+//        return poJSON;
+//    }
 }
