@@ -1414,6 +1414,7 @@ public class SalesInquiry extends Transaction {
             if ((paBankApplications.get(paBankApplications.size() - 1).getApplicationNo() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getApplicationNo()))
                 && (paBankApplications.get(paBankApplications.size() - 1).getBankId()!= null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getBankId()))) {
                 paBankApplications.add(BankApplication());
+                poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("message", "Unable to add bank application.");
