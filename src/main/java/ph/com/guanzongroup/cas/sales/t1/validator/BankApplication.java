@@ -96,15 +96,15 @@ public class BankApplication implements GValidator{
             return poJSON;
         }
         
-        if (loEntryDate == null) {
-            poJSON.put("message", "Invalid Entry Date.");
-            return poJSON;
-        }
-        
-        if (loApprovedDate == null) {
-            poJSON.put("message", "Invalid Approved Date.");
-            return poJSON;
-        }
+//        if (loEntryDate == null) {
+//            poJSON.put("message", "Invalid Entry Date.");
+//            return poJSON;
+//        }
+//        
+//        if (loApprovedDate == null) {
+//            poJSON.put("message", "Invalid Approved Date.");
+//            return poJSON;
+//        }
         
         if (poMaster.getTransactionNo()== null) {
             poJSON.put("message", "Transaction no is not set.");

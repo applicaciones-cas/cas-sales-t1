@@ -5,8 +5,14 @@
  */
 package ph.com.guanzongroup.cas.sales.t1.model;
 
+import static com.sun.corba.se.impl.activation.ServerMain.logError;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
@@ -36,10 +42,12 @@ public class Model_Sales_Inquiry_Requirements extends Model {
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-
+            
             //assign default values
-            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dReceived", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dReceived", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+            poEntity.updateNull("dModified");
+            poEntity.updateNull("dReceived");
             poEntity.updateObject("nEntryNox", 0);
             //end - assign default values
 
@@ -129,6 +137,27 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
 
     public Date getReceivedDate() {
+        System.out.println("Datetime " + getValue("dReceived"));
+        System.out.println("Date " + (Date) getValue("dReceived"));
+        
+        
+//        try {
+//            System.out.println("getDate " + poEntity.getDate("dReceived"));
+//            return poEntity.getDate("dReceived");
+//        } catch (SQLException e) {
+//            logError(getReceivedDate() + "»" + e.getMessage());
+//        }
+        
+//        try {
+//            System.out.println("get date : " + poEntity.getString("dReceived"));
+//            System.out.println("toDate : " + SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP));
+//            return SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP);
+//        } catch (SQLException e) {
+//            logError(getReceivedDate() + "»" + e.getMessage());
+//        }
+//        
+//        return null;
+        
         return (Date) getValue("dReceived");
     }
     
@@ -218,23 +247,25 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     
     //end - reference object models
     
-//    public JSONObject deleteRecord() throws SQLException, GuanzonException{
-//        poJSON = new JSONObject();
-//        
-//        String lsSQL = " DELETE FROM "+getTable()+" WHERE "
-//                    + " sTransNox = " + SQLUtil.toSQL(getTransactionNo())
-//                    + " AND sRqrmtCde = " + SQLUtil.toSQL(getRequirementCode());
-//        if (!lsSQL.isEmpty()) {
-//            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "", "") <= 0L) {
-//                poJSON.put("result", "success");
-//                poJSON.put("message", "Record deleted successfully.");
-//            } else {
-//                poJSON.put("result", "error");
-//                poJSON.put("continue", true);
-//                poJSON.put("message", poGRider.getMessage());
-//            }
-//        }
-//        return poJSON;
-//    }
+    public JSONObject deleteRecord() throws SQLException, GuanzonException{
+        poJSON = new JSONObject();
+        
+        String lsSQL = " DELETE FROM "+getTable()+" WHERE "
+                    + " sTransNox = " + SQLUtil.toSQL(getTransactionNo())
+                    + " AND sRqrmtCde = " + SQLUtil.toSQL(getRequirementCode());
+        if (!lsSQL.isEmpty()) {
+            System.out.println("Executing SQL: " + lsSQL);
+            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), null, null) <= 0L) {
+                System.out.println("Record deleted successfully.");
+                poJSON.put("result", "success");
+                poJSON.put("message", "Record deleted successfully.");
+            } else {
+                poJSON.put("result", "error");
+                poJSON.put("continue", true);
+                poJSON.put("message", poGRider.getMessage());
+            }
+        }
+        return poJSON;
+    }
     
 }
