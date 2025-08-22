@@ -100,6 +100,7 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         //Clear data
         resetMaster();
+        resetOthers();
         Detail().clear();
         return openTransaction(transactionNo);
     }
@@ -868,17 +869,19 @@ public class SalesInquiry extends Transaction {
                 return poJSON;
             }
         }
-        
+        String lsBrand = Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
+                                                    ? " AND a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
+                                                    : "";
+        String lsCategory2 = Detail(row).getCategory() != null && !"".equals(Detail(row).getCategory()) 
+                                                    ? " AND a.sCategCd2 = " + SQLUtil.toSQL(Detail(row).getCategory())
+                                                    : "";
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
         String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), 
-                                             Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
-                                                    ? " a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
-                                                    : ""
-                                            + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
+                                            // " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                                            " a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
                                             + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
-                                            + Detail(row).getCategory() != null && !"".equals(Detail(row).getCategory()) 
-                                                    ? " AND a.sCategCd2 = " + SQLUtil.toSQL(Detail(row).getCategory())
-                                                    : ""
+                                            + lsBrand
+                                            + lsCategory2
                                             );
         
         System.out.println("Executing SQL: " + lsSQL);
@@ -1346,6 +1349,8 @@ public class SalesInquiry extends Transaction {
         while (requirements.hasNext()) {
             Model_Sales_Inquiry_Requirements item = requirements.next();
             if (!customerGroup.equals(item.getCustomerGroup())) {
+                System.out.println("Remove Customer Group : " +  customerGroup);
+                System.out.println("Remove Requirements Code : " +  item.getRequirementCode());
                 if (item.getEditMode() == EditMode.UPDATE) {
                     paRequirementsRemoved.add(item);
                 }
@@ -2169,6 +2174,8 @@ public class SalesInquiry extends Transaction {
     public void resetOthers() {
         paRequirements = new ArrayList<>();
         paBankApplications = new ArrayList<>();
+        paRequirementsRemoved = new ArrayList<>();
+        paDetailRemoved = new ArrayList<>();
     }
     
     public void resetMaster() {
@@ -2217,10 +2224,13 @@ public class SalesInquiry extends Transaction {
         String lsCategory = "";
         int lnCtr = getDetailCount() - 1;
         while (lnCtr >= 0) {
+            System.out.println("Brand : " + Detail(lnCtr).getBrandId());
+            System.out.println("Category : " + Detail(lnCtr).getCategory());
+            System.out.println("Model : " + Detail(lnCtr).getModelId());
+            System.out.println("Model Variant : " + Detail(lnCtr).getModelVarianId());
+            System.out.println("Color : " + Detail(lnCtr).getColorId());
             if ((Detail(lnCtr).getStockId() == null || "".equals(Detail(lnCtr).getStockId()))
                     && (Detail(lnCtr).getModelId()== null || "".equals(Detail(lnCtr).getModelId()))) {
-                System.out.println("Brand : " + Detail(lnCtr).getBrandId());
-                System.out.println("Category : " + Detail(lnCtr).getCategory());
                 if (Detail(lnCtr).getBrandId() != null
                     && !"".equals(Detail(lnCtr).getBrandId())) {
                     lsBrandId = Detail(lnCtr).getBrandId();
@@ -2337,6 +2347,10 @@ public class SalesInquiry extends Transaction {
 
         if (paDetailRemoved == null) {
             paDetailRemoved = new ArrayList<>();
+        }
+        
+        if (paRequirementsRemoved == null) {
+            paRequirementsRemoved = new ArrayList<>();
         }
         
         if(Master().getEditMode() == EditMode.ADDNEW){
