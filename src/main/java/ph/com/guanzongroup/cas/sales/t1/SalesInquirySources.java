@@ -5,7 +5,9 @@
  */
 package ph.com.guanzongroup.cas.sales.t1;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
@@ -60,10 +62,40 @@ public class SalesInquirySources extends Parameter {
             return poJSON;
         } 
         
+        poJSON = checkExistingSource();
+        if("error".equals((String) poJSON.get("result"))){
+            return poJSON;
+        }
+        
         poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
         poModel.setModifiedDate(poGRider.getServerDate());
         poJSON.put("result", "success");
         return poJSON;
+    }
+    
+    private JSONObject checkExistingSource() throws SQLException{
+        poJSON = new JSONObject();
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), " upper(sDescript) = " +  SQLUtil.toSQL(poModel.getDescription().toUpperCase()));
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (MiscUtil.RecordCount(loRS) >= 0) {
+            while (loRS.next()) {
+                // Print the result set
+                System.out.println("sSourceID: " + loRS.getString("sSourceID"));
+                System.out.println("sDescript: " + loRS.getString("sDescript"));
+                System.out.println("------------------------------------------------------------------------------");
+
+                poJSON.put("result", "error");
+                poJSON.put("message", poModel.getDescription() + " already exists.");
+            }
+        } else {
+            poJSON.put("result", "success");
+            poJSON.put("continue", true);
+            poJSON.put("message", "No record found.");
+        }
+        MiscUtil.close(loRS);
+        
+        return poJSON;
+    
     }
 
     @Override

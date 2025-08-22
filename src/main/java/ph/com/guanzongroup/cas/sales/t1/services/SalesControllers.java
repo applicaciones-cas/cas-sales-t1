@@ -12,6 +12,8 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.appdriver.base.MiscUtil;
+import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
+import ph.com.guanzongroup.cas.sales.t1.RequirementsSourcePerGroup;
 import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
@@ -107,6 +109,48 @@ public class SalesControllers {
         return poSalesAgent;
     }
     
+    public RequirementsSource RequirementsSource(){
+        try {
+            if (poGRider == null) {
+                poLogWrapper.severe("SalesControllers.RequirementsSource: Application driver is not set.");
+                return null;
+            }
+            if (poRequirementSource != null){ 
+                return poRequirementSource;
+            }
+            poRequirementSource = new RequirementsSource();
+            poRequirementSource.setApplicationDriver(poGRider);
+            poRequirementSource.setWithParentClass(false);
+            poRequirementSource.setLogWrapper(poLogWrapper);
+            poRequirementSource.initialize();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        }
+        
+        return poRequirementSource;
+    }
+    
+    public RequirementsSourcePerGroup RequirementsSourcePerGroup(){
+        try {
+            if (poGRider == null) {
+                poLogWrapper.severe("SalesControllers.RequirementsSourcePerGroup: Application driver is not set.");
+                return null;
+            }
+            if (poRequirementSourcePerGroup != null){ 
+                return poRequirementSourcePerGroup;
+            }
+            poRequirementSourcePerGroup = new RequirementsSourcePerGroup();
+            poRequirementSourcePerGroup.setApplicationDriver(poGRider);
+            poRequirementSourcePerGroup.setWithParentClass(false);
+            poRequirementSourcePerGroup.setLogWrapper(poLogWrapper);
+            poRequirementSourcePerGroup.initialize();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        }
+        
+        return poRequirementSourcePerGroup;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {
@@ -114,6 +158,8 @@ public class SalesControllers {
             poSalesInquirySources = null;
             poSalesman = null;
             poSalesAgent = null;
+            poRequirementSource = null;
+            poRequirementSourcePerGroup = null;
             poLogWrapper = null;
             poGRider = null;
         } finally {
@@ -128,4 +174,6 @@ public class SalesControllers {
     private SalesInquirySources poSalesInquirySources;
     private Salesman poSalesman;
     private SalesAgent poSalesAgent;
+    private RequirementsSource poRequirementSource;
+    private RequirementsSourcePerGroup poRequirementSourcePerGroup;
 }

@@ -54,10 +54,16 @@ public class Model_Sales_Inquiry_Master extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
-            poEntity.updateObject("dTransact", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dTargetxx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("dFollowUp", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dTransact", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dTargetxx", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dFollowUp", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+            
+            poEntity.updateObject("dTransact", poGRider.getServerDate());
+            poEntity.updateNull("dModified");
+            poEntity.updateNull("dTargetxx");
+            poEntity.updateNull("dFollowUp");
+            
             poEntity.updateString("cProcessd", "0");
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cInqrStat", SalesInquiryStatic.OPEN);

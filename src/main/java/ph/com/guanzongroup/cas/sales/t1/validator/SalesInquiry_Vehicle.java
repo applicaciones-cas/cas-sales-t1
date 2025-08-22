@@ -25,7 +25,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Arsiela
  */
 public class SalesInquiry_Vehicle implements GValidator{
     GRiderCAS poGRider;
@@ -121,11 +121,9 @@ public class SalesInquiry_Vehicle implements GValidator{
             poJSON.put("message", "Company is not set.");
             return poJSON;
         }
-        if(SalesInquiryStatic.CAR.equals(poMaster.getCategoryCode())){
-            if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
-                poJSON.put("message", "Category is not set.");
-                return poJSON;
-            }
+        if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
+            poJSON.put("message", "Category is not set.");
+            return poJSON;
         }
         if (poMaster.getBranchCode()== null || "".equals(poMaster.getBranchCode())) {
             poJSON.put("message", "Branch is not set.");
@@ -135,9 +133,11 @@ public class SalesInquiry_Vehicle implements GValidator{
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
-            poJSON.put("message", "Category Type is not set.");
-            return poJSON;
+        if(SalesInquiryStatic.CategoryCode.CAR.equals(poMaster.getCategoryCode())){
+            if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
+                poJSON.put("message", "Unit Type is not set.");
+                return poJSON;
+            }
         }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
             poJSON.put("message", "Inquiry Type is not set.");

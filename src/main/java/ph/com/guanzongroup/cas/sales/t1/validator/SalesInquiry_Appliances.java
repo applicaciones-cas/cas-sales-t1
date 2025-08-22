@@ -25,7 +25,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Arsiela
  */
 public class SalesInquiry_Appliances implements GValidator{
     GRiderCAS poGRider;
@@ -134,10 +134,10 @@ public class SalesInquiry_Appliances implements GValidator{
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
-        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
-            poJSON.put("message", "Category Type is not set.");
-            return poJSON;
-        }
+//        if (poMaster.getCategoryType()== null || "".equals(poMaster.getCategoryType())) {
+//            poJSON.put("message", "Category Type is not set.");
+//            return poJSON;
+//        }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
             poJSON.put("message", "Inquiry Type is not set.");
             return poJSON;

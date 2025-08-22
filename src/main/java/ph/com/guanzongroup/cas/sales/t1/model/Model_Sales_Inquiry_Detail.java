@@ -18,6 +18,7 @@ import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.inv.services.InvModels;
 import org.guanzon.cas.parameter.model.Model_Brand;
+import org.guanzon.cas.parameter.model.Model_Category_Level2;
 import org.guanzon.cas.parameter.model.Model_Color;
 import org.guanzon.cas.parameter.model.Model_Model;
 import org.guanzon.cas.parameter.model.Model_Model_Variant;
@@ -31,6 +32,7 @@ import org.json.simple.JSONObject;
 public class Model_Sales_Inquiry_Detail extends Model {
     
     String psBrandId = "";
+    String psCategory = "";
     
     //reference objects
     Model_Brand poBrand;
@@ -39,6 +41,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
     Model_Color poColor;
     Model_Inventory poInventory;
     Model_Inv_Master poInvMaster;
+    Model_Category_Level2 poCategory;
     
     @Override
     public void initialize() {
@@ -54,6 +57,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nPriority", 0);
+            poEntity.updateObject("nSelPrice", 0.0000);
             //end - assign default values
 
             poEntity.insertRow();
@@ -69,6 +73,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
             poModel = model.Model();
             poColor = model.Color();
             poModelVariant = model.ModelVariant();
+            poCategory = model.Category2();
             
             InvModels invModel = new InvModels(poGRider); 
             poInventory = invModel.Inventory();
@@ -159,6 +164,25 @@ public class Model_Sales_Inquiry_Detail extends Model {
         return psBrandId;
     }
 
+    public JSONObject setCategory(String category) {
+        return setValue("sCategrCd", category);
+    }
+
+    public String getCategory() {
+        return (String) getValue("sCategrCd");
+    }
+    
+    public JSONObject setSellPrice(Double sellPrice) {
+        return setValue("nSelPrice", sellPrice);
+    }
+
+    public Double getSellPrice() {
+        if (getValue("nSelPrice") == null || "".equals(getValue("nSelPrice"))) {
+            return 0.0000;
+        }
+        return Double.valueOf(getValue("nSelPrice").toString());
+    }
+
     @Override
     public String getNextCode() {
         return "";
@@ -167,7 +191,11 @@ public class Model_Sales_Inquiry_Detail extends Model {
     //reference object models
     public Model_Brand Brand() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sModelIDx")) && (String) getValue("sModelIDx") != null) {
+            psBrandId = Model().getBrandId();
             setBrandId(Model().getBrandId());
+        } else if (!"".equals((String) getValue("sStockIDx")) && (String) getValue("sStockIDx") != null) {
+            psBrandId = Inventory().getBrandId();
+            setBrandId(Inventory().getBrandId());
         }
         
         if (!"".equals(getBrandId())) {
@@ -291,6 +319,27 @@ public class Model_Sales_Inquiry_Detail extends Model {
         } else {
             poInvMaster.initialize();
             return poInvMaster;
+        }
+    }
+    
+    public Model_Category_Level2 Category2() throws GuanzonException, SQLException {
+        if (!"".equals((String) getValue("sCategrCd"))) {
+            if (poCategory.getEditMode() == EditMode.READY
+                    && poCategory.getCategoryId().equals((String) getValue("sCategrCd"))) {
+                return poCategory;
+            } else {
+                poJSON = poCategory.openRecord((String) getValue("sCategrCd"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poCategory;
+                } else {
+                    poCategory.initialize();
+                    return poCategory;
+                }
+            }
+        } else {
+            poCategory.initialize();
+            return poCategory;
         }
     }
     //end reference object models

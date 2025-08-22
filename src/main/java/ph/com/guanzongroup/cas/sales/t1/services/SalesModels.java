@@ -6,9 +6,13 @@
 package ph.com.guanzongroup.cas.sales.t1.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Sources;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
 
@@ -107,6 +111,74 @@ public class SalesModels {
         return poSalesAgent;
     }
     
+    public Model_Sales_Inquiry_Requirements SalesInquiryRequirements(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesInquiryRequirements: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesInquiryRequirements == null){
+            poSalesInquiryRequirements = new Model_Sales_Inquiry_Requirements();
+            poSalesInquiryRequirements.setApplicationDriver(poGRider);
+            poSalesInquiryRequirements.setXML("Model_Sales_Inquiry_Requirements");
+            poSalesInquiryRequirements.setTableName("Sales_Inquiry_Requirements");
+            poSalesInquiryRequirements.initialize();
+        }
+
+        return poSalesInquiryRequirements;
+    }
+    
+    public Model_Bank_Application BankApplication(){
+        if (poGRider == null){
+            System.err.println("SalesModels.BankApplication: Application driver is not set.");
+            return null;
+        }
+        
+        if (poBankApplication == null){
+            poBankApplication = new Model_Bank_Application();
+            poBankApplication.setApplicationDriver(poGRider);
+            poBankApplication.setXML("Model_Bank_Application");
+            poBankApplication.setTableName("Bank_Application");
+            poBankApplication.initialize();
+        }
+
+        return poBankApplication;
+    }
+    
+    public Model_Requirement_Source RequirementSource(){
+        if (poGRider == null){
+            System.err.println("SalesModels.RequirementSource: Application driver is not set.");
+            return null;
+        }
+        
+        if (poRequirementSource == null){
+            poRequirementSource = new Model_Requirement_Source();
+            poRequirementSource.setApplicationDriver(poGRider);
+            poRequirementSource.setXML("Model_Requirement_Source");
+            poRequirementSource.setTableName("Requirement_Source");
+            poRequirementSource.initialize();
+        }
+
+        return poRequirementSource;
+    }
+    
+    public Model_Requirement_Source_PerGroup RequirementSourcePerGroup(){
+        if (poGRider == null){
+            System.err.println("SalesModels.RequirementSourcePerGroup: Application driver is not set.");
+            return null;
+        }
+        
+        if (poRequirementSourcePerGroup == null){
+            poRequirementSourcePerGroup = new Model_Requirement_Source_PerGroup();
+            poRequirementSourcePerGroup.setApplicationDriver(poGRider);
+            poRequirementSourcePerGroup.setXML("Model_Requirement_Source_PerGroup");
+            poRequirementSourcePerGroup.setTableName("Requirement_Source_PerGroup");
+            poRequirementSourcePerGroup.initialize();
+        }
+
+        return poRequirementSourcePerGroup;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {                    
@@ -115,6 +187,9 @@ public class SalesModels {
             poSalesInquirySources = null;
             poSalesman = null;
             poSalesAgent = null;
+            poSalesInquiryRequirements = null;
+            poRequirementSource = null;
+            poRequirementSourcePerGroup = null;
 
             poGRider = null;
         } finally {
@@ -129,4 +204,8 @@ public class SalesModels {
     private Model_Sales_Inquiry_Sources poSalesInquirySources;
     private Model_Salesman poSalesman;
     private Model_Sales_Agent poSalesAgent;
+    private Model_Sales_Inquiry_Requirements poSalesInquiryRequirements;
+    private Model_Bank_Application poBankApplication;
+    private Model_Requirement_Source poRequirementSource;
+    private Model_Requirement_Source_PerGroup poRequirementSourcePerGroup;
 }
