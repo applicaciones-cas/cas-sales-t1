@@ -137,8 +137,8 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
 
     public Date getReceivedDate() {
-        System.out.println("Datetime " + getValue("dReceived"));
-        System.out.println("Date " + (Date) getValue("dReceived"));
+//        System.out.println("Datetime " + getValue("dReceived"));
+//        System.out.println("Date " + (Date) getValue("dReceived"));
         
         
 //        try {

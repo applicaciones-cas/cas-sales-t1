@@ -1245,7 +1245,7 @@ public class SalesInquiry extends Transaction {
             ResultSet loRS = poGRider.executeQuery(lsSQL);
 
             int lnctr = 0;
-            if (MiscUtil.RecordCount(loRS) >= 0) {
+            if (MiscUtil.RecordCount(loRS) > 0) {
                 while (loRS.next()) {
                     // Print the result set
                     System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
@@ -1268,13 +1268,15 @@ public class SalesInquiry extends Transaction {
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("continue", true);
-                poJSON.put("message", "No record found .");
+                poJSON.put("message", "No requirements found.");
+                return poJSON;
             }
 
             MiscUtil.close(loRS);
         } catch (SQLException e) {
             poJSON.put("result", "error");
             poJSON.put("message", e.getMessage());
+            return poJSON;
         }
 
         poJSON = removeRequirements(customerGroup);
