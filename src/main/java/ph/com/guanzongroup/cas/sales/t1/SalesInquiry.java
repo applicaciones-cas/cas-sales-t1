@@ -39,7 +39,6 @@ import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
@@ -800,13 +799,13 @@ public class SalesInquiry extends Transaction {
             
         }
         
-        System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
-        System.out.println("Description : " + Detail(row).Inventory().getDescription());
-        System.out.println("Category : " + Detail(row).Category2().getDescription());
-        System.out.println("Brand : " + Detail(row).Brand().getDescription());
-        System.out.println("Model : " + Detail(row).Model().getDescription());
-        System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
-        System.out.println("Color : " + Detail(row).Color().getDescription());
+//        System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
+//        System.out.println("Description : " + Detail(row).Inventory().getDescription());
+//        System.out.println("Category : " + Detail(row).Category2().getDescription());
+//        System.out.println("Brand : " + Detail(row).Brand().getDescription());
+//        System.out.println("Model : " + Detail(row).Model().getDescription());
+//        System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
+//        System.out.println("Color : " + Detail(row).Color().getDescription());
 
         return poJSON;
     }
@@ -1272,7 +1271,6 @@ public class SalesInquiry extends Transaction {
                 poJSON.put("result", "error");
                 poJSON.put("continue", true);
                 poJSON.put("message", "No requirements found.");
-                return poJSON;
             }
 
             MiscUtil.close(loRS);
