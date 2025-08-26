@@ -1204,6 +1204,13 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
         poJSON.put("row", row);
+        
+        if(!(Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.PO)
+            || Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.FINANCING))){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Sales Inquiry purchase type must be PO or Financing.");
+            return poJSON;
+        }
 
         Banks object = new ParamControllers(poGRider, logwrapr).Banks();
         object.setRecordStatus(RecordStatus.ACTIVE);
@@ -1328,7 +1335,7 @@ public class SalesInquiry extends Transaction {
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("continue", true);
-                poJSON.put("message", "No requirements found.\nCustomer group will revert to < Any >.");
+                poJSON.put("message", "No requirements found.\nPlease contact the System Administrator for assistance.\n\nCustomer group will revert to < Any >.");
             }
 
             MiscUtil.close(loRS);
