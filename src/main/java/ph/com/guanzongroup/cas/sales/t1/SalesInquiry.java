@@ -1280,11 +1280,7 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
 
-        poJSON = removeRequirements(customerGroup);
-        if ("error".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-        
+        removeRequirements(customerGroup);
         return poJSON;
     }
 
@@ -1340,9 +1336,7 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    private JSONObject removeRequirements(String customerGroup){
-        poJSON = new JSONObject ();
-        
+    private void removeRequirements(String customerGroup){
         Iterator<Model_Sales_Inquiry_Requirements> requirements = paRequirements.iterator();
         while (requirements.hasNext()) {
             Model_Sales_Inquiry_Requirements item = requirements.next();
@@ -1356,9 +1350,6 @@ public class SalesInquiry extends Transaction {
                 requirements.remove();
             }
         }
-        
-        poJSON.put("result", "success");  
-        return poJSON;
     }
     
 //    private JSONObject populateRequirements(String requirementCode, String customerGroup) throws SQLException, GuanzonException{
