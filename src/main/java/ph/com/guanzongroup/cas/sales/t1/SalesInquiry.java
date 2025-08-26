@@ -136,6 +136,20 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)){
+            
+            poJSON = checkRequirements();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+            
+            poJSON = checkBankApplication();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+        }
+                
         //Require approval when user is not equal to sales man and user is not supervisor
         if(!Master().getSalesMan().equals(poGRider.getUserID())){
             if (poGRider.getUserLevel() <= UserRight.ENCODER) {
@@ -440,6 +454,50 @@ public class SalesInquiry extends Transaction {
             poJSON.put("message", "Transaction voiding request submitted successfully.");
         }
 
+        return poJSON;
+    }
+    
+    private JSONObject checkRequirements(){
+        poJSON = new JSONObject();
+        boolean lbIsWithRequirements = false;
+        for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
+            if(SalesInquiryRequimentsList(lnCtr).isSubmitted()){
+                lbIsWithRequirements = true;
+                break;
+            }
+        }
+        
+        if(!lbIsWithRequirements){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client must submit requirement.");
+            return poJSON;
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    private JSONObject checkBankApplication(){
+        poJSON = new JSONObject();
+        boolean lbIsWithBankApp = false;
+        
+        if(Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.PO) 
+            || Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.FINANCING)){
+            for(int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++){
+                if(BankApplicationsList(lnCtr).getTransactionStatus().equals(BankApplicationStatus.APPROVED)){
+                    lbIsWithBankApp = true;
+                    break;
+                }
+            }
+
+            if(!lbIsWithBankApp){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Client must have approved bank application.");
+                return poJSON;
+            }
+        }
+        
+        poJSON.put("result", "success");
         return poJSON;
     }
     
@@ -1270,7 +1328,7 @@ public class SalesInquiry extends Transaction {
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("continue", true);
-                poJSON.put("message", "No requirements found.");
+                poJSON.put("message", "No requirements found.\nCustomer group will revert to < Any >.");
             }
 
             MiscUtil.close(loRS);

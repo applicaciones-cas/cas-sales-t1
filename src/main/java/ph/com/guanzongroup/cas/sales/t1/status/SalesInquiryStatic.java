@@ -36,4 +36,15 @@ public class SalesInquiryStatic {
         public static final  String INDIVIDUAL = "0"; //Individual
         public static final  String CORPORATE = "1";  //Corporate
     }
+    
+    public static class PurchaseType  {
+        //Purchase Type:  0 = cash, 1 = cash balance, 2 = Installment, 3 = PO, 4 = financing,5 = insurance, 6=Term
+        public static final  String CASH = "0"; 
+        public static final  String CASH_BALANCE = "1";  
+        public static final  String INSTALLMENT = "2";  
+        public static final  String PO = "3";  
+        public static final  String FINANCING = "4";  
+        public static final  String INSURANCE = "5";  
+        public static final  String TERM = "6";  
+    }
 }
