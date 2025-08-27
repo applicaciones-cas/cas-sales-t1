@@ -137,7 +137,8 @@ public class SalesInquiry extends Transaction {
         }
         
         if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)){
+            //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+            ){
             
             poJSON = checkRequirements();
             if (!"success".equals((String) poJSON.get("result"))) {
@@ -2395,6 +2396,21 @@ public class SalesInquiry extends Transaction {
                             return poJSON;
                         }
                     }
+                }
+            }
+            
+            if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+                //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+                ){
+
+                poJSON = checkRequirements();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+
+                poJSON = checkBankApplication();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
                 }
             }
         }
