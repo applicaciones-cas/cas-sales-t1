@@ -39,7 +39,6 @@ import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
@@ -100,6 +99,7 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         //Clear data
         resetMaster();
+        resetOthers();
         Detail().clear();
         return openTransaction(transactionNo);
     }
@@ -136,6 +136,21 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
+        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+            //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+            ){
+            
+            poJSON = checkRequirements();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+            
+            poJSON = checkBankApplication();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+        }
+                
         //Require approval when user is not equal to sales man and user is not supervisor
         if(!Master().getSalesMan().equals(poGRider.getUserID())){
             if (poGRider.getUserLevel() <= UserRight.ENCODER) {
@@ -440,6 +455,50 @@ public class SalesInquiry extends Transaction {
             poJSON.put("message", "Transaction voiding request submitted successfully.");
         }
 
+        return poJSON;
+    }
+    
+    private JSONObject checkRequirements(){
+        poJSON = new JSONObject();
+        boolean lbIsWithRequirements = false;
+        for(int lnCtr = 0; lnCtr <= getSalesInquiryRequirementsCount() - 1; lnCtr++){
+            if(SalesInquiryRequimentsList(lnCtr).isSubmitted()){
+                lbIsWithRequirements = true;
+                break;
+            }
+        }
+        
+        if(!lbIsWithRequirements){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client must submit requirement.");
+            return poJSON;
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    private JSONObject checkBankApplication(){
+        poJSON = new JSONObject();
+        boolean lbIsWithBankApp = false;
+        
+        if(Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.PO) 
+            || Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.FINANCING)){
+            for(int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++){
+                if(BankApplicationsList(lnCtr).getTransactionStatus().equals(BankApplicationStatus.APPROVED)){
+                    lbIsWithBankApp = true;
+                    break;
+                }
+            }
+
+            if(!lbIsWithBankApp){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Client must have approved bank application.");
+                return poJSON;
+            }
+        }
+        
+        poJSON.put("result", "success");
         return poJSON;
     }
     
@@ -799,13 +858,13 @@ public class SalesInquiry extends Transaction {
             
         }
         
-        System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
-        System.out.println("Description : " + Detail(row).Inventory().getDescription());
-        System.out.println("Category : " + Detail(row).Category2().getDescription());
-        System.out.println("Brand : " + Detail(row).Brand().getDescription());
-        System.out.println("Model : " + Detail(row).Model().getDescription());
-        System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
-        System.out.println("Color : " + Detail(row).Color().getDescription());
+//        System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
+//        System.out.println("Description : " + Detail(row).Inventory().getDescription());
+//        System.out.println("Category : " + Detail(row).Category2().getDescription());
+//        System.out.println("Brand : " + Detail(row).Brand().getDescription());
+//        System.out.println("Model : " + Detail(row).Model().getDescription());
+//        System.out.println("Variant : " + Detail(row).ModelVariant().getDescription());
+//        System.out.println("Color : " + Detail(row).Color().getDescription());
 
         return poJSON;
     }
@@ -868,17 +927,19 @@ public class SalesInquiry extends Transaction {
                 return poJSON;
             }
         }
-        
+        String lsBrand = Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
+                                                    ? " AND a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
+                                                    : "";
+        String lsCategory2 = Detail(row).getCategory() != null && !"".equals(Detail(row).getCategory()) 
+                                                    ? " AND a.sCategCd2 = " + SQLUtil.toSQL(Detail(row).getCategory())
+                                                    : "";
         Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
         String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), 
-                                             Detail(row).getBrandId() != null && !"".equals(Detail(row).getBrandId()) 
-                                                    ? " a.sBrandIDx = " + SQLUtil.toSQL(Detail(row).getBrandId())
-                                                    : ""
-                                            + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
+                                            // " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                                            " a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
                                             + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
-                                            + Detail(row).getCategory() != null && !"".equals(Detail(row).getCategory()) 
-                                                    ? " AND a.sCategCd2 = " + SQLUtil.toSQL(Detail(row).getCategory())
-                                                    : ""
+                                            + lsBrand
+                                            + lsCategory2
                                             );
         
         System.out.println("Executing SQL: " + lsSQL);
@@ -1144,6 +1205,13 @@ public class SalesInquiry extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
         poJSON.put("row", row);
+        
+        if(!(Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.PO)
+            || Master().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.FINANCING))){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Sales Inquiry purchase type must be PO or Financing.");
+            return poJSON;
+        }
 
         Banks object = new ParamControllers(poGRider, logwrapr).Banks();
         object.setRecordStatus(RecordStatus.ACTIVE);
@@ -1245,7 +1313,7 @@ public class SalesInquiry extends Transaction {
             ResultSet loRS = poGRider.executeQuery(lsSQL);
 
             int lnctr = 0;
-            if (MiscUtil.RecordCount(loRS) >= 0) {
+            if (MiscUtil.RecordCount(loRS) > 0) {
                 while (loRS.next()) {
                     // Print the result set
                     System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
@@ -1268,20 +1336,17 @@ public class SalesInquiry extends Transaction {
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("continue", true);
-                poJSON.put("message", "No record found .");
+                poJSON.put("message", "No requirements found.\nPlease contact the System Administrator for assistance.\n\nCustomer group will revert to < Any >.");
             }
 
             MiscUtil.close(loRS);
         } catch (SQLException e) {
             poJSON.put("result", "error");
             poJSON.put("message", e.getMessage());
-        }
-
-        poJSON = removeRequirements(customerGroup);
-        if ("error".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-        
+
+        removeRequirements(customerGroup);
         return poJSON;
     }
 
@@ -1337,13 +1402,13 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    private JSONObject removeRequirements(String customerGroup){
-        poJSON = new JSONObject ();
-        
+    private void removeRequirements(String customerGroup){
         Iterator<Model_Sales_Inquiry_Requirements> requirements = paRequirements.iterator();
         while (requirements.hasNext()) {
             Model_Sales_Inquiry_Requirements item = requirements.next();
             if (!customerGroup.equals(item.getCustomerGroup())) {
+                System.out.println("Remove Customer Group : " +  customerGroup);
+                System.out.println("Remove Requirements Code : " +  item.getRequirementCode());
                 if (item.getEditMode() == EditMode.UPDATE) {
                     paRequirementsRemoved.add(item);
                 }
@@ -1351,9 +1416,6 @@ public class SalesInquiry extends Transaction {
                 requirements.remove();
             }
         }
-        
-        poJSON.put("result", "success");  
-        return poJSON;
     }
     
 //    private JSONObject populateRequirements(String requirementCode, String customerGroup) throws SQLException, GuanzonException{
@@ -2167,6 +2229,8 @@ public class SalesInquiry extends Transaction {
     public void resetOthers() {
         paRequirements = new ArrayList<>();
         paBankApplications = new ArrayList<>();
+        paRequirementsRemoved = new ArrayList<>();
+        paDetailRemoved = new ArrayList<>();
     }
     
     public void resetMaster() {
@@ -2215,10 +2279,13 @@ public class SalesInquiry extends Transaction {
         String lsCategory = "";
         int lnCtr = getDetailCount() - 1;
         while (lnCtr >= 0) {
+            System.out.println("Brand : " + Detail(lnCtr).getBrandId());
+            System.out.println("Category : " + Detail(lnCtr).getCategory());
+            System.out.println("Model : " + Detail(lnCtr).getModelId());
+            System.out.println("Model Variant : " + Detail(lnCtr).getModelVarianId());
+            System.out.println("Color : " + Detail(lnCtr).getColorId());
             if ((Detail(lnCtr).getStockId() == null || "".equals(Detail(lnCtr).getStockId()))
                     && (Detail(lnCtr).getModelId()== null || "".equals(Detail(lnCtr).getModelId()))) {
-                System.out.println("Brand : " + Detail(lnCtr).getBrandId());
-                System.out.println("Category : " + Detail(lnCtr).getCategory());
                 if (Detail(lnCtr).getBrandId() != null
                     && !"".equals(Detail(lnCtr).getBrandId())) {
                     lsBrandId = Detail(lnCtr).getBrandId();
@@ -2331,10 +2398,29 @@ public class SalesInquiry extends Transaction {
                     }
                 }
             }
+            
+            if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+                //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+                ){
+
+                poJSON = checkRequirements();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+
+                poJSON = checkBankApplication();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+            }
         }
 
         if (paDetailRemoved == null) {
             paDetailRemoved = new ArrayList<>();
+        }
+        
+        if (paRequirementsRemoved == null) {
+            paRequirementsRemoved = new ArrayList<>();
         }
         
         if(Master().getEditMode() == EditMode.ADDNEW){
