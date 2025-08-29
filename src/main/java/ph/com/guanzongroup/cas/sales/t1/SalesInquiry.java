@@ -137,7 +137,7 @@ public class SalesInquiry extends Transaction {
         }
         
         if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-            //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
             ){
             
             poJSON = checkRequirements();
@@ -2415,7 +2415,7 @@ public class SalesInquiry extends Transaction {
             }
             
             if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-                //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
                 ){
 
                 poJSON = checkRequirements();
