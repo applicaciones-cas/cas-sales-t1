@@ -137,7 +137,7 @@ public class SalesInquiry extends Transaction {
         }
         
         if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-            //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+            || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
             ){
             
             poJSON = checkRequirements();
@@ -1502,6 +1502,21 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    public JSONObject removeBankApplications() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        Iterator<Model_Bank_Application> object = BankApplicationsList().iterator();
+        while (object.hasNext()) {
+            Model_Bank_Application item = object.next();
+            if(item.getEditMode() == EditMode.ADDNEW){
+                object.remove();
+            }
+        }
+
+        poJSON.put("result", "success");
+        poJSON.put("message", "success");
+        return poJSON;
+    }
+    
 //    public JSONObject removeRequirements(String customerGroup, String paymentMode) throws SQLException, GuanzonException {
 //        poJSON = new JSONObject();
 //        Iterator<Model_Sales_Inquiry_Requirements> requirements = SalesInquiryRequimentsList().iterator();
@@ -2400,7 +2415,7 @@ public class SalesInquiry extends Transaction {
             }
             
             if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-                //|| Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
                 ){
 
                 poJSON = checkRequirements();
