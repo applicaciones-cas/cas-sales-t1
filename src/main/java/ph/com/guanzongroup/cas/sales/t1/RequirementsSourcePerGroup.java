@@ -12,6 +12,7 @@ import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
@@ -66,9 +67,11 @@ public class RequirementsSourcePerGroup extends Parameter {
             return poJSON;
         } 
         
-        poJSON = checkExistingSource();
-        if("error".equals((String) poJSON.get("result"))){
-            return poJSON;
+        if(getEditMode() == EditMode.ADDNEW){
+            poJSON = checkExistingSource();
+            if("error".equals((String) poJSON.get("result"))){
+                return poJSON;
+            }
         }
         
         if (poModel.getEditMode() == 0) {
@@ -120,15 +123,18 @@ public class RequirementsSourcePerGroup extends Parameter {
             }
         }
         
-        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), lsCondition);
+        String lsSQL = getSQ_Browse();
+        if(!lsCondition.isEmpty()){
+            lsSQL = MiscUtil.addCondition(lsSQL, lsCondition);
+        }
 
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 value,
-                "Requirement Code»Description",
-                "sRqrmtIDx»sDescript",
-                "a.sRqrmtIDx»b.sDescript",
+                "Requirement ID»Description»Customer Group»Payment Mode",
+                "sRqrmtIDx»sDescript»cCustGrpx»cPayModex",
+                "a.sRqrmtIDx»b.sDescript»a.cCustGrpx»a.cPayModex",
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
