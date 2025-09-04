@@ -5,6 +5,7 @@
  */
 package ph.com.guanzongroup.cas.sales.t1;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
@@ -14,6 +15,7 @@ import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
+import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 
 /**
@@ -63,12 +65,45 @@ public class RequirementsSourcePerGroup extends Parameter {
             poJSON.put("message", "Payment mode cannot be empty.");
             return poJSON;
         } 
+        
+        poJSON = checkExistingSource();
+        if("error".equals((String) poJSON.get("result"))){
+            return poJSON;
+        }
+        
         if (poModel.getEditMode() == 0) {
             poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
             poModel.setModifiedDate(poGRider.getServerDate());
         } 
         poJSON.put("result", "success");
         return poJSON;
+    }
+    
+    private JSONObject checkExistingSource() throws SQLException, GuanzonException{
+        poJSON = new JSONObject();
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), " a.cPayModex = " +  SQLUtil.toSQL(poModel.getPaymentMode())
+                                                            + " AND a.cCustGrpx = " +  SQLUtil.toSQL(poModel.getCustomerGroup())
+                                                            + " AND a.sRqrmtCde = " +  SQLUtil.toSQL(poModel.getRequirementCode()));
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (MiscUtil.RecordCount(loRS) >= 0) {
+            while (loRS.next()) {
+                // Print the result set
+                System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
+                System.out.println("sRqrmtCde: " + loRS.getString("sRqrmtCde"));
+                System.out.println("------------------------------------------------------------------------------");
+
+                poJSON.put("result", "error");
+                poJSON.put("message", poModel.RequirementSource().getDescription()+ " already exists.");
+            }
+        } else {
+            poJSON.put("result", "success");
+            poJSON.put("continue", true);
+            poJSON.put("message", "No record found.");
+        }
+        MiscUtil.close(loRS);
+        
+        return poJSON;
+    
     }
     
     @Override
@@ -79,9 +114,9 @@ public class RequirementsSourcePerGroup extends Parameter {
                 for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
                     lsCondition += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
                 }
-                lsCondition = " cRecdStat IN (" + lsCondition.substring(2) + ")";
+                lsCondition = " a.cRecdStat IN (" + lsCondition.substring(2) + ")";
             } else {
-                lsCondition = " cRecdStat = " + SQLUtil.toSQL(psRecdStat);
+                lsCondition = " a.cRecdStat = " + SQLUtil.toSQL(psRecdStat);
             }
         }
         
@@ -104,6 +139,21 @@ public class RequirementsSourcePerGroup extends Parameter {
             poJSON.put("message", "No record loaded.");
             return poJSON;
         }
+    }
+    
+     public JSONObject SearchRequirmentSource(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        RequirementsSource object = new SalesControllers(poGRider, logwrapr).RequirementsSource();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setRequirementCode(object.getModel().getRequirementCode());
+        }
+
+        return poJSON;
     }
     
     @Override
