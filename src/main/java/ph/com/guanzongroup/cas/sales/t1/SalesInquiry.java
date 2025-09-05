@@ -830,6 +830,7 @@ public class SalesInquiry extends Transaction {
         if ("success".equals((String) poJSON.get("result"))) {
            
             System.out.println("Category Type : " + Master().getCategoryType());
+            System.out.println("Category Code : " + Master().getCategoryCode());
             System.out.println("Brand : " + Detail(row).getBrandId());
             System.out.println("Model : " + Detail(row).getModelId());
             System.out.println("Variant : " + Detail(row).getModelVarianId());
@@ -837,11 +838,23 @@ public class SalesInquiry extends Transaction {
             
             //Set stock ID
             String lsStockId = "";
+            String lsCategoryId = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
             inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
             inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
+                lsCategoryId = inventory.getModel().getCategoryFirstLevelId();
+                
+//                if(inventory.getModel().Variant().getSellingPrice() != 0.0000){ //Error TODO
+//                    Detail(row).setSellPrice(inventory.getModel().Variant().getSellingPrice());
+//                } else {
+                    if(inventory.getModel().getSellingPrice() != null){
+                        Detail(row).setSellPrice(inventory.getModel().getSellingPrice().doubleValue());
+                    } else {
+                        Detail(row).setSellPrice(0.0000);
+                    }
+//                }
             }
             poJSON = checkExistingDetail(row,
                     Detail(row).getBrandId(),
@@ -855,6 +868,7 @@ public class SalesInquiry extends Transaction {
             
             Detail(row).setColorId(object.getModel().getColorId());
             Detail(row).setStockId(lsStockId);
+            Detail(row).setCategory(lsCategoryId);
             
         }
         
@@ -969,8 +983,8 @@ public class SalesInquiry extends Transaction {
                 Detail(row).setModelId(object.getModel().getModelId());
                 Detail(row).setModelVarianId(object.getModel().getVariantId());
                 Detail(row).setColorId(object.getModel().getColorId());
-                
-//                if(object.getModel().Variant().getSellingPrice() != 0.0000){
+                   
+//                if(object.getModel().Variant().getSellingPrice() != 0.0000){  //Error TODO
 //                    Detail(row).setSellPrice(object.getModel().Variant().getSellingPrice());
 //                } else {
                     if(object.getModel().getSellingPrice() != null){
