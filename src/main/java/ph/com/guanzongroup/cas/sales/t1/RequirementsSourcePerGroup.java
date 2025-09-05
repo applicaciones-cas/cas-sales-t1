@@ -133,8 +133,8 @@ public class RequirementsSourcePerGroup extends Parameter {
                 lsSQL,
                 value,
                 "Requirement ID»Description»Customer Group»Payment Mode",
-                "sRqrmtIDx»sDescript»cCustGrpx»cPayModex",
-                "a.sRqrmtIDx»b.sDescript»a.cCustGrpx»a.cPayModex",
+                "sRqrmtIDx»sDescript»Customer_Group»PaymentMode",
+                "a.sRqrmtIDx»b.sDescript»"+getCustomerGroupCase()+"»" + getPaymentModeCase(),
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
@@ -161,21 +161,47 @@ public class RequirementsSourcePerGroup extends Parameter {
 
         return poJSON;
     }
+     
+    private String getPaymentModeCase(){
+        return " CASE 					 "
+                + "   WHEN a.cPayModex = '0' THEN 'Cash'         "
+                + "   WHEN a.cPayModex = '1' THEN 'Cash Balance' "
+                + "   WHEN a.cPayModex = '2' THEN 'Installment'  "
+                + "   WHEN a.cPayModex = '3' THEN 'PO'           "
+                + "   WHEN a.cPayModex = '4' THEN 'Financing'    "
+                + "   WHEN a.cPayModex = '5' THEN 'Insurance'    "
+                + "   WHEN a.cPayModex = '6' THEN 'Term'         "
+                + "   ELSE ''            "
+                + " END ";
+    }
+     
+    private String getCustomerGroupCase(){
+        return " CASE                 "
+            + "   WHEN a.cCustGrpx = '0' THEN 'Any'        "
+            + "   WHEN a.cCustGrpx = '1' THEN 'Employee'   "
+            + "   WHEN a.cCustGrpx = '2' THEN 'OFW'        "
+            + "   WHEN a.cCustGrpx = '3' THEN 'Seaman'     "
+            + "   WHEN a.cCustGrpx = '4' THEN 'Business'   "
+            + "   ELSE ''          "
+            + " END ";
+    }
     
     @Override
     public String getSQ_Browse() {
-        return " SELECT  "
-              + "   a.sRqrmtIDx "
-              + " , a.cPayModex "
-              + " , a.cCustGrpx "
-              + " , a.sRqrmtCde "
-              + " , a.cRequired "
-              + " , a.cRecdStat "
-              + " , a.sModified "
-              + " , a.dModified "
-              + " , b.sDescript "
-              + "  FROM requirement_source_pergroup a "
-              + " LEFT JOIN requirement_source b ON b.sRqrmtCde = a.sRqrmtCde ";
+        return    " SELECT "
+                + "   a.sRqrmtIDx, "
+                + "   a.cPayModex, "
+                + "   a.cCustGrpx, "
+                + getPaymentModeCase() + " AS PaymentMode ,"
+                + getCustomerGroupCase() + " AS Customer_Group,"
+                + "   a.sRqrmtCde,         "
+                + "   a.cRequired,         "
+                + "   a.cRecdStat,         "
+                + "   a.sModified,         "
+                + "   a.dModified,         "
+                + "   b.sDescript          "
+                + " FROM requirement_source_pergroup a  "
+                + " LEFT JOIN requirement_source b ON b.sRqrmtCde = a.sRqrmtCde ";
     }
     
 }
