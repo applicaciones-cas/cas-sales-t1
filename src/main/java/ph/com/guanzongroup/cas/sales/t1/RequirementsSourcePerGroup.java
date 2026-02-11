@@ -7,7 +7,12 @@ package ph.com.guanzongroup.cas.sales.t1;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.agent.ShowDialogFX;
+import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
@@ -25,11 +30,12 @@ import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
  */
 public class RequirementsSourcePerGroup extends Parameter {
     Model_Requirement_Source_PerGroup poModel;
-  
+    public List<Model> paModel;
      @Override
     public void initialize() throws SQLException, GuanzonException {
-      psRecdStat = RecordStatus.ACTIVE;
-      poModel = new SalesModels(poGRider).RequirementSourcePerGroup();
+        psRecdStat = RecordStatus.ACTIVE;
+        poModel = new SalesModels(poGRider).RequirementSourcePerGroup();
+        paModel = new ArrayList<>();
       
       super.initialize();
     }
@@ -39,8 +45,16 @@ public class RequirementsSourcePerGroup extends Parameter {
         return poModel;
     }
     
-    private Model_Requirement_Source_PerGroup SalesInquirySources() {
+    private Model_Requirement_Source_PerGroup RequirementsSourcePerGroup() {
         return new SalesModels(poGRider).RequirementSourcePerGroup();
+    }
+    
+    public Model_Requirement_Source_PerGroup ParameterList(int row) {
+        return (Model_Requirement_Source_PerGroup) paModel.get(row);
+    }
+
+    public int getParameterCount() {
+        return this.paModel.size();
     }
   
     @Override
@@ -159,6 +173,78 @@ public class RequirementsSourcePerGroup extends Parameter {
             getModel().setRequirementCode(object.getModel().getRequirementCode());
         }
 
+        return poJSON;
+    }
+     
+    /**
+     * Load parameter list
+     * @param fsCustomerType
+     * @param fsPaymentMode
+     * @return 
+     */
+    public JSONObject loadParameterList(String fsCustomerType, String fsPaymentMode){
+        poJSON = new JSONObject();
+        try {
+            fsCustomerType = (fsCustomerType == null || "-1".equals(fsCustomerType)) ? "" : fsCustomerType;
+            fsPaymentMode = (fsPaymentMode == null || "-1".equals(fsPaymentMode)) ? "" : fsPaymentMode;
+            
+            String lsSQL = MiscUtil.addCondition(getSQ_Browse(),
+                    " a.cCustGrpx LIKE " + SQLUtil.toSQL("%"+fsCustomerType)
+                + " AND a.cPayModex LIKE " + SQLUtil.toSQL("%"+fsPaymentMode)
+            );
+            
+            String lsStatus = "";
+            if (psRecdStat != null) {
+                if (psRecdStat.length() > 1) {
+                    for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
+                        lsStatus += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
+                    }
+                    lsStatus = " AND a.cRecdStat IN (" + lsStatus.substring(2) + ")";
+                } else {
+                    lsStatus = " AND a.cRecdStat = " + SQLUtil.toSQL(psRecdStat);
+                }
+            }
+
+            lsSQL = lsSQL + "" + lsStatus +" GROUP BY a.sRqrmtIDx ORDER BY a.cCustGrpx, a.cPayModex ASC ";
+
+            System.out.println("Executing SQL: " + lsSQL);
+            ResultSet loRS = poGRider.executeQuery(lsSQL);
+            poJSON = new JSONObject();
+
+            int lnctr = 0;
+
+            if (MiscUtil.RecordCount(loRS) >= 0) {
+                paModel = new ArrayList<>();
+                while (loRS.next()) {
+                    // Print the result set
+                    System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
+                    System.out.println("cCustGrpx: " + loRS.getString("cCustGrpx"));
+                    System.out.println("cPayModex: " + loRS.getString("cPayModex"));
+                    System.out.println("sDescript: " + loRS.getString("sDescript"));
+                    System.out.println("------------------------------------------------------------------------------");
+
+                    paModel.add(RequirementsSourcePerGroup());
+                    paModel.get(paModel.size() - 1).openRecord(loRS.getString("sRqrmtIDx"));
+                    lnctr++;
+                }
+
+                System.out.println("Records found: " + lnctr);
+                poJSON.put("result", "success");
+                poJSON.put("message", "Record loaded successfully.");
+            } else {
+                paModel = new ArrayList<>();
+                paModel.add(RequirementsSourcePerGroup());
+                poJSON.put("result", "error");
+                poJSON.put("continue", true);
+                poJSON.put("message", "No record found.");
+            }
+            MiscUtil.close(loRS);
+        }catch (GuanzonException | SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON.put("result", "error");
+            poJSON.put("message", MiscUtil.getException(ex));
+        }
+        poJSON.put("result", "success");
         return poJSON;
     }
      

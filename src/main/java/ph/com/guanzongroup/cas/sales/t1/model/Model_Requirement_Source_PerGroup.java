@@ -13,6 +13,7 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
@@ -39,6 +40,7 @@ public class Model_Requirement_Source_PerGroup extends Model {
             //assign default values
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("cRecdStat", RecordStatus.ACTIVE);
+            poEntity.updateObject("cRequired", Logical.YES);
             //end - assign default values
 
             poEntity.insertRow();
