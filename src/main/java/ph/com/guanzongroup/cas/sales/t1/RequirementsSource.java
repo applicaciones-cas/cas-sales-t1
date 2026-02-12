@@ -129,6 +129,8 @@ public class RequirementsSource extends Parameter {
     
     private JSONObject checkExistingSourcePerGroup() throws SQLException{
         poJSON = new JSONObject();
+        boolean lbIsError = false;
+        String lsReqID = "";
         Model_Requirement_Source_PerGroup loObject = new SalesModels(poGRider).RequirementSourcePerGroup();
         String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loObject), " sRqrmtCde = " +  SQLUtil.toSQL(poModel.getRequirementCode())
                                             + " AND cRecdStat = " +  SQLUtil.toSQL(RecordStatus.ACTIVE));
@@ -139,9 +141,12 @@ public class RequirementsSource extends Parameter {
                 System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
                 System.out.println("sRqrmtCde: " + loRS.getString("sRqrmtCde"));
                 System.out.println("------------------------------------------------------------------------------");
-
-                poJSON.put("result", "error");
-                poJSON.put("message", poModel.getDescription() + " already used in requirement source per group <"+loRS.getString("sRqrmtIDx")+">.");
+                lbIsError = true;
+                if(lsReqID.isEmpty()){
+                    lsReqID = loRS.getString("sRqrmtIDx");
+                } else {
+                    lsReqID = lsReqID + "," + loRS.getString("sRqrmtIDx");
+                }
             }
         } else {
             poJSON.put("result", "success");
@@ -149,6 +154,10 @@ public class RequirementsSource extends Parameter {
             poJSON.put("message", "No record found.");
         }
         MiscUtil.close(loRS);
+        if(lbIsError){
+            poJSON.put("result", "error");
+            poJSON.put("message", poModel.getDescription() + " already used in requirement source per group <"+lsReqID+">.");
+        }
         return poJSON;
     }
     
