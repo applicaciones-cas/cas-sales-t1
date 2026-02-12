@@ -12,9 +12,11 @@ import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 
 /**
@@ -40,6 +42,39 @@ public class RequirementsSource extends Parameter {
     private Model_Requirement_Source SalesInquirySources() {
         return new SalesModels(poGRider).RequirementSource();
     }
+    
+    public JSONObject DeactivateRecord()
+            throws SQLException,
+            GuanzonException,
+            CloneNotSupportedException {
+        
+        poJSON = checkExistingSourcePerGroup();
+        if ("error".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        poJSON = deactivateRecord();
+        if ("error".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record deactivated successfully.");
+        return poJSON;
+    }
+    
+    public JSONObject ActivateRecord()
+            throws SQLException,
+            GuanzonException,
+            CloneNotSupportedException {
+        
+        poJSON = activateRecord();
+        if ("error".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record activated successfully.");
+        return poJSON;
+    }
   
     @Override
     public JSONObject isEntryOkay() throws SQLException, GuanzonException {
@@ -54,14 +89,15 @@ public class RequirementsSource extends Parameter {
             poJSON.put("message", "Description cannot be empty.");
             return poJSON;
         } 
-        poJSON = checkExistingSource();
-        if("error".equals((String) poJSON.get("result"))){
-            return poJSON;
+        
+        if(getEditMode() == EditMode.ADDNEW){
+            poJSON = checkExistingSource();
+            if("error".equals((String) poJSON.get("result"))){
+                return poJSON;
+            }
         }
-        if (poModel.getEditMode() == 0) {
-            poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
-            poModel.setModifiedDate(poGRider.getServerDate());
-        } 
+        poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+        poModel.setModifiedDate(poGRider.getServerDate());
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -89,6 +125,31 @@ public class RequirementsSource extends Parameter {
         
         return poJSON;
     
+    }
+    
+    private JSONObject checkExistingSourcePerGroup() throws SQLException{
+        poJSON = new JSONObject();
+        Model_Requirement_Source_PerGroup loObject = new SalesModels(poGRider).RequirementSourcePerGroup();
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loObject), " sRqrmtCde = " +  SQLUtil.toSQL(poModel.getRequirementCode())
+                                            + " AND cRecdStat = " +  SQLUtil.toSQL(RecordStatus.ACTIVE));
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (MiscUtil.RecordCount(loRS) >= 0) {
+            while (loRS.next()) {
+                // Print the result set
+                System.out.println("sRqrmtIDx: " + loRS.getString("sRqrmtIDx"));
+                System.out.println("sRqrmtCde: " + loRS.getString("sRqrmtCde"));
+                System.out.println("------------------------------------------------------------------------------");
+
+                poJSON.put("result", "error");
+                poJSON.put("message", poModel.getDescription() + " already used in requirement source per group <"+loRS.getString("sRqrmtIDx")+">.");
+            }
+        } else {
+            poJSON.put("result", "success");
+            poJSON.put("continue", true);
+            poJSON.put("message", "No record found.");
+        }
+        MiscUtil.close(loRS);
+        return poJSON;
     }
     
     @Override
