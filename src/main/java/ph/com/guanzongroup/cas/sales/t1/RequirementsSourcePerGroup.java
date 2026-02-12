@@ -56,6 +56,32 @@ public class RequirementsSourcePerGroup extends Parameter {
     public int getParameterCount() {
         return this.paModel.size();
     }
+    
+    public JSONObject DeactivateRecord()
+            throws SQLException,
+            GuanzonException,
+            CloneNotSupportedException {
+        poJSON = deactivateRecord();
+        if ("error".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record deactivated successfully.");
+        return poJSON;
+    }
+    
+    public JSONObject ActivateRecord()
+            throws SQLException,
+            GuanzonException,
+            CloneNotSupportedException {
+        poJSON = activateRecord();
+        if ("error".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record activated successfully.");
+        return poJSON;
+    }
   
     @Override
     public JSONObject isEntryOkay() throws SQLException, GuanzonException {
@@ -88,10 +114,8 @@ public class RequirementsSourcePerGroup extends Parameter {
             }
         }
         
-        if (poModel.getEditMode() == 0) {
-            poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
-            poModel.setModifiedDate(poGRider.getServerDate());
-        } 
+        poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+        poModel.setModifiedDate(poGRider.getServerDate());
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -101,6 +125,7 @@ public class RequirementsSourcePerGroup extends Parameter {
         String lsSQL = MiscUtil.addCondition(getSQ_Browse(), " a.cPayModex = " +  SQLUtil.toSQL(poModel.getPaymentMode())
                                                             + " AND a.cCustGrpx = " +  SQLUtil.toSQL(poModel.getCustomerGroup())
                                                             + " AND a.sRqrmtCde = " +  SQLUtil.toSQL(poModel.getRequirementCode()));
+        System.out.println("Execute SQL : " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         if (MiscUtil.RecordCount(loRS) >= 0) {
             while (loRS.next()) {
