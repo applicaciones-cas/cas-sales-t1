@@ -379,7 +379,7 @@ public class SalesGiveaways extends Transaction {
                 "Giveaway Code»Description»From Date»Thru Date",
                 "sGAWayCde»sGAWayDsc»dFromDate»dThruDate",
                 "a.sGAWayCde»a.sGAWayDsc»a.dFromDate»a.dThruDate",
-                0);
+                byCode ? 0 : 1);
 
         if (poJSON != null) {
             return OpenTransaction((String) poJSON.get("sGAWayCde"));
