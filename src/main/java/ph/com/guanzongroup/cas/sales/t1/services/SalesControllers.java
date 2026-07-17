@@ -15,6 +15,7 @@ import org.guanzon.appdriver.base.MiscUtil;
 import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
 import ph.com.guanzongroup.cas.sales.t1.RequirementsSourcePerGroup;
 import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
+import ph.com.guanzongroup.cas.sales.t1.SalesGiveaways;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
 import ph.com.guanzongroup.cas.sales.t1.Salesman;
@@ -108,7 +109,27 @@ public class SalesControllers {
         
         return poSalesAgent;
     }
-    
+
+    public SalesGiveaways SalesGiveaways(){
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.SalesGiveaways: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesGiveaways != null){
+            return poSalesGiveaways;
+        }
+
+        poSalesGiveaways = new SalesGiveaways();
+        poSalesGiveaways.setApplicationDriver(poGRider);
+        poSalesGiveaways.setBranchCode(poGRider.getBranchCode());
+        poSalesGiveaways.setVerifyEntryNo(true);
+        poSalesGiveaways.setWithParent(false);
+        poSalesGiveaways.setLogWrapper(poLogWrapper);
+
+        return poSalesGiveaways;
+    }
+
     public RequirementsSource RequirementsSource(){
         try {
             if (poGRider == null) {
@@ -158,6 +179,7 @@ public class SalesControllers {
             poSalesInquirySources = null;
             poSalesman = null;
             poSalesAgent = null;
+            poSalesGiveaways = null;
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
             poLogWrapper = null;
@@ -174,6 +196,7 @@ public class SalesControllers {
     private SalesInquirySources poSalesInquirySources;
     private Salesman poSalesman;
     private SalesAgent poSalesAgent;
+    private SalesGiveaways poSalesGiveaways;
     private RequirementsSource poRequirementSource;
     private RequirementsSourcePerGroup poRequirementSourcePerGroup;
 }
