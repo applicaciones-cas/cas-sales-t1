@@ -106,7 +106,7 @@ public class SalesGiveawaysTest {
     public void test01InitTransaction() {
         JSONObject loJSON = poController.InitTransaction();
         Assert.assertEquals("success", loJSON.get("result"));
-        Assert.assertEquals("PARM", poController.getSourceCode());
+        Assert.assertEquals("Slgw", poController.getSourceCode());
         Assert.assertNotNull(poController.Master());
         Assert.assertNotNull(poController.getDetail());
     }
