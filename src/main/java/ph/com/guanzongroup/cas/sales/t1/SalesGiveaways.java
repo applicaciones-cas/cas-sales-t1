@@ -149,7 +149,7 @@ public class SalesGiveaways extends Transaction {
      * @throws GuanzonException
      * @throws CloneNotSupportedException 
      */
-    public JSONObject ConfirmTransaction(String remarks)
+    public JSONObject ActivateTransaction(String remarks)
             throws ParseException,
             SQLException,
             GuanzonException,
