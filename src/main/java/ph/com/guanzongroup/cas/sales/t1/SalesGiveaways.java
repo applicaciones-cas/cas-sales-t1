@@ -316,8 +316,8 @@ public class SalesGiveaways extends Transaction {
         }
 
         initSQL();
-        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId));
+//                                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
 
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -366,8 +366,8 @@ public class SalesGiveaways extends Transaction {
         }
 
         initSQL();
-        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId));
+//                + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
 
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
