@@ -625,11 +625,12 @@ public class SalesGiveaways extends Transaction {
             Model item = detail.next();
             if (item.getValue("sStockIDx") == null || "".equals(item.getValue("sStockIDx"))) {
                 detail.remove();
-            }
-            if(item.getValue("cReversex") == Logical.YES){
-               if(!lbCheckActive){
-                   lbCheckActive = true;
-               }
+            } else {
+                if(item.getValue("cReversex") == "+"){
+                   if(!lbCheckActive){
+                       lbCheckActive = true;
+                   }
+                }
             }
         }
 

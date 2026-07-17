@@ -1,0 +1,20 @@
+/*
+SQLyog Ultimate v8.55 
+MySQL - 5.7.44-log : Database - gcasys_dbf
+*********************************************************************
+*/
+
+/*!40101 SET NAMES utf8 */;
+
+/*!40101 SET SQL_MODE=''*/;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+/*Data for the table `sales_giveaways_item` */
+
+insert  into `sales_giveaways_item`(`sGAWayCde`,`nEntryNox`,`sStockIDx`,`nQuantity`,`cReversex`,`dTimeStmp`) values ('GCO126000001',1,'GK0123000005',1,'0','2026-07-17 11:21:16'),('GCO126000001',2,'GK0123000006',22,'0','2026-07-17 11:21:16');
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
