@@ -21,6 +21,7 @@ import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
 import org.guanzon.cas.parameter.*;
+import org.guanzon.cas.parameter.model.Model_Inventory_Child_Unit;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -163,6 +164,11 @@ public class SalesGiveaways extends Transaction {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
+
+        poJSON = validateRecordStatus(lsStatus);
+        if (!"success".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
         
         //change status
         poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
@@ -209,6 +215,11 @@ public class SalesGiveaways extends Transaction {
             return poJSON;
         }
 
+        poJSON = validateRecordStatus(lsStatus);
+        if (!"success".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+
         //change status
         poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
@@ -251,6 +262,11 @@ public class SalesGiveaways extends Transaction {
         //validator
         poJSON = isEntryOkay(SalesGiveawaysStatus.DISAPPROVE);
         if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+
+        poJSON = validateRecordStatus(lsStatus);
+        if (!"success".equals(poJSON.get("result"))) {
             return poJSON;
         }
 
@@ -490,10 +506,6 @@ public class SalesGiveaways extends Transaction {
         psIndustryId = industryId;
     }
 
-    public void setCompanyId(String companyId) {
-        psCompanyId = companyId;
-    }
-
     public void setCategoryId(String categoryId) {
         psCategorCd = categoryId;
     }
@@ -608,7 +620,15 @@ public class SalesGiveaways extends Transaction {
             return poJSON;
         }
 
+        int lnRow = 0;
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            if(Detail(lnCtr).isReversed()){
+                lnRow++;
+            }
+            if(Detail(lnCtr).getQuantity() <= 0 ){
+                poJSON = setJSON("error","Invalid quantity at row "+lnRow+".");
+                return poJSON;
+            }
             Detail(lnCtr).setGiveawayCode(Master().getGiveawayCode());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
@@ -706,7 +726,7 @@ public class SalesGiveaways extends Transaction {
         LocalDate ldFromDate = strToDate(xsDateShort(Master().getFromDate()));
         LocalDate ldThruDate = strToDate(xsDateShort(Master().getThruDate()));
         LocalDate ldEntryDate = strToDate(xsDateShort(Master().getEntryDate()));
-        if (ldThruDate.isAfter(ldFromDate)) {
+        if (ldThruDate.isBefore(ldFromDate)) {
             poJSON = setJSON("error",  "Thru date cannot be before the from date.");
             return poJSON;
         }
@@ -717,6 +737,48 @@ public class SalesGiveaways extends Transaction {
 
         poJSON.put("result", "success");
         return poJSON;
+    }
+
+    private JSONObject validateRecordStatus(String fsStatus){
+        poJSON = new JSONObject();
+
+        try {
+            Model_Sales_Giveaways_Master loObject = new SalesModels(poGRider).SalesGiveawaysMaster();
+            loObject.initialize();
+            poJSON = loObject.openRecord(Master().getGiveawayCode());
+            if ("error".equals((String) poJSON.get("result"))) {
+                poJSON = setJSON("error",  (String) poJSON.get("message"));
+                return poJSON;
+            }
+
+            if (Master().getTransactionStatus().equals(fsStatus)) {
+                poJSON = setJSON("error", "Record is already in " + getStatus(fsStatus) + " status.");
+                return poJSON;
+            }
+
+            if (Master().getTransactionStatus().equals(SalesGiveawaysStatus.DISAPPROVE)) {
+                poJSON = setJSON("error", "Record is already in " + getStatus(Master().getTransactionStatus()) + " status.");
+                return poJSON;
+            }
+
+            if (Master().getTransactionStatus().equals(SalesGiveawaysStatus.OPEN) && fsStatus.equals(SalesGiveawaysStatus.DEACTIVATE)) {
+                poJSON = setJSON("error",  "OPEN record status cannot be deactivated.");
+                return poJSON;
+            }
+
+            if (Master().getTransactionStatus().equals(SalesGiveawaysStatus.ACTIVE) && fsStatus.equals(SalesGiveawaysStatus.DISAPPROVE)) {
+                poJSON = setJSON("error",  "ACTIVE record status cannot be disapprove.");
+                return poJSON;
+            }
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON = setJSON("error", MiscUtil.getException(ex));
+            return poJSON;
+        }
+
+        poJSON.put("result", "success");
+        return poJSON;
+
     }
 
     @Override
