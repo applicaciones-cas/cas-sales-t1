@@ -12,6 +12,7 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
@@ -465,10 +466,16 @@ public class SalesGiveaways extends Transaction {
                 //Check Existing Stock ID
                 if(!"".equals(stockId)){
                     if(stockId.equals(Detail(lnCtr).getStockId())){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "Item Description already exists in the transaction detail at row "+(lnCtr+1)+".");
-                        poJSON.put("row", lnCtr);
-                        return poJSON;
+                        if(Detail(lnCtr).isReversed()) {
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "Item Description already exists in the transaction detail at row " + (lnCtr + 1) + ".");
+                            poJSON.put("row", lnCtr);
+                            return poJSON;
+                        } else {
+                            Detail(lnCtr).setReversed(true);
+                            poJSON.put("row", lnCtr);
+                            return poJSON;
+                        }
                     }
                 }
             }
@@ -592,21 +599,27 @@ public class SalesGiveaways extends Transaction {
         Master().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
         Master().setModifiedDate(poGRider.getServerDate());
 
+        boolean lbCheckActive = false;
         Iterator<Model> detail = Detail().iterator();
         while (detail.hasNext()) {
             Model item = detail.next();
             if (item.getValue("sStockIDx") == null || "".equals(item.getValue("sStockIDx"))) {
                 detail.remove();
             }
+            if(item.getValue("cReversex") == Logical.YES){
+               if(!lbCheckActive){
+                   lbCheckActive = true;
+               }
+            }
         }
 
         //Validate detail after removing all zero qty and empty stock Id
-        if (getDetailCount() <= 0) {
+        if (getDetailCount() <= 0 || !lbCheckActive) {
             poJSON.put("result", "error");
             poJSON.put("message", "No transaction detail to be save.");
             return poJSON;
         }
-        
+
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setGiveawayCode(Master().getGiveawayCode());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
@@ -678,6 +691,47 @@ public class SalesGiveaways extends Transaction {
             poJSON.put("message", "Category must not be empty.");
             return poJSON;
         }
+
+        Date loFromDate = Master().getFromDate();
+        Date loThruDate = Master().getThruDate();
+        Date loEntryDate = Master().getEntryDate();
+        if (loFromDate == null) {
+            poJSON = setJSON("error",  "Invalid From Date.");
+            return poJSON;
+        }
+        if (loThruDate == null) {
+            poJSON = setJSON("error",  "Invalid Thru Date.");
+            return poJSON;
+        }
+        if (loEntryDate == null) {
+            poJSON = setJSON("error",  "Invalid Entry Date.");
+            return poJSON;
+        }
+        if ("1900-01-01".equals(xsDateShort(loFromDate))) {
+            poJSON = setJSON("error",  "Invalid From Date.");
+            return poJSON;
+        }
+        if ("1900-01-01".equals(xsDateShort(loFromDate))) {
+            poJSON = setJSON("error",  "Invalid Thru Date.");
+            return poJSON;
+        }
+        if ("1900-01-01".equals(xsDateShort(loEntryDate))) {
+            poJSON = setJSON("error",  "Invalid Entry Date.");
+            return poJSON;
+        }
+
+        LocalDate ldFromDate = strToDate(xsDateShort(Master().getFromDate()));
+        LocalDate ldThruDate = strToDate(xsDateShort(Master().getThruDate()));
+        LocalDate ldEntryDate = strToDate(xsDateShort(Master().getEntryDate()));
+        if (ldThruDate.isAfter(ldFromDate)) {
+            poJSON = setJSON("error",  "Thru date cannot be before the from date.");
+            return poJSON;
+        }
+        if (ldFromDate.isBefore(ldEntryDate)) {
+            poJSON = setJSON("error",  "From date cannot be before the entry date.");
+            return poJSON;
+        }
+
         poJSON.put("result", "success");
         return poJSON;
     }
