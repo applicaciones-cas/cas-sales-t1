@@ -23,6 +23,7 @@ import org.guanzon.cas.parameter.*;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import ph.com.guanzongroup.cas.cashflow.status.CashDisbursementStatus;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Item;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Master;
@@ -36,10 +37,12 @@ import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryRequirements;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryValidatorFactory;
 
+import javax.sql.rowset.CachedRowSet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,13 +100,13 @@ public class SalesGiveaways extends Transaction {
 
     public String getStatus(String fsStatus) {
         switch (fsStatus){
-            case InventoryChildUnit.RecordStatus.OPEN:
+            case SalesGiveawaysStatus.OPEN:
                 return "OPEN";
-            case InventoryChildUnit.RecordStatus.ACTIVE:
+            case SalesGiveawaysStatus.ACTIVE:
                 return "ACTIVE";
-            case InventoryChildUnit.RecordStatus.DEACTIVATE:
+            case SalesGiveawaysStatus.DEACTIVATE:
                 return "INACTIVE";
-            case InventoryChildUnit.RecordStatus.DISAPPROVE:
+            case SalesGiveawaysStatus.DISAPPROVE:
                 return "DISAPPROVE";
             default:
                 return "UNKNOWN";
@@ -633,25 +636,188 @@ public class SalesGiveaways extends Transaction {
 
     @Override
     public void initSQL() {
-        SQL_BROWSE =  " SELECT "
-                    + " a.sTransNox "
-                    + " , a.dTransact "
-                    + " , a.cTranStat "
-                    + " , a.sClientID "
-                    + " , b.sCompnyNm AS sClientNm "
-                    + " , concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName) AS sSalePrsn "
-                    + " , d.sCompnyNm AS sAgentNme "
-                    + " , e.sBranchNm "
-                    + " , f.sCompnyNm "
-                    + " , g.sDescript "
-                    + " FROM sales_inquiry_master a "
-                    + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                    + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
-                    + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
-                    + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
-                    + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
-                    + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx " ;
+        SQL_BROWSE =  "SELECT " +
+                    "  a.sGAWayCde, " +
+                    "  a.sGAWayDsc, " +
+                    "  a.sIndstCdx, " +
+                    "  a.sCategrCd, " +
+                    "  a.sRemarksx, " +
+                    "  a.dFromDate, " +
+                    "  a.dThruDate, " +
+                    "  a.cTranStat, " +
+                    "  a.sEntryByx, " +
+                    "  a.dEntryDte, " +
+                    "  a.sModified, " +
+                    "  a.dModified, " +
+                    "  b.sDescript as Industry, " +
+                    "  c.sDescript AS Category " +
+                    "FROM Sales_Giveaways_Master a " +
+                    "LEFT JOIN Industry b ON b.sIndstCdx = a.sIndstCdx " +
+                    "LEFT JOIN Category c ON c.sCategrCd = a.sCategrCd ";
         
     }
 
+    /**
+     * Displays the status history of a Cash Advance transaction.
+     *
+     * Retrieves status records, maps status codes to readable text, and
+     * shows them in the UI along with entry details.
+     *
+     * @throws SQLException if a database error occurs
+     * @throws GuanzonException if application-specific error occurs
+     * @throws Exception for other unexpected errors
+     */
+    public void ShowStatusHistory() throws SQLException, GuanzonException, Exception {
+        CachedRowSet crs = getStatusHistory();
+
+        crs.beforeFirst();
+
+        while(crs.next()){
+            switch (crs.getString("cRefrStat")){
+                case "":
+                    crs.updateString("cRefrStat", "-");
+                    break;
+                case SalesGiveawaysStatus.OPEN:
+                    crs.updateString("cRefrStat", "OPEN");
+                    break;
+                case SalesGiveawaysStatus.DISAPPROVE:
+                    crs.updateString("cRefrStat", "DISAPPROVED");
+                    break;
+                case SalesGiveawaysStatus.ACTIVE:
+                    crs.updateString("cRefrStat", "ACTIVE");
+                    break;
+                case SalesGiveawaysStatus.DEACTIVATE:
+                    crs.updateString("cRefrStat", "INACTIVE");
+                    break;
+                default:
+                    char ch = crs.getString("cRefrStat").charAt(0);
+                    String stat = String.valueOf((int) ch - 64);
+
+                    switch (stat){
+                        case SalesGiveawaysStatus.OPEN:
+                            crs.updateString("cRefrStat", "OPEN");
+                            break;
+                        case SalesGiveawaysStatus.DISAPPROVE:
+                            crs.updateString("cRefrStat", "DISAPPROVED");
+                            break;
+                        case SalesGiveawaysStatus.ACTIVE:
+                            crs.updateString("cRefrStat", "ACTIVE");
+                            break;
+                        case SalesGiveawaysStatus.DEACTIVATE:
+                            crs.updateString("cRefrStat", "INACTIVE");
+                            break;
+                    }
+            }
+            crs.updateRow();
+        }
+
+        JSONObject loJSON = getEntryBy();
+        String entryBy = "";
+        String entryDate = "";
+
+        if (isJSONSuccess(loJSON)) {
+            entryBy = (String) loJSON.get("sCompnyNm");
+            entryDate = (String) loJSON.get("sEntryDte");
+        }
+
+        showStatusHistoryUI("Giveaways", (String) poMaster.getValue("sTransNox"), entryBy, entryDate, crs);
+    }
+    /**
+     * Retrieves the user and timestamp of who created the current transaction.
+     *
+     * @return JSONObject containing "sCompnyNm" (user) and "sEntryDte" (timestamp)
+     * @throws SQLException if a database error occurs
+     * @throws GuanzonException if application-specific error occurs
+     */
+    public JSONObject getEntryBy() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsEntry = "";
+        String lsEntryDate = "";
+        String lsSQL = " SELECT b.sModified, b.dModified "
+                + " FROM "+Master().getTable()+" a "
+                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Master().getTable());
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Master().getGiveawayCode()));
+        lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
+        System.out.println("Execute SQL : " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    if (loRS.getString("sModified") != null && !"".equals(loRS.getString("sModified"))) {
+                        if (loRS.getString("sModified").length() > 10) {
+                            lsEntry = getSysUser(poGRider.Decrypt(loRS.getString("sModified")));
+                        } else {
+                            lsEntry = getSysUser(loRS.getString("sModified"));
+                        }
+                        // Get the LocalDateTime from your result set
+                        LocalDateTime dModified = loRS.getObject("dModified", LocalDateTime.class);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+                        lsEntryDate = dModified.format(formatter);
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON = setJSON("error", e.getMessage());
+            return poJSON;
+        }
+
+        poJSON.put("result", "success");
+        poJSON.put("sCompnyNm", lsEntry);
+        poJSON.put("sEntryDte", lsEntryDate);
+        return poJSON;
+    }
+    /**
+     * Retrieves the company name of a system user based on user ID.
+     *
+     * @param fsId User ID to lookup
+     * @return Company name of the user
+     * @throws SQLException if a database error occurs
+     * @throws GuanzonException if application-specific error occurs
+     */
+    public String getSysUser(String fsId) throws SQLException, GuanzonException {
+        String lsEntry = "";
+        String lsSQL = " SELECT b.sCompnyNm from xxxSysUser a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId));
+        System.out.println("Execute SQL : " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    lsEntry = loRS.getString("sCompnyNm");
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON = setJSON("error", e.getMessage());
+        }
+        return lsEntry;
+    }
+
+    /**
+     * Creates a JSONObject with "result" and "message" fields.
+     *
+     * @param fsResult  The result value (e.g., "success", "error")
+     * @param fsMessage The message describing the result
+     * @return JSONObject containing the result and message
+     */
+    private JSONObject setJSON(String fsResult, String fsMessage) {
+        JSONObject loJSON = new JSONObject();
+        loJSON.put("result", fsResult);
+        loJSON.put("message", fsMessage);
+        return loJSON;
+    }
+
+    /**
+     * Checks whether a JSONObject indicates a successful result.
+     *
+     * Returns true if the "result" field equals "success" or is not "error".
+     *
+     * @param foJSON The JSONObject to check
+     * @return true if successful, false otherwise
+     */
+    public boolean isJSONSuccess(JSONObject foJSON) {
+        return ("success".equals((String) foJSON.get("result")) || !"error".equals((String) foJSON.get("result")));
+    }
 }
