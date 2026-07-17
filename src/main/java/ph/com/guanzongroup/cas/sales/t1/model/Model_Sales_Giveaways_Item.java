@@ -35,7 +35,7 @@ public class Model_Sales_Giveaways_Item extends Model {
             // assign default values
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nQuantity", 0);
-            poEntity.updateString("cReversex", Logical.YES);
+            poEntity.updateString("cReversex", "+");
             // end - assign default values
             InvModels invModel = new InvModels(poGRider);
             poInventory = invModel.Inventory();
@@ -93,11 +93,11 @@ public class Model_Sales_Giveaways_Item extends Model {
     }
 
     public JSONObject setReversed(boolean reversed) {
-        return setValue("cReversex", reversed ? Logical.YES : Logical.NO);
+        return setValue("cReversex", reversed ? "+" : "-");
     }
 
     public boolean isReversed() {
-        return Logical.YES.equals(getValue("cReversex"));
+        return "+".equals(getValue("cReversex"));
     }
 
     @Override
