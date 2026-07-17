@@ -81,7 +81,7 @@ public class SalesGiveaways extends Transaction {
     }
 
     public JSONObject OpenTransaction(String transactionNo) throws CloneNotSupportedException, SQLException, GuanzonException {
-        return openTransaction(transactionNo);
+        return super.openTransaction(transactionNo);
     }
 
     public JSONObject UpdateTransaction() {

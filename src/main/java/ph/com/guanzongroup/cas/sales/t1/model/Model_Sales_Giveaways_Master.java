@@ -42,6 +42,7 @@ public class Model_Sales_Giveaways_Master extends Model {
             poEntity.updateNull("dThruDate");
             poEntity.updateNull("dEntryDte");
             poEntity.updateNull("dModified");
+            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cTranStat", SalesGiveawaysStatus.OPEN);
             // end - assign default values
 
@@ -157,6 +158,17 @@ public class Model_Sales_Giveaways_Master extends Model {
 
     public Date getModifiedDate() {
         return (Date) getValue("dModified");
+    }
+
+    public JSONObject setEntryNo(int entryNo) {
+        return setValue("nEntryNox", entryNo);
+    }
+
+    public int getEntryNo() {
+        if (getValue("nEntryNox") == null || "".equals(getValue("nEntryNox"))) {
+            return 0;
+        }
+        return (int) getValue("nEntryNox");
     }
 
     @Override
