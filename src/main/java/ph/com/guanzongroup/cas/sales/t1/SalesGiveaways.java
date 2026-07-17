@@ -388,7 +388,6 @@ public class SalesGiveaways extends Transaction {
         }
     }
 
-
     public JSONObject SearchCategory(String value, boolean byCode ) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         Category object = new ParamControllers(poGRider, logwrapr).Category();
@@ -596,6 +595,8 @@ public class SalesGiveaways extends Transaction {
         if(Master().getEditMode() == EditMode.ADDNEW){
             System.out.println("Will Save : " + Master().getNextCode());
             Master().setGiveawayCode(Master().getNextCode());
+            Master().setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
+            Master().setEntryDate(poGRider.getServerDate());
         }
 
         Master().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
@@ -614,6 +615,11 @@ public class SalesGiveaways extends Transaction {
             poJSON.put("result", "error");
             poJSON.put("message", "No transaction detail to be save.");
             return poJSON;
+        }
+        
+        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            Detail(lnCtr).setGiveawayCode(Master().getGiveawayCode());
+            Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
         
         poJSON.put("result", "success");
@@ -661,22 +667,23 @@ public class SalesGiveaways extends Transaction {
     @Override
     protected JSONObject isEntryOkay(String status) {
         poJSON = new JSONObject();
-        if (Master().getGiveawayCode().isEmpty()) {
+        if (Master().getGiveawayCode() == null || "".equals(Master().getGiveawayCode())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Giveaway code must not be empty.");
             return poJSON;
         }
-        if (Master().getDescription().isEmpty()) {
+
+        if (Master().getDescription() == null || "".equals(Master().getDescription())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Description must not be empty.");
             return poJSON;
         }
-        if (Master().getIndustryId().isEmpty()) {
+        if (Master().getIndustryId() == null || "".equals(Master().getIndustryId())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Industry must not be empty.");
             return poJSON;
         }
-        if (Master().getCategoryCode().isEmpty()) {
+        if (Master().getCategoryCode() == null || "".equals(Master().getCategoryCode())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Category must not be empty.");
             return poJSON;
