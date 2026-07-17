@@ -24,6 +24,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesGiveawaysStatus;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.constant.EditMode;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SalesGiveawaysTest {
@@ -503,5 +504,66 @@ public class SalesGiveawaysTest {
         Field field = Transaction.class.getDeclaredField("pnEditMode");
         field.setAccessible(true);
         field.setInt(controller, EditMode.READY);
+    }
+
+    @Test
+    public void test17CheckExistingDetailValidation() throws Exception {
+        startNewTransaction();
+
+        // Prepare row 0 as existing detail, then create row 1 for duplicate check.
+        poController.Detail(0).setStockId(testStockId);
+        poController.Detail(0).setQuantity(1);
+
+        JSONObject loJSON = poController.AddDetail();
+        Assert.assertEquals("success", loJSON.get("result"));
+        Assert.assertTrue(poController.getDetailCount() >= 2);
+
+        // Default cReversex is YES, so duplicate stock should return error.
+        JSONObject checkJSON = invokeCheckExistingDetail(poController, 1, testStockId);
+        Assert.assertEquals("error", checkJSON.get("result"));
+        Assert.assertEquals("Item Description already exists in the transaction detail at row 1.", checkJSON.get("message"));
+        Assert.assertEquals(0, ((Number) checkJSON.get("row")).intValue());
+    }
+
+    @Test
+    public void test18ValidateRecordStatusValidation() throws Exception {
+        Assert.assertNotNull("No giveaways sample transaction available.", sampleGiveawayCode);
+
+        resetController();
+        JSONObject loJSON = poController.InitTransaction();
+        Assert.assertEquals("success", loJSON.get("result"));
+
+        // Use existing record code so validateRecordStatus can open the record.
+        poController.Master().setGiveawayCode(sampleGiveawayCode);
+
+        // OPEN cannot be directly deactivated.
+        poController.Master().setTransactionStatus(SalesGiveawaysStatus.OPEN);
+        JSONObject checkJSON = invokeValidateRecordStatus(poController, SalesGiveawaysStatus.DEACTIVATE);
+        Assert.assertEquals("error", checkJSON.get("result"));
+        Assert.assertEquals("OPEN record status cannot be deactivated.", checkJSON.get("message"));
+
+        // ACTIVE cannot be directly disapproved.
+        poController.Master().setTransactionStatus(SalesGiveawaysStatus.ACTIVE);
+        checkJSON = invokeValidateRecordStatus(poController, SalesGiveawaysStatus.DISAPPROVE);
+        Assert.assertEquals("error", checkJSON.get("result"));
+        Assert.assertEquals("ACTIVE record status cannot be disapprove.", checkJSON.get("message"));
+
+        // DISAPPROVE should always be blocked.
+        poController.Master().setTransactionStatus(SalesGiveawaysStatus.DISAPPROVE);
+        checkJSON = invokeValidateRecordStatus(poController, SalesGiveawaysStatus.ACTIVE);
+        Assert.assertEquals("error", checkJSON.get("result"));
+        Assert.assertEquals("Record is already in DISAPPROVE status.", checkJSON.get("message"));
+    }
+
+    private static JSONObject invokeCheckExistingDetail(SalesGiveaways controller, int row, String stockId) throws Exception {
+        Method method = SalesGiveaways.class.getDeclaredMethod("checkExistingDetail", int.class, String.class);
+        method.setAccessible(true);
+        return (JSONObject) method.invoke(controller, row, stockId);
+    }
+
+    private static JSONObject invokeValidateRecordStatus(SalesGiveaways controller, String status) throws Exception {
+        Method method = SalesGiveaways.class.getDeclaredMethod("validateRecordStatus", String.class);
+        method.setAccessible(true);
+        return (JSONObject) method.invoke(controller, status);
     }
 }
