@@ -8,10 +8,13 @@ package ph.com.guanzongroup.cas.sales.t1.model;
 import java.sql.SQLException;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
+import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
+import org.guanzon.cas.parameter.model.Model_Category;
+import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesGiveawaysStatus;
 
@@ -21,6 +24,7 @@ import ph.com.guanzongroup.cas.sales.t1.status.SalesGiveawaysStatus;
  */
 public class Model_Sales_Giveaways_Master extends Model {
 
+    Model_Category poCategory;
     @Override
     public void initialize() {
         try {
@@ -44,6 +48,10 @@ public class Model_Sales_Giveaways_Master extends Model {
             poEntity.absolute(1);
 
             ID = "sGAWayCde";
+
+            //initialize reference objects
+            ParamModels model = new ParamModels(poGRider);
+            poCategory = model.Category();
 
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
@@ -151,6 +159,27 @@ public class Model_Sales_Giveaways_Master extends Model {
     @Override
     public String getNextCode() {
         return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
+    }
+
+    public Model_Category Category() throws GuanzonException, SQLException {
+        if (!"".equals((String) getValue("sCategrCd"))) {
+            if (poCategory.getEditMode() == EditMode.READY
+                    && poCategory.getCategoryId().equals((String) getValue("sCategrCd"))) {
+                return poCategory;
+            } else {
+                poJSON = poCategory.openRecord((String) getValue("sCategrCd"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poCategory;
+                } else {
+                    poCategory.initialize();
+                    return poCategory;
+                }
+            }
+        } else {
+            poCategory.initialize();
+            return poCategory;
+        }
     }
 }
 

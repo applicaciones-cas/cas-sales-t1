@@ -387,6 +387,21 @@ public class SalesGiveaways extends Transaction {
             return poJSON;
         }
     }
+
+
+    public JSONObject SearchCategory(String value, boolean byCode ) throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        Category object = new ParamControllers(poGRider, logwrapr).Category();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            System.out.println("Category ID: " + object.getModel().getCategoryId());
+            System.out.println("Description " + object.getModel().getDescription());
+            Master().setCategoryCode(object.getModel().getCategoryId());
+        }
+        return poJSON;
+    }
     /**
      * Search Inventory
      * @param value
