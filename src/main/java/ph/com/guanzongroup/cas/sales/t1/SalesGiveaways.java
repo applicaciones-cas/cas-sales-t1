@@ -149,14 +149,12 @@ public class SalesGiveaways extends Transaction {
         String lsStatus = SalesGiveawaysStatus.ACTIVE;
 
         if (getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transacton was loaded.");
+            poJSON = setJSON("error",  "No transacton was loaded.");
             return poJSON;
         }
 
         if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Record was already confirmed.");
+            poJSON = setJSON("error", "Record was already active.");
             return poJSON;
         }
 
@@ -173,8 +171,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        poJSON.put("message", "Record confirmed successfully.");
+        poJSON = setJSON("success", "Record confirmed successfully.");
         return poJSON;
     }
 
@@ -197,14 +194,12 @@ public class SalesGiveaways extends Transaction {
         String lsStatus = SalesGiveawaysStatus.DEACTIVATE;
 
         if (getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transacton was loaded.");
+            poJSON = setJSON("error",  "No transacton was loaded.");
             return poJSON;
         }
 
         if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Record was already deactivated.");
+            poJSON = setJSON("error", "Record was already deactivated.");
             return poJSON;
         }
 
@@ -221,8 +216,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        poJSON.put("message", "Record deactivate successfully.");
+        poJSON = setJSON("success", "Record deactive successfully.");
         return poJSON;
     }
     
@@ -245,14 +239,12 @@ public class SalesGiveaways extends Transaction {
         String lsStatus = SalesGiveawaysStatus.DISAPPROVE;
 
         if (getEditMode() != EditMode.READY) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transacton was loaded.");
+            poJSON = setJSON("error",  "No transacton was loaded.");
             return poJSON;
         }
 
         if (lsStatus.equals((String) poMaster.getValue("cTranStat"))) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Record was already voided.");
+            poJSON = setJSON("error", "Record was already voided.");
             return poJSON;
         }
 
@@ -269,8 +261,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        poJSON.put("message", "Record voided successfully.");
+        poJSON = setJSON("success", "Record voided successfully.");
         return poJSON;
     }
 
@@ -320,8 +311,7 @@ public class SalesGiveaways extends Transaction {
             return OpenTransaction((String) poJSON.get("sTransNox"));
         } else {
             poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "No record loaded.");
+            poJSON = setJSON("error", "No record loaded.");
             return poJSON;
         }
     }
@@ -372,8 +362,7 @@ public class SalesGiveaways extends Transaction {
             return OpenTransaction((String) poJSON.get("sTransNox"));
         } else {
             poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "No record loaded.");
+            poJSON = setJSON("error", "No record loaded.");
             return poJSON;
         }
     }
@@ -615,8 +604,7 @@ public class SalesGiveaways extends Transaction {
 
         //Validate detail after removing all zero qty and empty stock Id
         if (getDetailCount() <= 0 || !lbCheckActive) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No transaction detail to be save.");
+            poJSON = setJSON("error","No transaction detail to be save.");
             return poJSON;
         }
 
@@ -658,8 +646,7 @@ public class SalesGiveaways extends Transaction {
             Master().setThruDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
         } catch (SQLException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
-            poJSON.put("result", "error");
-            poJSON.put("message", MiscUtil.getException(ex));
+            poJSON = setJSON("error", MiscUtil.getException(ex));
             return poJSON;
         }
 
@@ -671,24 +658,20 @@ public class SalesGiveaways extends Transaction {
     protected JSONObject isEntryOkay(String status) {
         poJSON = new JSONObject();
         if (Master().getGiveawayCode() == null || "".equals(Master().getGiveawayCode())) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Giveaway code must not be empty.");
+            poJSON = setJSON("error","Giveaway code must not be empty.");
             return poJSON;
         }
 
         if (Master().getDescription() == null || "".equals(Master().getDescription())) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Description must not be empty.");
+            poJSON = setJSON("error","Description must not be empty.");
             return poJSON;
         }
         if (Master().getIndustryId() == null || "".equals(Master().getIndustryId())) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Industry must not be empty.");
+            poJSON = setJSON("error","Industry must not be empty.");
             return poJSON;
         }
         if (Master().getCategoryCode() == null || "".equals(Master().getCategoryCode())) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Category must not be empty.");
+            poJSON = setJSON("error", "Category must not be empty.");
             return poJSON;
         }
 
