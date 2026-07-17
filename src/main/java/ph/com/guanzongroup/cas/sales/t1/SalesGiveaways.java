@@ -389,6 +389,8 @@ public class SalesGiveaways extends Transaction {
             System.out.println("Description " + object.getModel().getDescription());
             Master().setCategoryCode(object.getModel().getCategoryId());
         }
+
+        poJSON.put("result", "success");
         return poJSON;
     }
     /**
@@ -404,13 +406,14 @@ public class SalesGiveaways extends Transaction {
         poJSON = new JSONObject();
         if(Master().getCategoryCode()== null || "".equals(Master().getCategoryCode())){
             poJSON.put("result", "error");
+            poJSON.put("row", row);
             poJSON.put("message", "Category is not set.");
             return poJSON;
         }
-        Inventory object = new InvControllers(poGRider, logwrapr).Inventory();
-        String lsSQL = MiscUtil.addCondition(object.getSQ_Browse(), 
-                                            // " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
-                                            " a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
+        String lsSQL = "SELECT  a.sStockIDx, a.sBarCodex, a.sDescript, a.sBriefDsc, a.sAltBarCd, a.sCategCd1, a.sCategCd2, a.sCategCd3, a.sCategCd4, a.sBrandIDx, a.sModelIDx, a.sColorIDx, a.sVrntIDxx, a.sMeasurID, a.sInvTypCd, a.sIndstCdx, a.nUnitPrce, a.nSelPrice, a.nDiscLev1, a.nDiscLev2, a.nDiscLev3, a.nDealrDsc, a.nMinLevel, a.nMaxLevel, a.cComboInv, a.cWthPromo, a.cSerialze, a.cUnitType, a.cInvStatx, a.nShlfLife, a.sSupersed, a.cRecdStat, a.sModified, a.dModified, IFNULL(b.sDescript, '') xBrandNme, IFNULL(c.sDescript, '') xModelNme, IFNULL(d.sDescript, '') xColorNme, IFNULL(e.sDescript, '') xMeasurNm, TRIM(CONCAT(IFNULL(f.sDescript, ''), ' ', IFNULL(f.nYearMdlx, ''))) xVrntName, IFNULL(c.sModelCde, '') xModelCde FROM Inventory a LEFT JOIN Brand b ON a.sBrandIDx = b.sBrandIDx AND a.sIndstCdx = b.sIndstCdx LEFT JOIN Model c ON a.sModelIDx = c.sModelIDx AND a.sIndstCdx = c.sIndstCdx LEFT JOIN Color d ON a.sColorIDx = d.sColorIDx LEFT JOIN Measure e ON a.sMeasurID = e.sMeasurID LEFT JOIN Model_Variant f ON a.sVrntIDxx = f.sVrntIDxx LEFT JOIN Inv_Supplier g ON a.sStockIDx = g.sStockIDx AND a.sIndstCdx = g.sIndstCdx";
+        lsSQL = MiscUtil.addCondition(lsSQL,
+                                             " a.cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                                            + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
                                             + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
                                             );
         
@@ -424,27 +427,25 @@ public class SalesGiveaways extends Transaction {
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            poJSON = object.getModel().openRecord((String) poJSON.get("sStockIDx"));
-            if ("success".equals((String) poJSON.get("result"))) {
-                poJSON = checkExistingDetail(row,
-                        object.getModel().getStockId() 
-                        );
-                if ("error".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                }
-
-                Detail(row).setStockId(object.getModel().getStockId());
+            String lsStockId = (String) poJSON.get("sStockIDx");
+            poJSON = checkExistingDetail(row,lsStockId);
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
             }
-            
+
+            Detail(row).setStockId(lsStockId);
             System.out.println("Barcode : " + Detail(row).Inventory().getBarCode());
             System.out.println("Description : " + Detail(row).Inventory().getDescription());
             
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
+            poJSON.put("row", row);
             poJSON.put("message", "No record loaded.");
         }
-        
+
+        poJSON.put("result", "success");
+        poJSON.put("row", row);
         return poJSON;
     }
 
