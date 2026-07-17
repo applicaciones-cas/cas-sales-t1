@@ -165,7 +165,7 @@ public class SalesGiveaways extends Transaction {
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -210,7 +210,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -255,7 +255,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -308,7 +308,7 @@ public class SalesGiveaways extends Transaction {
                 0);
 
         if (poJSON != null) {
-            return OpenTransaction((String) poJSON.get("sTransNox"));
+            return OpenTransaction((String) poJSON.get("sGAWayCde"));
         } else {
             poJSON = new JSONObject();
             poJSON = setJSON("error", "No record loaded.");
@@ -359,7 +359,7 @@ public class SalesGiveaways extends Transaction {
                 0);
 
         if (poJSON != null) {
-            return OpenTransaction((String) poJSON.get("sTransNox"));
+            return OpenTransaction((String) poJSON.get("sGAWayCde"));
         } else {
             poJSON = new JSONObject();
             poJSON = setJSON("error", "No record loaded.");
@@ -805,7 +805,7 @@ public class SalesGiveaways extends Transaction {
             entryDate = (String) loJSON.get("sEntryDte");
         }
 
-        showStatusHistoryUI("Giveaways", (String) poMaster.getValue("sTransNox"), entryBy, entryDate, crs);
+        showStatusHistoryUI("Giveaways", (String) poMaster.getValue("sGAWayCde"), entryBy, entryDate, crs);
     }
     /**
      * Retrieves the user and timestamp of who created the current transaction.
@@ -820,8 +820,8 @@ public class SalesGiveaways extends Transaction {
         String lsEntryDate = "";
         String lsSQL = " SELECT b.sModified, b.dModified "
                 + " FROM "+Master().getTable()+" a "
-                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Master().getTable());
-        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Master().getGiveawayCode()));
+                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sGAWayCde AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Master().getTable());
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sGAWayCde =  " + SQLUtil.toSQL(Master().getGiveawayCode()));
         lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
         System.out.println("Execute SQL : " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
