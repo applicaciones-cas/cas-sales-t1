@@ -61,12 +61,10 @@ import java.util.logging.Logger;
  */
 public class SalesGiveaways extends Transaction {
     private String psIndustryId = "";
-    private String psCompanyId = "";
     private String psCategorCd = "";
-    private String psApprover = "";
     
     public JSONObject InitTransaction() {
-        SOURCE_CODE = "PARM";
+        SOURCE_CODE = "Slgw";
 
         poMaster = new SalesModels(poGRider).SalesGiveawaysMaster();
         poDetail = new SalesModels(poGRider).SalesGiveawaysItem();
@@ -125,7 +123,6 @@ public class SalesGiveaways extends Transaction {
                 return poJSON;
             }
             setApproving((String) poJSON.get("sUserIDxx"));
-            psApprover = (String) poJSON.get("sUserIDxx");
         }
 
         poJSON.put("result", "success");
