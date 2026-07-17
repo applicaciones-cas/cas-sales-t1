@@ -546,6 +546,29 @@ public class SalesGiveaways extends Transaction {
     public void resetMaster() {
         poMaster = new SalesModels(poGRider).SalesGiveawaysMaster();
     }
+    /**
+     * Reload Detail for adding or deleting detail
+     * @throws CloneNotSupportedException
+     */
+    public void ReloadDetail() throws CloneNotSupportedException, SQLException{
+        int lnCtr = getDetailCount() - 1;
+        while (lnCtr >= 0) {
+            if ((Detail(lnCtr).getStockId() == null || "".equals(Detail(lnCtr).getStockId()))) {
+                Detail().remove(lnCtr);
+            }
+            lnCtr--;
+        }
+
+        if ((getDetailCount() - 1) >= 0) {
+            if (Detail(getDetailCount() - 1).getStockId() != null && !"".equals(Detail(getDetailCount() - 1).getStockId())) {
+                AddDetail();
+            }
+        }
+
+        if ((getDetailCount() - 1) < 0) {
+            AddDetail();
+        }
+    }
 
     @Override
     public JSONObject willSave()
@@ -622,15 +645,28 @@ public class SalesGiveaways extends Transaction {
     
     @Override
     protected JSONObject isEntryOkay(String status) {
-        GValidator loValidator = SalesInquiryValidatorFactory.make(Master().getIndustryId());
-
-        loValidator.setApplicationDriver(poGRider);
-        loValidator.setTransactionStatus(status);
-        loValidator.setMaster(poMaster);
-//        loValidator.setDetail(paDetail);
-
-        poJSON = loValidator.validate();
-
+        poJSON = new JSONObject();
+        if (Master().getGiveawayCode().isEmpty()) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Giveaway code must not be empty.");
+            return poJSON;
+        }
+        if (Master().getDescription().isEmpty()) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Description must not be empty.");
+            return poJSON;
+        }
+        if (Master().getIndustryId().isEmpty()) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Industry must not be empty.");
+            return poJSON;
+        }
+        if (Master().getCategoryCode().isEmpty()) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Category must not be empty.");
+            return poJSON;
+        }
+        poJSON.put("result", "success");
         return poJSON;
     }
 
