@@ -35,7 +35,7 @@ public class Model_Sales_Giveaways_Item extends Model {
             // assign default values
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nQuantity", 0);
-            poEntity.updateString("cReversex", Logical.NO);
+            poEntity.updateString("cReversex", Logical.YES);
             // end - assign default values
             InvModels invModel = new InvModels(poGRider);
             poInventory = invModel.Inventory();

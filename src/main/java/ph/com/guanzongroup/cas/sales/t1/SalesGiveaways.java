@@ -72,30 +72,20 @@ public class SalesGiveaways extends Transaction {
         return initialize();
     }
 
-    public JSONObject NewTransaction()
-            throws CloneNotSupportedException {
-        return newTransaction();
+      public JSONObject NewTransaction() throws CloneNotSupportedException {
+        return super.newTransaction();
     }
 
-    public JSONObject SaveTransaction()
-            throws SQLException,
-            GuanzonException,
-            CloneNotSupportedException {
-        return saveTransaction();
+    public JSONObject SaveTransaction() throws SQLException, GuanzonException, CloneNotSupportedException {
+        return super.saveTransaction();
     }
 
-    public JSONObject OpenTransaction(String transactionNo)
-            throws CloneNotSupportedException,
-            SQLException,
-            GuanzonException {
-        //Clear data
-        resetMaster();
-        Detail().clear();
+    public JSONObject OpenTransaction(String transactionNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         return openTransaction(transactionNo);
     }
 
     public JSONObject UpdateTransaction() {
-        return updateTransaction();
+        return super.updateTransaction();
     }
 
     public String getStatus(String fsStatus) {
