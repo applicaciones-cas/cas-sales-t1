@@ -692,64 +692,61 @@ public class SalesGiveaways extends Transaction {
     @Override
     protected JSONObject isEntryOkay(String status) {
         poJSON = new JSONObject();
-        if (Master().getGiveawayCode() == null || "".equals(Master().getGiveawayCode())) {
-            poJSON = setJSON("error","Giveaway code must not be empty.");
-            return poJSON;
-        }
+        try{
+            if (Master().getGiveawayCode() == null || "".equals(Master().getGiveawayCode())) {
+                poJSON = setJSON("error","Giveaway code must not be empty.");
+                return poJSON;
+            }
 
-        if (Master().getDescription() == null || "".equals(Master().getDescription())) {
-            poJSON = setJSON("error","Description must not be empty.");
-            return poJSON;
-        }
-        if (Master().getIndustryId() == null || "".equals(Master().getIndustryId())) {
-            poJSON = setJSON("error","Industry must not be empty.");
-            return poJSON;
-        }
-        if (Master().getCategoryCode() == null || "".equals(Master().getCategoryCode())) {
-            poJSON = setJSON("error", "Category must not be empty.");
-            return poJSON;
-        }
+            if (Master().getDescription() == null || "".equals(Master().getDescription())) {
+                poJSON = setJSON("error","Description must not be empty.");
+                return poJSON;
+            }
+            if (Master().getIndustryId() == null || "".equals(Master().getIndustryId())) {
+                poJSON = setJSON("error","Industry must not be empty.");
+                return poJSON;
+            }
+            if (Master().getCategoryCode() == null || "".equals(Master().getCategoryCode())) {
+                poJSON = setJSON("error", "Category must not be empty.");
+                return poJSON;
+            }
 
-        Date loFromDate = Master().getFromDate();
-        Date loThruDate = Master().getThruDate();
-        Date loEntryDate = Master().getEntryDate();
-        if (loFromDate == null) {
-            poJSON = setJSON("error",  "Invalid From Date.");
-            return poJSON;
-        }
-        if (loThruDate == null) {
-            poJSON = setJSON("error",  "Invalid Thru Date.");
-            return poJSON;
-        }
-        if (loEntryDate == null) {
-            poJSON = setJSON("error",  "Invalid Entry Date.");
-            return poJSON;
-        }
-        if ("1900-01-01".equals(xsDateShort(loFromDate))) {
-            poJSON = setJSON("error",  "Invalid From Date.");
-            return poJSON;
-        }
-        if ("1900-01-01".equals(xsDateShort(loFromDate))) {
-            poJSON = setJSON("error",  "Invalid Thru Date.");
-            return poJSON;
-        }
-        if ("1900-01-01".equals(xsDateShort(loEntryDate))) {
-            poJSON = setJSON("error",  "Invalid Entry Date.");
-            return poJSON;
-        }
+            Date loFromDate = Master().getFromDate();
+            Date loThruDate = Master().getThruDate();
+            if (loFromDate == null) {
+                poJSON = setJSON("error",  "Invalid From Date.");
+                return poJSON;
+            }
+            if (loThruDate == null) {
+                poJSON = setJSON("error",  "Invalid Thru Date.");
+                return poJSON;
+            }
+            if ("1900-01-01".equals(xsDateShort(loFromDate))) {
+                poJSON = setJSON("error",  "Invalid From Date.");
+                return poJSON;
+            }
+            if ("1900-01-01".equals(xsDateShort(loFromDate))) {
+                poJSON = setJSON("error",  "Invalid Thru Date.");
+                return poJSON;
+            }
 
-        LocalDate ldFromDate = strToDate(xsDateShort(Master().getFromDate()));
-        LocalDate ldThruDate = strToDate(xsDateShort(Master().getThruDate()));
-        LocalDate ldEntryDate = strToDate(xsDateShort(Master().getEntryDate()));
-        if (ldThruDate.isBefore(ldFromDate)) {
-            poJSON = setJSON("error",  "Thru date cannot be before the from date.");
-            return poJSON;
-        }
-        if (ldFromDate.isBefore(ldEntryDate)) {
-            poJSON = setJSON("error",  "From date cannot be before the entry date.");
-            return poJSON;
-        }
+            LocalDate ldFromDate = strToDate(xsDateShort(Master().getFromDate()));
+            LocalDate ldThruDate = strToDate(xsDateShort(Master().getThruDate()));
+            LocalDate serverDate = strToDate(xsDateShort(poGRider.getServerDate()));
+            if (ldThruDate.isBefore(ldFromDate)) {
+                poJSON = setJSON("error",  "Thru date cannot be before the from date.");
+                return poJSON;
+            }
+            if (ldFromDate.isBefore(serverDate)) {
+                poJSON = setJSON("error",  "From date cannot be before the current date.");
+                return poJSON;
+            }
 
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON = setJSON("error", MiscUtil.getException(ex));
+            return poJSON;
+        }
         poJSON.put("result", "success");
         return poJSON;
     }
