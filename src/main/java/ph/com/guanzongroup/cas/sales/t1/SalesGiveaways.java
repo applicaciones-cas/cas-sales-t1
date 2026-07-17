@@ -117,8 +117,7 @@ public class SalesGiveaways extends Transaction {
                 return poJSON;
             }
             if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER) {
-                poJSON.put("result", "error");
-                poJSON.put("message", "User is not an authorized approving officer.");
+                poJSON = setJSON("error", "User is not an authorized approving officer.");
                 return poJSON;
             }
             setApproving((String) poJSON.get("sUserIDxx"));
@@ -538,8 +537,7 @@ public class SalesGiveaways extends Transaction {
         if (getDetailCount() > 0) {
             if (Detail(getDetailCount() - 1).getStockId() != null) {
                 if (Detail(getDetailCount() - 1).getStockId().isEmpty()) {
-                    poJSON.put("result", "error");
-                    poJSON.put("message", "Last row has empty item.");
+                    poJSON = setJSON("error", "Last row has empty item.");
                     return poJSON;
                 }
             }
@@ -565,7 +563,8 @@ public class SalesGiveaways extends Transaction {
         }
 
         if ((getDetailCount() - 1) >= 0) {
-            if (Detail(getDetailCount() - 1).getStockId() != null && !"".equals(Detail(getDetailCount() - 1).getStockId())) {
+            if (Detail(getDetailCount() - 1).getStockId() != null && !"".equals(Detail(getDetailCount() - 1).getStockId())
+                && Detail(getDetailCount() - 1).getQuantity() > 0) {
                 AddDetail();
             }
         }
