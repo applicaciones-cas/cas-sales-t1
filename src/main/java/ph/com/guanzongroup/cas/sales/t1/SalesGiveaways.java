@@ -40,6 +40,8 @@ import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryRequirements;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryValidatorFactory;
 
 import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -429,7 +431,7 @@ public class SalesGiveaways extends Transaction {
                                             + " AND a.sCategCd1 = " + SQLUtil.toSQL(Master().getCategoryCode())
                                             + " AND a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId())
                                             );
-        
+        lsSQL = lsSQL + " GROUP BY a.sStockIDx ";
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
@@ -814,6 +816,25 @@ public class SalesGiveaways extends Transaction {
                     "LEFT JOIN Industry b ON b.sIndstCdx = a.sIndstCdx " +
                     "LEFT JOIN Category c ON c.sCategrCd = a.sCategrCd ";
         
+    }
+
+
+    protected CachedRowSet getStatusHistory() throws SQLException {
+        String lsSQL = "SELECT  a.sTableNme, a.sSourceNo, a.sRemarksx, a.cRefrStat cTranStat, IFNULL(c.sCompnyNm, '-') xModified, IFNULL(e.sCompnyNm, '-') xApproved, a.dModified, a.dApproved, a.sModified, a.sApproved " +
+                " FROM GCASys_DBF.Transaction_Status_History a " +
+                "LEFT JOIN GCASys_DBF.xxxSysUser b ON b.sUserIDxx = AES_DECRYPT(UNHEX(a.sModified), '08220326') " +
+                "LEFT JOIN GGC_ISysDBF.Client_Master c ON b.sEmployNo = c.sClientID " +
+                "LEFT JOIN GCASys_DBF.xxxSysUser d ON d.sUserIDxx = AES_DECRYPT(UNHEX(a.sApproved), '08220326') " +
+                "LEFT JOIN GGC_ISysDBF.Client_Master e ON d.sEmployNo = e.sClientID " +
+                " WHERE a.sSourceNo = " + SQLUtil.toSQL(Master().getGiveawayCode()) +
+                " AND a.sTableNme = " + SQLUtil.toSQL(Master().getTable()) + " ORDER BY a.dModified";
+        System.out.println("STATUS HISTORY : " + lsSQL);
+        ResultSet loRS = this.poGRider.executeQuery(lsSQL);
+        RowSetFactory factory = RowSetProvider.newFactory();
+        CachedRowSet rowset = factory.createCachedRowSet();
+        rowset.populate(loRS);
+        MiscUtil.close(loRS);
+        return rowset;
     }
 
     /**
