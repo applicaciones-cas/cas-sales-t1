@@ -879,7 +879,7 @@ public class SalesGiveaways extends Transaction {
             entryDate = (String) loJSON.get("sEntryDte");
         }
 
-        showStatusHistoryUI("Giveaways", (String) poMaster.getValue("sGAWayCde"), entryBy, entryDate, crs);
+        showStatusHistoryUI("Sales Giveaways", (String) poMaster.getValue("sGAWayCde"), entryBy, entryDate, crs);
     }
     /**
      * Retrieves the user and timestamp of who created the current transaction.
