@@ -441,7 +441,7 @@ public class SalesGiveaways extends Transaction {
         if (poJSON != null) {
             String lsStockId = (String) poJSON.get("sStockIDx");
             poJSON = checkExistingDetail(row,lsStockId);
-            if ("error".equals((String) poJSON.get("result"))) {
+            if ("error".equals((String) poJSON.get("result")) || (boolean) poJSON.get("continue")) {
                 return poJSON;
             }
 
@@ -482,10 +482,13 @@ public class SalesGiveaways extends Transaction {
                             poJSON.put("result", "error");
                             poJSON.put("message", "Item Description already exists in the transaction detail at row " + (lnCtr + 1) + ".");
                             poJSON.put("row", lnCtr);
+                            poJSON.put("continue", true);
                             return poJSON;
                         } else {
                             Detail(lnCtr).setReversed(true);
                             poJSON.put("row", lnCtr);
+                            poJSON.put("result", "success");
+                            poJSON.put("continue", true);
                             return poJSON;
                         }
                     }
@@ -493,6 +496,8 @@ public class SalesGiveaways extends Transaction {
             }
         }
         
+        poJSON.put("result", "success");
+        poJSON.put("continue", false);
         return poJSON;
     }
 
