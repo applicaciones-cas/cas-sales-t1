@@ -169,6 +169,11 @@ public class SalesGiveaways extends Transaction {
         if (!"success".equals(poJSON.get("result"))) {
             return poJSON;
         }
+
+        poJSON = callApproval();
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
         
         //change status
         poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sGAWayCde"), remarks, lsStatus, false);
@@ -210,13 +215,18 @@ public class SalesGiveaways extends Transaction {
         }
 
         //validator
-        poJSON = isEntryOkay(SalesGiveawaysStatus.DEACTIVATE);
+        poJSON = isEntryOkay(lsStatus);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = validateRecordStatus(lsStatus);
         if (!"success".equals(poJSON.get("result"))) {
+            return poJSON;
+        }
+
+        poJSON = callApproval();
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
@@ -260,7 +270,7 @@ public class SalesGiveaways extends Transaction {
         }
 
         //validator
-        poJSON = isEntryOkay(SalesGiveawaysStatus.DISAPPROVE);
+        poJSON = isEntryOkay(lsStatus);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -308,7 +318,6 @@ public class SalesGiveaways extends Transaction {
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                                             + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
-//                                            + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
 
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -359,7 +368,6 @@ public class SalesGiveaways extends Transaction {
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd));
-//                                            + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
 
         if (lsTransStat != null && !"".equals(lsTransStat)) {
             lsSQL = lsSQL + lsTransStat;
@@ -599,6 +607,13 @@ public class SalesGiveaways extends Transaction {
 
         Master().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
         Master().setModifiedDate(poGRider.getServerDate());
+
+        if(SalesGiveawaysStatus.ACTIVE.equals(Master().getTransactionStatus())) {
+            poJSON = callApproval();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+        }
 
         boolean lbCheckActive = false;
         Iterator<Model> detail = Detail().iterator();
