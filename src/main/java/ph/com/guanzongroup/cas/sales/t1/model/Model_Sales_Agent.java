@@ -14,7 +14,7 @@ import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.appdriver.constant.RecordStatus;
-import org.guanzon.cas.client.model.Model_Client_Master;
+import org.guanzon.cas.client.model.*;
 import org.guanzon.cas.client.services.ClientModels;
 import org.json.simple.JSONObject;
 
@@ -23,10 +23,13 @@ import org.json.simple.JSONObject;
  * @author Arsiela
  */
 public class Model_Sales_Agent extends Model {
-    
+
     //reference objects
     Model_Client_Master poClient;
-
+    Model_Client_Address poClientAddess;
+    Model_Client_Mobile poClientContact;
+    Model_Client_Mail poClientEmail;
+    Model_Client_Social_Media poSocmed;
     @Override
     public void initialize() {
         try {
@@ -39,7 +42,7 @@ public class Model_Sales_Agent extends Model {
 
             //assign default values
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
+            poEntity.updateString("cRecdStat","0" );
             //end - assign default values
 
             poEntity.insertRow();
@@ -51,7 +54,11 @@ public class Model_Sales_Agent extends Model {
             //initialize reference objects
             ClientModels clientModel = new ClientModels(poGRider);
             poClient = clientModel.ClientMaster();
-            
+            poClientAddess = clientModel.ClientAddress();
+            poClientEmail = clientModel.ClientMail();
+            poClientContact = clientModel.ClientMobile();
+            poSocmed = clientModel.ClientSocMed();
+
 //            end - initialize reference objects
 
             pnEditMode = EditMode.UNKNOWN;
@@ -76,7 +83,7 @@ public class Model_Sales_Agent extends Model {
     public String getProfession() {
         return (String) getValue("sProfessn");
     }
-    
+
     public JSONObject setCompany(String company) {
         return setValue("sCompanyx", company);
     }
@@ -93,14 +100,14 @@ public class Model_Sales_Agent extends Model {
         return (String) getValue("sPosition");
     }
 
-    public JSONObject setRecordStatus(boolean recordStatus) {
-        return setValue("cRecdStat", recordStatus ? "1" : "0");
+    public JSONObject setRecordStatus(String recordStatus){
+        return setValue("cRecdStat", recordStatus);
     }
 
-    public boolean getRecordStatus() {
-        return ((String) getValue("cRecdStat")).equals("1");
+    public String getRecordStatus() {
+        return (String) getValue("cRecdStat");
     }
-    
+
     public JSONObject setModifyingId(String modifiedBy) {
         return setValue("sModified", modifiedBy);
     }
@@ -143,7 +150,6 @@ public class Model_Sales_Agent extends Model {
             return poClient;
         }
     }
-    
     //end - reference object models
 
 }
