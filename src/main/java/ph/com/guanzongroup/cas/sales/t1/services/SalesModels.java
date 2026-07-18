@@ -10,6 +10,8 @@ import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Item;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
@@ -110,7 +112,41 @@ public class SalesModels {
 
         return poSalesAgent;
     }
-    
+
+    public Model_Sales_Giveaways_Master SalesGiveawaysMaster(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesGiveawaysMaster: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesGiveawaysMaster == null){
+            poSalesGiveawaysMaster = new Model_Sales_Giveaways_Master();
+            poSalesGiveawaysMaster.setApplicationDriver(poGRider);
+            poSalesGiveawaysMaster.setXML("Model_Sales_Giveaways_Master");
+            poSalesGiveawaysMaster.setTableName("Sales_Giveaways_Master");
+            poSalesGiveawaysMaster.initialize();
+        }
+
+        return poSalesGiveawaysMaster;
+    }
+
+    public Model_Sales_Giveaways_Item SalesGiveawaysItem(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesGiveawaysItem: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesGiveawaysItem == null){
+            poSalesGiveawaysItem = new Model_Sales_Giveaways_Item();
+            poSalesGiveawaysItem.setApplicationDriver(poGRider);
+            poSalesGiveawaysItem.setXML("Model_Sales_Giveaways_Item");
+            poSalesGiveawaysItem.setTableName("Sales_Giveaways_Item");
+            poSalesGiveawaysItem.initialize();
+        }
+
+        return poSalesGiveawaysItem;
+    }
+
     public Model_Sales_Inquiry_Requirements SalesInquiryRequirements(){
         if (poGRider == null){
             System.err.println("SalesModels.SalesInquiryRequirements: Application driver is not set.");
@@ -188,6 +224,8 @@ public class SalesModels {
             poSalesman = null;
             poSalesAgent = null;
             poSalesInquiryRequirements = null;
+            poSalesGiveawaysMaster = null;
+            poSalesGiveawaysItem = null;
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
 
@@ -205,6 +243,8 @@ public class SalesModels {
     private Model_Salesman poSalesman;
     private Model_Sales_Agent poSalesAgent;
     private Model_Sales_Inquiry_Requirements poSalesInquiryRequirements;
+    private Model_Sales_Giveaways_Master poSalesGiveawaysMaster;
+    private Model_Sales_Giveaways_Item poSalesGiveawaysItem;
     private Model_Bank_Application poBankApplication;
     private Model_Requirement_Source poRequirementSource;
     private Model_Requirement_Source_PerGroup poRequirementSourcePerGroup;
