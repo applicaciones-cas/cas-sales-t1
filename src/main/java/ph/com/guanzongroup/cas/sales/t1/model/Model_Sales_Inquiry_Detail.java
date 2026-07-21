@@ -200,7 +200,7 @@ public class Model_Sales_Inquiry_Detail extends Model {
         
         if (!"".equals(getBrandId())) {
             if (poBrand.getEditMode() == EditMode.READY
-                    && poBrand.getBrandId().equals(getBrandId())) {
+                    && getBrandId().equals(poBrand.getBrandId())) {
                 return poBrand;
             } else {
                 poJSON = poBrand.openRecord(getBrandId());
