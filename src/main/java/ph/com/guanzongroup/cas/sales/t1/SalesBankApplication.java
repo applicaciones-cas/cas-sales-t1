@@ -376,18 +376,18 @@ public class SalesBankApplication extends Transaction{
 
             initSQL();
             String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
+//                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategorCd)
                             + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                             + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + client)
                             + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
-                            + " AND a.cProcessd = '0' "
+//                            + " AND a.cProcessd = '0' "
             );
 
             //If current user is an ordinary user load only its inquiries
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                lsSQL = MiscUtil.addCondition(lsSQL,
-                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-            }
+//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//                lsSQL = MiscUtil.addCondition(lsSQL,
+//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+//            }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
                 lsSQL = lsSQL + lsTransStat;
