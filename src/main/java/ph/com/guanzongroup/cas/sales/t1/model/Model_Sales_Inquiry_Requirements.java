@@ -6,6 +6,7 @@
 package ph.com.guanzongroup.cas.sales.t1.model;
 
 import static com.sun.corba.se.impl.activation.ServerMain.logError;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -136,28 +137,46 @@ public class Model_Sales_Inquiry_Requirements extends Model {
         return setValue("dReceived", receivedDate);
     }
 
-    public Date getReceivedDate() {
-//        System.out.println("Datetime " + getValue("dReceived"));
-//        System.out.println("Date " + (Date) getValue("dReceived"));
-        
-        
-//        try {
-//            System.out.println("getDate " + poEntity.getDate("dReceived"));
-//            return poEntity.getDate("dReceived");
-//        } catch (SQLException e) {
-//            logError(getReceivedDate() + "»" + e.getMessage());
-//        }
-        
-//        try {
-//            System.out.println("get date : " + poEntity.getString("dReceived"));
-//            System.out.println("toDate : " + SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP));
-//            return SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP);
-//        } catch (SQLException e) {
-//            logError(getReceivedDate() + "»" + e.getMessage());
-//        }
+//    public Date getReceivedDate() {
+////        System.out.println("Datetime " + getValue("dReceived"));
+////        System.out.println("Date " + (Date) getValue("dReceived"));
 //        
-//        return null;
-        
+//        
+////        try {
+////            System.out.println("getDate " + poEntity.getDate("dReceived"));
+////            return poEntity.getDate("dReceived");
+////        } catch (SQLException e) {
+////            logError(getReceivedDate() + "»" + e.getMessage());
+////        }
+//        
+////        try {
+////            System.out.println("get date : " + poEntity.getString("dReceived"));
+////            System.out.println("toDate : " + SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP));
+////            return SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP);
+////        } catch (SQLException e) {
+////            logError(getReceivedDate() + "»" + e.getMessage());
+////        }
+////        
+////        return null;
+//        System.out.println("receive date getValue : " + getValue("dReceived"));
+//        return (Date) getValue("dReceived");
+//    }
+    public Date getReceivedDate() {
+//        System.out.println("get Value LIQUIDATED DATE : " + (Date) getValue("dIssuedxx"));
+        if((Date) getValue("dReceived") == null){
+            try {
+                String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(this), 
+                                    " sTransNox = " + SQLUtil.toSQL((String) getValue("sTransNox"))
+                                    );
+                ResultSet loRS = poGRider.executeQuery(lsSQL);
+                if (loRS.next()) {
+//                    System.out.println("DB select LIQUIDATED DATE : " + loRS.getTimestamp("dLiquidtd"));
+                    setReceivedDate(loRS.getTimestamp("dReceived"));
+                }
+            } catch (SQLException e) {
+                return (Date) getValue("dReceived");
+            } 
+        }
         return (Date) getValue("dReceived");
     }
     
