@@ -963,7 +963,7 @@ public class SalesInquiry extends Transaction {
             String lsCategoryId = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
             inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
-            inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
+            poJSON = inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
                 lsCategoryId = inventory.getModel().getCategoryFirstLevelId();
