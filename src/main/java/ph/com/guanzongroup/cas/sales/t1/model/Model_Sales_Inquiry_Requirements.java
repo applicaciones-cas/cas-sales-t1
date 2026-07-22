@@ -245,23 +245,50 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
     public Model_Salesman SalesPerson() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sReceived"))) {
-            if (poSalesPerson.getEditMode() == EditMode.READY
-                    && poSalesPerson.getEmployeeId().equals((String) getValue("sReceived"))) {
-                return poSalesPerson;
-            } else {
-                poJSON = poSalesPerson.openRecord((String) getValue("sReceived"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
+            String lsUserID = getSysUser((String) getValue("sReceived"));
+            if(!"".equals(lsUserID)){
+                if (poSalesPerson.getEditMode() == EditMode.READY
+                        && poSalesPerson.getEmployeeId().equals(lsUserID)) {
                     return poSalesPerson;
                 } else {
-                    poSalesPerson.initialize();
-                    return poSalesPerson;
+                    poJSON = poSalesPerson.openRecord(lsUserID);
+
+                    if ("success".equals((String) poJSON.get("result"))) {
+                        return poSalesPerson;
+                    } else {
+                        poSalesPerson.initialize();
+                        return poSalesPerson;
+                    }
                 }
+            } else {
+                poSalesPerson.initialize();
+                return poSalesPerson;
             }
         } else {
             poSalesPerson.initialize();
             return poSalesPerson;
         }
+    }
+    
+    public String getSysUser(String fsId) throws SQLException, GuanzonException {
+        String lsEntry = "";
+        String lsSQL =   " SELECT a.sEmployNo from xxxSysUser a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId)) ;
+        System.out.println("SQL " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    lsEntry = loRS.getString("sEmployNo");
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+        return lsEntry;
     }
     
     //end - reference object models
