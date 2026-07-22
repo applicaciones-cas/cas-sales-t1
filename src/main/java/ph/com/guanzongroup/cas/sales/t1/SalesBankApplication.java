@@ -148,7 +148,7 @@ public class SalesBankApplication extends Transaction{
         poJSON = new JSONObject();
 
         String lsStatus = BankApplicationStatus.APPROVED;
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             if (faModel.get(lnCtr).getEditMode() != EditMode.READY) {
                 poJSON.put("result", "error");
                 poJSON.put("message", "No bank application loaded.");
@@ -172,7 +172,7 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
         
             poGRider.beginTrans("UPDATE STATUS", "ApproveTransaction", SOURCE_CODE, faModel.get(lnCtr).getTransactionNo());
             
@@ -217,7 +217,7 @@ public class SalesBankApplication extends Transaction{
         poJSON = new JSONObject();
 
         String lsStatus = BankApplicationStatus.DISAPPROVED;
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             if (faModel.get(lnCtr).getEditMode() != EditMode.READY) {
                 poJSON.put("result", "error");
                 poJSON.put("message", "No bank application loaded.");
@@ -241,7 +241,7 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             //change status
             poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
             if (!isJSONSuccess(poJSON)) {
@@ -264,7 +264,7 @@ public class SalesBankApplication extends Transaction{
         poJSON = new JSONObject();
 
         String lsStatus = BankApplicationStatus.CANCELLED;
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             if (faModel.get(lnCtr).getEditMode() != EditMode.READY) {
                 poJSON.put("result", "error");
                 poJSON.put("message", "No bank application loaded.");
@@ -288,7 +288,7 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             //change status
             poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
             if (!isJSONSuccess(poJSON)) {
@@ -298,7 +298,7 @@ public class SalesBankApplication extends Transaction{
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        poJSON.put("message", "Bank Application disapproved successfully.");
+        poJSON.put("message", "Bank Application cancelled successfully.");
         return poJSON;
     }
     
@@ -311,7 +311,7 @@ public class SalesBankApplication extends Transaction{
         poJSON = new JSONObject();
 
         String lsStatus = BankApplicationStatus.VOID;
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             if (faModel.get(lnCtr).getEditMode() != EditMode.READY) {
                 poJSON.put("result", "error");
                 poJSON.put("message", "No bank application loaded.");
@@ -330,7 +330,7 @@ public class SalesBankApplication extends Transaction{
             }
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size()-1;lnCtr++){
+        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
             //change status
             poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
             if (!isJSONSuccess(poJSON)) {
