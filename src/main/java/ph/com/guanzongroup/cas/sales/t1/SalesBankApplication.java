@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.script.ScriptException;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
@@ -39,6 +40,8 @@ import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
+import org.guanzon.appdriver.agent.systables.SysTableContollers;
+import org.guanzon.appdriver.agent.systables.TransactionStatusHistory;
 
 /**
  *
@@ -143,7 +146,8 @@ public class SalesBankApplication extends Transaction{
             throws ParseException,
             SQLException,
             GuanzonException,
-            CloneNotSupportedException {
+            CloneNotSupportedException,
+            ScriptException {
         
         poJSON = new JSONObject();
 
@@ -172,36 +176,12 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
-        
-            poGRider.beginTrans("UPDATE STATUS", "ApproveTransaction", SOURCE_CODE, faModel.get(lnCtr).getTransactionNo());
-            
-            Model_Bank_Application loObject = new SalesModels(poGRider).BankApplication();
-            loObject.initialize();
-            
-            poJSON = loObject.openRecord(faModel.get(lnCtr).getTransactionNo());
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
-            poJSON = loObject.updateRecord();
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
-
-            loObject.setApprovedDate(faModel.get(lnCtr).getApprovedDate());
-            poJSON = loObject.saveRecord();
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
-            //change status
-            poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false,true);
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
-
-            poGRider.commitTrans();
+        poJSON = updateStatus(faModel, lsStatus);
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
         }
-
+        
+        poGRider.commitTrans();
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         poJSON.put("message", "Bank Application approved successfully.");
@@ -212,7 +192,8 @@ public class SalesBankApplication extends Transaction{
             throws ParseException,
             SQLException,
             GuanzonException,
-            CloneNotSupportedException {
+            CloneNotSupportedException,
+            ScriptException {
         
         poJSON = new JSONObject();
 
@@ -241,12 +222,9 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
-            //change status
-            poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
+        poJSON = updateStatus(faModel, lsStatus);
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
         }
 
         poJSON = new JSONObject();
@@ -259,7 +237,8 @@ public class SalesBankApplication extends Transaction{
             throws ParseException,
             SQLException,
             GuanzonException,
-            CloneNotSupportedException {
+            CloneNotSupportedException,
+            ScriptException {
         
         poJSON = new JSONObject();
 
@@ -288,12 +267,9 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
-            //change status
-            poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
+        poJSON = updateStatus(faModel, lsStatus);
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
         }
 
         poJSON = new JSONObject();
@@ -306,7 +282,8 @@ public class SalesBankApplication extends Transaction{
             throws ParseException,
             SQLException,
             GuanzonException,
-            CloneNotSupportedException {
+            CloneNotSupportedException,
+            ScriptException {
         
         poJSON = new JSONObject();
 
@@ -330,12 +307,9 @@ public class SalesBankApplication extends Transaction{
             }
         }
         
-        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
-            //change status
-            poJSON = statusChange(faModel.get(lnCtr).getTable(),faModel.get(lnCtr).getTransactionNo(),"", lsStatus, false);
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
+        poJSON = updateStatus(faModel, lsStatus);
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
         }
 
         poJSON = new JSONObject();
@@ -344,6 +318,82 @@ public class SalesBankApplication extends Transaction{
         return poJSON;
     }
     
+    private JSONObject updateStatus(List<Model_Bank_Application> faObject, String fsStatus)
+            throws ParseException, SQLException, GuanzonException, CloneNotSupportedException, ScriptException {
+        poJSON = new JSONObject();
+
+        String lsRemarks = "";
+        if (pbWithUI){
+            try {
+                lsRemarks = ShowDialogFX.getStatusChangeNotes();
+            } catch (Exception e) {
+                poJSON = new JSONObject();
+                poJSON.put("result", "error");
+                poJSON.put("message", e.getMessage());
+                return poJSON;
+            }
+        }
+
+        for(int lnCtr = 0; lnCtr < faObject.size(); lnCtr++){
+            Model_Bank_Application faItem = faObject.get(lnCtr);
+            
+            if(BankApplicationStatus.APPROVED.equals(fsStatus)){
+                Model_Bank_Application loObject = new SalesModels(poGRider).BankApplication();
+                loObject.initialize();
+
+                poJSON = loObject.openRecord(faItem.getTransactionNo());
+                if (!isJSONSuccess(poJSON)) {
+                    return poJSON;
+                }
+                poJSON = loObject.updateRecord();
+                if (!isJSONSuccess(poJSON)) {
+                    return poJSON;
+                }
+
+                loObject.setApprovedDate(faItem.getApprovedDate());
+                poJSON = loObject.saveRecord();
+                if (!isJSONSuccess(poJSON)) {
+                    return poJSON;
+                }
+            }
+            
+            //Save to parameter status history
+            poGRider.beginTrans("UPDATE STATUS", lsRemarks, "TSHx",faItem.getTransactionNo() );
+            TransactionStatusHistory loStatus = (new SysTableContollers(poGRider, logwrapr)).TransactionStatusHistory();
+            loStatus.setWithParentClass(true);
+            poJSON = loStatus.newRecord();
+            if (!"success".equals(poJSON.get("result"))) {
+                poGRider.rollbackTrans();
+                return poJSON;
+            }
+            loStatus.getModel().setTransactionTable(faItem.getTable());
+            loStatus.getModel().setSourceNo(faItem.getTransactionNo());
+            loStatus.getModel().setRemarks(lsRemarks);
+            loStatus.getModel().setStatusRequest(fsStatus);
+            loStatus.getModel().setTransactionStatus("1");
+            loStatus.getModel().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+            poJSON = loStatus.saveRecord();
+            if (!"success".equals(poJSON.get("result"))) {
+                poGRider.rollbackTrans();
+                return poJSON;
+            }
+            String lsSQL = "UPDATE " + faItem.getTable() + " SET   cRecdStat = " + SQLUtil.toSQL(fsStatus);
+            String lsCondition = ("sTransNox = " + SQLUtil.toSQL(faItem.getTransactionNo()));
+            lsSQL = MiscUtil.addCondition(lsSQL, lsCondition);
+            if (poGRider.executeQuery(lsSQL, faItem.getTable(), poGRider.getBranchCode(), "", "") <= 0L) {
+                poJSON = new JSONObject();
+                poJSON.put("result", "error");
+                poJSON.put("message", "Error updating the transaction status.");
+                poGRider.rollbackTrans();
+                return poJSON;
+            }
+            poGRider.commitTrans();
+        }
+
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+
     public JSONObject checkPendingBankApplication(){
         for(int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++){
             if(Detail(lnRow).getEditMode() == EditMode.UPDATE){

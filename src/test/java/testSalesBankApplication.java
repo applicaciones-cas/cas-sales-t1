@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.script.ScriptException;
 
 /**
  *
@@ -201,10 +202,10 @@ public class testSalesBankApplication {
             } 
             
             System.out.println((String) loJSON.get("message"));
-        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException e) {
+        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException | ScriptException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
-        }
+        } 
     }
 
     //    @Test
@@ -248,7 +249,7 @@ public class testSalesBankApplication {
             }
 
             System.out.println((String) loJSON.get("message"));
-        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException e) {
+        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException | ScriptException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         }
@@ -295,7 +296,7 @@ public class testSalesBankApplication {
             }
 
             System.out.println((String) loJSON.get("message"));
-        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException e) {
+        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException | ScriptException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         }
@@ -342,7 +343,7 @@ public class testSalesBankApplication {
             }
 
             System.out.println((String) loJSON.get("message"));
-        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException e) {
+        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException | ScriptException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         }
