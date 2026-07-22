@@ -7,6 +7,8 @@ package ph.com.guanzongroup.cas.sales.t1;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.parameter.Banks;
+import org.guanzon.cas.parameter.InventoryChildUnit;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -32,6 +35,10 @@ import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
+
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 
 /**
  *
@@ -788,6 +795,158 @@ public class SalesBankApplication extends Transaction{
     public boolean isJSONSuccess(JSONObject foJSON) {
         return ("success".equals((String) foJSON.get("result")) || !"error".equals((String) foJSON.get("result")));
     }
-    
-    
+
+    protected CachedRowSet getStatusHistory(int fnRow) throws SQLException {
+        String lsSQL = "SELECT  a.sTableNme, a.sSourceNo, a.sRemarksx, a.cRefrStat cTranStat, IFNULL(c.sCompnyNm, '-') xModified, IFNULL(e.sCompnyNm, '-') xApproved, a.dModified, a.dApproved, a.sModified, a.sApproved " +
+                " FROM GCASys_DBF.Parameter_Status_History a " +
+                "LEFT JOIN GCASys_DBF.xxxSysUser b ON b.sUserIDxx = AES_DECRYPT(UNHEX(a.sModified), '08220326') " +
+                "LEFT JOIN GGC_ISysDBF.Client_Master c ON b.sEmployNo = c.sClientID " +
+                "LEFT JOIN GCASys_DBF.xxxSysUser d ON d.sUserIDxx = AES_DECRYPT(UNHEX(a.sApproved), '08220326') " +
+                "LEFT JOIN GGC_ISysDBF.Client_Master e ON d.sEmployNo = e.sClientID " +
+                " WHERE a.sSourceNo = " + SQLUtil.toSQL(Detail(fnRow).getTransactionNo()) +
+                " AND a.sTableNme = " + SQLUtil.toSQL(Detail(fnRow).getTable()) + " ORDER BY a.dModified";
+        System.out.println("STATUS HISTORY : " + lsSQL);
+        ResultSet loRS = this.poGRider.executeQuery(lsSQL);
+        RowSetFactory factory = RowSetProvider.newFactory();
+        CachedRowSet rowset = factory.createCachedRowSet();
+        rowset.populate(loRS);
+        MiscUtil.close(loRS);
+        return rowset;
+    }
+
+
+    /**
+     * Loads status history, maps status codes to captions, and displays the status-history dialog.
+     *
+     * @throws SQLException If a database access error occurs.
+     * @throws GuanzonException If model operations fail.
+     * @throws Exception If UI rendering fails.
+     */
+    public void ShowStatusHistory(int fnRow) throws SQLException, GuanzonException, Exception{
+        CachedRowSet crs = getStatusHistory(fnRow);
+
+        crs.beforeFirst();
+        while(crs.next()){
+            switch (crs.getString("cRefrStat")){
+                case "":
+                    crs.updateString("cRefrStat", "-");
+                    break;
+                case BankApplicationStatus.OPEN:
+                    crs.updateString("cRefrStat", "OPEN");
+                    break;
+                case BankApplicationStatus.APPROVED:
+                    crs.updateString("cRefrStat", "APPROVED");
+                    break;
+                case BankApplicationStatus.DISAPPROVED:
+                    crs.updateString("cRefrStat", "DISAPPROVED");
+                    break;
+                case BankApplicationStatus.VOID:
+                    crs.updateString("cRefrStat", "VOIDED");
+                    break;
+                case BankApplicationStatus.CANCELLED:
+                    crs.updateString("cRefrStat", "CANCELLED");
+                    break;
+                default:
+                    char ch = crs.getString("cRefrStat").charAt(0);
+                    String stat = String.valueOf((int) ch - 64);
+
+                    switch (stat){
+                        case BankApplicationStatus.OPEN:
+                            crs.updateString("cRefrStat", "OPEN");
+                            break;
+                        case BankApplicationStatus.APPROVED:
+                            crs.updateString("cRefrStat", "APPROVED");
+                            break;
+                        case BankApplicationStatus.DISAPPROVED:
+                            crs.updateString("cRefrStat", "DISAPPROVED");
+                            break;
+                        case BankApplicationStatus.VOID:
+                            crs.updateString("cRefrStat", "VOIDED");
+                            break;
+                        case BankApplicationStatus.CANCELLED:
+                            crs.updateString("cRefrStat", "CANCELLED");
+                            break;
+                    }
+            }
+            crs.updateRow();
+        }
+
+        JSONObject loJSON  = getEntryBy(fnRow);
+        String entryBy = "";
+        String entryDate = "";
+
+        if ("success".equals((String) loJSON.get("result"))){
+            entryBy = (String) loJSON.get("sCompnyNm");
+            entryDate = (String) loJSON.get("sEntryDte");
+        }
+        showStatusHistoryUI("Bank Application", Detail(fnRow).getTransactionNo(), entryBy, entryDate, crs);
+    }
+
+    /**
+     * Resolves encoder name and entry timestamp from audit logs for the current transaction.
+     *
+     * @return JSON result containing entry metadata.
+     * @throws SQLException If a database access error occurs.
+     * @throws GuanzonException If user lookup operations fail.
+     */
+    public JSONObject getEntryBy(int fnRow) throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsEntry = "";
+        String lsEntryDate = "";
+        String lsSQL =  " SELECT b.sModified, b.dModified "
+                + " FROM "+Detail(fnRow).getTable()+" a "
+                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Detail(fnRow).getTable());
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Detail(fnRow).getTransactionNo()));
+        lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
+        System.out.println("Execute SQL : " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    if(loRS.getString("sModified") != null && !"".equals(loRS.getString("sModified"))){
+                        if(loRS.getString("sModified").length() > 10){
+                            lsEntry = getSysUser(poGRider.Decrypt(loRS.getString("sModified")));
+                        } else {
+                            lsEntry = getSysUser(loRS.getString("sModified"));
+                        }
+                        // Get the LocalDateTime from your result set
+                        LocalDateTime dModified = loRS.getObject("dModified", LocalDateTime.class);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+                        lsEntryDate =  dModified.format(formatter);
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+            return poJSON;
+        }
+
+        poJSON.put("result", "success");
+        poJSON.put("sCompnyNm", lsEntry);
+        poJSON.put("sEntryDte", lsEntryDate);
+        return poJSON;
+    }
+
+    public String getSysUser(String fsId) throws SQLException, GuanzonException {
+        String lsEntry = "";
+        String lsSQL =   " SELECT b.sCompnyNm from xxxSysUser a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId)) ;
+        System.out.println("SQL " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    lsEntry = loRS.getString("sCompnyNm");
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+        return lsEntry;
+    }
 }
