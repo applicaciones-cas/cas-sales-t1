@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
@@ -553,7 +555,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -615,7 +617,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -682,7 +684,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -2282,7 +2284,7 @@ public class SalesInquiry extends Transaction {
             //If current user is an ordinary user load only its inquiries
             if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                 lsSQL = MiscUtil.addCondition(lsSQL, 
-                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                        " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
             }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -2974,7 +2976,6 @@ public class SalesInquiry extends Transaction {
                 + " , cTranStat "
                 + " FROM bank_application ";
     }
-    
     
     /**
      * Loads status history, maps status codes to captions, and displays the status-history dialog.

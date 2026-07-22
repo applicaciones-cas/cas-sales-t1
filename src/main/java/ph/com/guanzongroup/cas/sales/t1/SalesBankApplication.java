@@ -576,6 +576,27 @@ public class SalesBankApplication extends Transaction{
                 return "Unknown";
         }
     }
+    
+    public String getInquiryStatus(String lsStatus) {
+        switch (lsStatus) {
+            case SalesInquiryStatic.LOST:
+                return "Lost Sale";
+            case SalesInquiryStatic.CONFIRMED:
+                return "Confirmed";
+            case SalesInquiryStatic.QUOTED:
+                return "Quoted";
+            case SalesInquiryStatic.SALE:
+                return "Sale";
+            case SalesInquiryStatic.OPEN:
+                return "Open";
+            case SalesInquiryStatic.VOID:
+                return "Void";
+            case SalesInquiryStatic.CANCELLED:
+                return "Cancelled";
+            default:
+                return "Unknown";
+        }
+    }
     /**
     * Returns the master record model for the current cash disbursement transaction.
     * 
