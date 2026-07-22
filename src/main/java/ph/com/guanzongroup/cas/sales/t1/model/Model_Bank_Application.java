@@ -223,7 +223,7 @@ public class Model_Bank_Application extends Model {
     
     @Override
     public String getNextCode() {
-        return ""; //MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
+        return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
 
     //reference object models

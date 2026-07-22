@@ -706,8 +706,11 @@ public class SalesBankApplication extends Transaction{
         }
         
         for(int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++){
-            Detail(lnRow).setTransactionNo(Master().getTransactionNo());
             Detail(lnRow).setEntryNo(lnRow+1);
+            
+            if(Detail(lnRow).getEditMode() == EditMode.ADDNEW){
+                Detail(lnRow).setTransactionNo(Detail(lnRow).getNextCode());
+            }
             
             poJSON = isEntryOkay(Detail(lnRow).getTransactionStatus(), Detail(lnRow));
             if (!"success".equals((String) poJSON.get("result"))) {
