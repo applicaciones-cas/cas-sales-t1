@@ -491,6 +491,7 @@ public class SalesBankApplication extends Transaction{
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
+            System.out.println("DETAIL ROW COUNT : " + getDetailCount());
             Detail(row).setBankId(object.getModel().getBankID());
             Detail(row).setAppliedDate(poGRider.getServerDate());
         }
@@ -638,7 +639,7 @@ public class SalesBankApplication extends Transaction{
         if ((getDetailCount() - 1) >= 0) {
             if (
                 (Detail(getDetailCount() - 1).getBankId() != null && !"".equals(Detail(getDetailCount() - 1).getBankId()))
-                && (Detail(lnCtr).getApplicationNo() != null && !"".equals(Detail(lnCtr).getApplicationNo()))
+                && (Detail(getDetailCount() - 1).getApplicationNo() != null && !"".equals(Detail(getDetailCount() - 1).getApplicationNo()))
                 ) {
                 AddDetail();
             }
