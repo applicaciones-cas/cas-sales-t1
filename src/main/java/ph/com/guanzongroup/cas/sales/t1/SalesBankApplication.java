@@ -627,26 +627,35 @@ public class SalesBankApplication extends Transaction{
      * @throws CloneNotSupportedException If an error occurs while adding a new detail row.
      */
     public void ReloadDetail() throws CloneNotSupportedException{
-        int lnCtr = getDetailCount() - 1;
-        while (lnCtr >= 0) {
-            if ((Detail(lnCtr).getBankId() == null || "".equals(Detail(lnCtr).getBankId()))
-                && (Detail(lnCtr).getApplicationNo() == null || "".equals(Detail(lnCtr).getApplicationNo()))) {
-                deleteDetail(lnCtr);
-            } 
-            lnCtr--;
-        }
+        try {
+            int lnCtr = getDetailCount() - 1;
+            while (lnCtr >= 0) {
+                if ((Detail(lnCtr).getBankId() == null || "".equals(Detail(lnCtr).getBankId()))
+                        && (Detail(lnCtr).getApplicationNo() == null || "".equals(Detail(lnCtr).getApplicationNo()))) {
+                    deleteDetail(lnCtr);
+                }
+                lnCtr--;
+            }
             
-        if ((getDetailCount() - 1) >= 0) {
-            if (
-                (Detail(getDetailCount() - 1).getBankId() != null && !"".equals(Detail(getDetailCount() - 1).getBankId()))
-                && (Detail(getDetailCount() - 1).getApplicationNo() != null && !"".equals(Detail(getDetailCount() - 1).getApplicationNo()))
-                ) {
+            if ((getDetailCount() - 1) >= 0) {
+                if (
+                        (Detail(getDetailCount() - 1).getBankId() != null && !"".equals(Detail(getDetailCount() - 1).getBankId()))
+                        && (Detail(getDetailCount() - 1).getApplicationNo() != null && !"".equals(Detail(getDetailCount() - 1).getApplicationNo()))
+                        ) {
+                    AddDetail();
+                }
+            }
+            
+            if ((getDetailCount() - 1) < 0) {
                 AddDetail();
             }
-        }
-
-        if ((getDetailCount() - 1) < 0) {
-            AddDetail();
+            
+            Detail(getDetailCount() - 1).setAppliedDate(poGRider.getServerDate());
+            Detail(getDetailCount() - 1).setPaymentMode(Master().getPurchaseType());
+            Detail(getDetailCount() - 1).setSourceCode("SInq");
+            Detail(getDetailCount() - 1).setSourceNo(Master().getTransactionNo());
+        } catch (SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
         }
     }
     
