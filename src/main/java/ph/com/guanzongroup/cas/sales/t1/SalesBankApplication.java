@@ -165,6 +165,12 @@ public class SalesBankApplication extends Transaction{
                 return poJSON;
             }
 
+            if (!BankApplicationStatus.OPEN.equals(faModel.get(lnCtr).getTransactionStatus())) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Bank Application was already "+getStatus(faModel.get(lnCtr).getTransactionStatus()).toLowerCase()+".");
+                return poJSON;
+            }
+
             poJSON = isEntryOkay(lsStatus, faModel.get(lnCtr));
             if (!isJSONSuccess(poJSON)) {
                 return poJSON;
@@ -181,7 +187,6 @@ public class SalesBankApplication extends Transaction{
             return poJSON;
         }
         
-        poGRider.commitTrans();
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         poJSON.put("message", "Bank Application approved successfully.");
@@ -208,6 +213,12 @@ public class SalesBankApplication extends Transaction{
             if (lsStatus.equals(faModel.get(lnCtr).getTransactionStatus())) {
                 poJSON.put("result", "error");
                 poJSON.put("message", "Bank Application was already disapprove.");
+                return poJSON;
+            }
+
+            if (!BankApplicationStatus.OPEN.equals(faModel.get(lnCtr).getTransactionStatus())) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Bank Application was already "+getStatus(faModel.get(lnCtr).getTransactionStatus()).toLowerCase()+".");
                 return poJSON;
             }
 
@@ -256,6 +267,12 @@ public class SalesBankApplication extends Transaction{
                 return poJSON;
             }
 
+            if (!BankApplicationStatus.OPEN.equals(faModel.get(lnCtr).getTransactionStatus())) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Bank Application was already "+getStatus(faModel.get(lnCtr).getTransactionStatus()).toLowerCase()+".");
+                return poJSON;
+            }
+
             poJSON = isEntryOkay(lsStatus, faModel.get(lnCtr));
             if (!isJSONSuccess(poJSON)) {
                 return poJSON;
@@ -278,46 +295,6 @@ public class SalesBankApplication extends Transaction{
         return poJSON;
     }
     
-    public JSONObject VoidBankApplication(String remarks, List<Model_Bank_Application> faModel)
-            throws ParseException,
-            SQLException,
-            GuanzonException,
-            CloneNotSupportedException,
-            ScriptException {
-        
-        poJSON = new JSONObject();
-
-        String lsStatus = BankApplicationStatus.VOID;
-        for(int lnCtr = 0;lnCtr < faModel.size();lnCtr++){
-            if (faModel.get(lnCtr).getEditMode() != EditMode.READY) {
-                poJSON.put("result", "error");
-                poJSON.put("message", "No bank application loaded.");
-                return poJSON;
-            }
-
-            if (lsStatus.equals(faModel.get(lnCtr).getTransactionStatus())) {
-                poJSON.put("result", "error");
-                poJSON.put("message", "Bank Application was already voided.");
-                return poJSON;
-            }
-
-            poJSON = isEntryOkay(lsStatus, faModel.get(lnCtr));
-            if (!isJSONSuccess(poJSON)) {
-                return poJSON;
-            }
-        }
-        
-        poJSON = updateStatus(faModel, lsStatus);
-        if ("error".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        poJSON.put("message", "Bank Application voided successfully.");
-        return poJSON;
-    }
-    
     private JSONObject updateStatus(List<Model_Bank_Application> faObject, String fsStatus)
             throws ParseException, SQLException, GuanzonException, CloneNotSupportedException, ScriptException {
         poJSON = new JSONObject();
@@ -336,26 +313,6 @@ public class SalesBankApplication extends Transaction{
 
         for(int lnCtr = 0; lnCtr < faObject.size(); lnCtr++){
             Model_Bank_Application faItem = faObject.get(lnCtr);
-            
-            if(BankApplicationStatus.APPROVED.equals(fsStatus)){
-                Model_Bank_Application loObject = new SalesModels(poGRider).BankApplication();
-                loObject.initialize();
-
-                poJSON = loObject.openRecord(faItem.getTransactionNo());
-                if (!isJSONSuccess(poJSON)) {
-                    return poJSON;
-                }
-                poJSON = loObject.updateRecord();
-                if (!isJSONSuccess(poJSON)) {
-                    return poJSON;
-                }
-
-                loObject.setApprovedDate(faItem.getApprovedDate());
-                poJSON = loObject.saveRecord();
-                if (!isJSONSuccess(poJSON)) {
-                    return poJSON;
-                }
-            }
             
             //Save to parameter status history
             poGRider.beginTrans("UPDATE STATUS", lsRemarks, "TSHx",faItem.getTransactionNo() );
@@ -377,7 +334,31 @@ public class SalesBankApplication extends Transaction{
                 poGRider.rollbackTrans();
                 return poJSON;
             }
-            String lsSQL = "UPDATE " + faItem.getTable() + " SET   cRecdStat = " + SQLUtil.toSQL(fsStatus);
+            
+            
+            if(BankApplicationStatus.APPROVED.equals(fsStatus)){
+                Model_Bank_Application loObject = new SalesModels(poGRider).BankApplication();
+                loObject.initialize();
+
+                poJSON = loObject.openRecord(faItem.getTransactionNo());
+                if (!isJSONSuccess(poJSON)) {
+                    return poJSON;
+                }
+                if(loObject.getApprovedDate() == null){
+                    poJSON = loObject.updateRecord();
+                    if (!isJSONSuccess(poJSON)) {
+                        return poJSON;
+                    }
+
+                    loObject.setApprovedDate(faItem.getApprovedDate());
+                    poJSON = loObject.saveRecord();
+                    if (!isJSONSuccess(poJSON)) {
+                        return poJSON;
+                    }
+                }
+            }
+            
+            String lsSQL = "UPDATE " + faItem.getTable() + " SET   cTranStat = " + SQLUtil.toSQL(fsStatus);
             String lsCondition = ("sTransNox = " + SQLUtil.toSQL(faItem.getTransactionNo()));
             lsSQL = MiscUtil.addCondition(lsSQL, lsCondition);
             if (poGRider.executeQuery(lsSQL, faItem.getTable(), poGRider.getBranchCode(), "", "") <= 0L) {
@@ -616,8 +597,6 @@ public class SalesBankApplication extends Transaction{
                 return "Disapproved";
             case BankApplicationStatus.CANCELLED:
                 return "Cancelled";
-            case BankApplicationStatus.VOID:
-                return "Void";
             case BankApplicationStatus.APPROVED:
                 return "Approved";
             case BankApplicationStatus.OPEN:
@@ -882,7 +861,7 @@ public class SalesBankApplication extends Transaction{
 
     protected CachedRowSet getStatusHistory(int fnRow) throws SQLException {
         String lsSQL = "SELECT  a.sTableNme, a.sSourceNo, a.sRemarksx, a.cRefrStat cTranStat, IFNULL(c.sCompnyNm, '-') xModified, IFNULL(e.sCompnyNm, '-') xApproved, a.dModified, a.dApproved, a.sModified, a.sApproved " +
-                " FROM GCASys_DBF.Parameter_Status_History a " +
+                " FROM GCASys_DBF.Transaction_Status_History a " +
                 "LEFT JOIN GCASys_DBF.xxxSysUser b ON b.sUserIDxx = AES_DECRYPT(UNHEX(a.sModified), '08220326') " +
                 "LEFT JOIN GGC_ISysDBF.Client_Master c ON b.sEmployNo = c.sClientID " +
                 "LEFT JOIN GCASys_DBF.xxxSysUser d ON d.sUserIDxx = AES_DECRYPT(UNHEX(a.sApproved), '08220326') " +
@@ -924,9 +903,6 @@ public class SalesBankApplication extends Transaction{
                 case BankApplicationStatus.DISAPPROVED:
                     crs.updateString("cRefrStat", "DISAPPROVED");
                     break;
-                case BankApplicationStatus.VOID:
-                    crs.updateString("cRefrStat", "VOIDED");
-                    break;
                 case BankApplicationStatus.CANCELLED:
                     crs.updateString("cRefrStat", "CANCELLED");
                     break;
@@ -943,9 +919,6 @@ public class SalesBankApplication extends Transaction{
                             break;
                         case BankApplicationStatus.DISAPPROVED:
                             crs.updateString("cRefrStat", "DISAPPROVED");
-                            break;
-                        case BankApplicationStatus.VOID:
-                            crs.updateString("cRefrStat", "VOIDED");
                             break;
                         case BankApplicationStatus.CANCELLED:
                             crs.updateString("cRefrStat", "CANCELLED");
@@ -977,11 +950,23 @@ public class SalesBankApplication extends Transaction{
         poJSON = new JSONObject();
         String lsEntry = "";
         String lsEntryDate = "";
-        String lsSQL =  " SELECT b.sModified, b.dModified "
-                + " FROM "+Detail(fnRow).getTable()+" a "
-                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Detail(fnRow).getTable());
-        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Detail(fnRow).getTransactionNo()));
-        lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
+        String lsSQL =  "SELECT " +
+                " b.sModified, b.dModified " +
+                " FROM "+Detail(fnRow).getTable()+" a " +
+                "  INNER JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox  " +
+                "  INNER JOIN xxxAuditLogDetail c ON c.sSourceNo = b.sTransNox  " +
+                " WHERE a.sTransNox = "+SQLUtil.toSQL(Master().getTransactionNo()) +
+                " AND b.sSourceNo = "+SQLUtil.toSQL(Master().getTransactionNo()) +
+                " AND b.sRemarksx = "+SQLUtil.toSQL(Master().getTable()) +
+                " AND c.sQryTypex = 'INSERT'  " +
+                " AND sTableNme = "+SQLUtil.toSQL(Detail(fnRow).getTable()) +
+                " AND c.sPayloadx LIKE " + SQLUtil.toSQL("%"+Detail(fnRow).getTransactionNo()+"%"+Detail(fnRow).getEntryNo()+",%") +
+                " ORDER BY b.dModified DESC ";
+//        String lsSQL =  " SELECT b.sModified, b.dModified "
+//                + " FROM "+Detail(fnRow).getTable()+" a "
+//                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Detail(fnRow).getTable());
+//        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Detail(fnRow).getTransactionNo()));
+//        lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
         System.out.println("Execute SQL : " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         try {

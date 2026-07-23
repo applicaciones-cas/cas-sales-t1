@@ -256,53 +256,6 @@ public class testSalesBankApplication {
     }
 
     //    @Test
-    public void testVoidTransaction() {
-        JSONObject loJSON;
-
-        try {
-            loJSON = poController.InitTransaction();
-            if (!"success".equals((String) loJSON.get("result"))){
-                System.err.println((String) loJSON.get("message"));
-                Assert.fail();
-            }
-
-            loJSON = poController.OpenTransaction(psTransNo);
-            if (!"success".equals((String) loJSON.get("result"))){
-                System.err.println((String) loJSON.get("message"));
-                Assert.fail();
-            }
-
-            //retreiving using column index
-            for (int lnCol = 1; lnCol <= poController.Master().getColumnCount(); lnCol++){
-                System.out.println(poController.Master().getColumn(lnCol) + " ->> " + poController.Master().getValue(lnCol));
-            }
-            //retreiving using field descriptions
-            System.out.println(poController.Master().Branch().getBranchName());
-            System.out.println(poController.Master().Industry().getDescription());
-
-            //retreiving using column index
-            for (int lnCtr = 0; lnCtr <= poController.Detail().size() - 1; lnCtr++){
-                for (int lnCol = 1; lnCol <= poController.Detail(lnCtr).getColumnCount(); lnCol++){
-                    System.out.println(poController.Detail(lnCtr).getColumn(lnCol) + " ->> " + poController.Detail(lnCtr).getValue(lnCol));
-                }
-            }
-
-            List<Model_Bank_Application> faModel = new ArrayList<>();
-            faModel.add(poController.Detail(0));
-            loJSON = poController.VoidBankApplication("",faModel);
-            if (!"success".equals((String) loJSON.get("result"))){
-                System.err.println((String) loJSON.get("message"));
-                Assert.fail();
-            }
-
-            System.out.println((String) loJSON.get("message"));
-        } catch (CloneNotSupportedException | ParseException | SQLException | GuanzonException | ScriptException e) {
-            System.err.println(MiscUtil.getException(e));
-            Assert.fail();
-        }
-    }
-
-    //    @Test
     public void testCancelTransaction() {
         JSONObject loJSON;
 

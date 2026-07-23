@@ -87,11 +87,13 @@ public class BankApplication implements GValidator{
         LocalDate oneYearAgo = serverDate.minusYears(1);
         
         if (loAppliedDate == null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Applied Date.");
             return poJSON;
         }
 
         if ("1900-01-01".equals(xsDateShort(loAppliedDate))) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Applied Date.");
             return poJSON;
         }
@@ -107,18 +109,22 @@ public class BankApplication implements GValidator{
 //        }
         
         if (poMaster.getTransactionNo()== null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Transaction no is not set.");
             return poJSON;
         }
         if (poMaster.getApplicationNo() == null || "".equals(poMaster.getApplicationNo())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Application is not set.");
             return poJSON;
         }
         if (poMaster.getPaymentMode()== null || "".equals(poMaster.getPaymentMode())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Payment Mode is not set.");
             return poJSON;
         }
         if (poMaster.getBankId() == null || "".equals(poMaster.getBankId())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Bank is not set.");
             return poJSON;
         }
@@ -131,19 +137,22 @@ public class BankApplication implements GValidator{
         Date ldAppliedDate = poMaster.getAppliedDate();
         Date ldApprovedDate = poMaster.getApprovedDate();
         LocalDate loAppliedDate = strToDate(xsDateShort(poMaster.getAppliedDate()));
-        LocalDate loApprovedDate = strToDate(xsDateShort(poMaster.getApprovedDate()));
         
         if (ldApprovedDate == null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Approved Date.");
             return poJSON;
         }
 
         if ("1900-01-01".equals(xsDateShort(ldApprovedDate))) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Approved Date.");
             return poJSON;
         }
         
+        LocalDate loApprovedDate = strToDate(xsDateShort(poMaster.getApprovedDate()));
         if (loApprovedDate.isBefore(loAppliedDate)) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Approve date cannot be before the applied date.");
             return poJSON;
         }
