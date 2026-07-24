@@ -115,6 +115,27 @@ public class SalesInquiry extends Transaction {
         return updateTransaction();
     }
     
+    public String getInquiryStatus(String lsStatus) {
+        switch (lsStatus) {
+            case SalesInquiryStatic.LOST:
+                return "Lost Sale";
+            case SalesInquiryStatic.CONFIRMED:
+                return "Confirmed";
+            case SalesInquiryStatic.QUOTED:
+                return "Quoted";
+            case SalesInquiryStatic.SALE:
+                return "Sale";
+            case SalesInquiryStatic.OPEN:
+                return "Open";
+            case SalesInquiryStatic.VOID:
+                return "Void";
+            case SalesInquiryStatic.CANCELLED:
+                return "Cancelled";
+            default:
+                return "Unknown";
+        }
+    }
+    
     /**
      * Call Approval for encoder
      * @return 
@@ -190,7 +211,7 @@ public class SalesInquiry extends Transaction {
         }
                 
         //Require approval when user is not equal to sales man and user is not supervisor
-        if(!Master().getSalesMan().equals(poGRider.getUserID())){
+        if(!Master().getSalesMan().equals(getSysUser(poGRider.getUserID(), true))){
             poJSON = callApproval();
             if (!"success".equals((String) poJSON.get("result"))) {
                 return poJSON;
@@ -2615,7 +2636,7 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
         
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if(!Master().getSalesMan().equals(poGRider.getUserID())){
+            if(!Master().getSalesMan().equals(getSysUser(poGRider.getUserID(), true))){
                 if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                     poJSON = ShowDialogFX.getUserApproval(poGRider);
                     if (!"success".equals((String) poJSON.get("result"))) {

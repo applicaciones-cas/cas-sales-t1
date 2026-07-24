@@ -422,10 +422,10 @@ public class SalesBankApplication extends Transaction{
             );
 
             //If current user is an ordinary user load only its inquiries
-//            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-//                lsSQL = MiscUtil.addCondition(lsSQL,
-//                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
-//            }
+            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                lsSQL = MiscUtil.addCondition(lsSQL,
+                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+            }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
                 lsSQL = lsSQL + lsTransStat;
