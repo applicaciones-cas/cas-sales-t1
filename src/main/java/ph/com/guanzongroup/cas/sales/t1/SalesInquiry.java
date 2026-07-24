@@ -1828,17 +1828,14 @@ public class SalesInquiry extends Transaction {
             throws SQLException,
             GuanzonException {
         poJSON = new JSONObject();
-        paBankApplications = new ArrayList<>();
-
+        paBankApplications = null;
         List loList = getBankApplications();
         for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
-            paBankApplications.add(BankApplication());
-            poJSON = paBankApplications.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr), lnCtr+1);
-            if ("success".equals((String) poJSON.get("result"))) {
-                if(Master().getEditMode() == EditMode.UPDATE){
-                   poJSON = paBankApplications.get(getBankApplicationsCount() - 1).updateRecord();
-                }
+            if(paBankApplications == null){
+                paBankApplications = new ArrayList<>();
             }
+            paBankApplications.add(BankApplication());
+            poJSON = paBankApplications.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr));
             
         }
         return poJSON;
@@ -1915,7 +1912,9 @@ public class SalesInquiry extends Transaction {
     }
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
-        lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sSourceNo = " + SQLUtil.toSQL(Master().getTransactionNo())
+                                                +  " AND sSourceCd = " + SQLUtil.toSQL(getSourceCode())
+                                                 );
         System.out.println("Executing SQL: " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         List<String> loList = new ArrayList();
@@ -1948,7 +1947,7 @@ public class SalesInquiry extends Transaction {
     public JSONObject checkPendingBankApplication(){
         for(int lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
             if(BankApplicationsList(lnRow).getEditMode() == EditMode.UPDATE){
-                if (BankApplicationsList(lnRow).getTransactionStatus().equals(SalesInquiryStatic.OPEN)) {
+                if (BankApplicationsList(lnRow).getTransactionStatus().equals(BankApplicationStatus.OPEN)) {
                     poJSON.put("result", "error");
                     poJSON.put("message", "You have a pending bank application. Update the status before changing the purchase type.");
                     return poJSON;
