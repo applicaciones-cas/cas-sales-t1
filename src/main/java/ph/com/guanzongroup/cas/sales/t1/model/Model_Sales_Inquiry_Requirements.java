@@ -134,6 +134,16 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
     
     public JSONObject setReceivedDate(Date receivedDate) {
+      if (receivedDate == null) {
+            try {
+                poEntity.updateNull("dReceived");
+            } catch (SQLException ex) {
+                Logger.getLogger(getClass().getName())
+                        .log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            }
+
+            return new JSONObject();
+        }
         return setValue("dReceived", receivedDate);
     }
 
@@ -162,15 +172,13 @@ public class Model_Sales_Inquiry_Requirements extends Model {
 //        return (Date) getValue("dReceived");
 //    }
     public Date getReceivedDate() {
-//        System.out.println("get Value LIQUIDATED DATE : " + (Date) getValue("dIssuedxx"));
-        if((Date) getValue("dReceived") == null){
+        if((Date) getValue("dReceived") == null && getReceivedBy() != null && !"".equals(getReceivedBy()) ){
             try {
                 String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(this), 
                                     " sTransNox = " + SQLUtil.toSQL((String) getValue("sTransNox"))
                                     );
                 ResultSet loRS = poGRider.executeQuery(lsSQL);
                 if (loRS.next()) {
-//                    System.out.println("DB select LIQUIDATED DATE : " + loRS.getTimestamp("dLiquidtd"));
                     setReceivedDate(loRS.getTimestamp("dReceived"));
                 }
             } catch (SQLException e) {

@@ -2707,13 +2707,13 @@ public class SalesInquiry extends Transaction {
         }
         
         //remove bank application without details
-        Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
-        while (bankApplication.hasNext()) {
-            Model_Bank_Application item = bankApplication.next();
-            if (item.getBankId() == null || "".equals(item.getBankId())){
-                bankApplication.remove();
-            }
-        }
+//        Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
+//        while (bankApplication.hasNext()) {
+//            Model_Bank_Application item = bankApplication.next();
+//            if (item.getBankId() == null || "".equals(item.getBankId())){
+//                bankApplication.remove();
+//            }
+//        }
         
         //remove bank application without details
         Iterator<Model_Sales_Inquiry_Requirements> requirements = paRequirements.iterator();
@@ -2825,23 +2825,23 @@ public class SalesInquiry extends Transaction {
             }
             
             //Save Bank Applications
-            for (int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++) {
-                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW){
-                    paBankApplications.get(lnCtr).setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
-                    paBankApplications.get(lnCtr).setEntryDate(poGRider.getServerDate());
-                }
-                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW || paBankApplications.get(lnCtr).getEditMode() == EditMode.UPDATE) {
-                    paBankApplications.get(lnCtr).setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
-                    paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
-                    poJSON = paBankApplications.get(lnCtr).saveRecord();
-                    if ("error".equals((String) poJSON.get("result"))) {
-                        System.out.println("Save Sales Inquiry Bank Application " + (String) poJSON.get("message"));
-                        poJSON.put("result", "error");
-                        poJSON.put("message", (String) poJSON.get("message"));
-                        return poJSON;
-                    }
-                }
-            }
+//            for (int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++) {
+//                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW){
+//                    paBankApplications.get(lnCtr).setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
+//                    paBankApplications.get(lnCtr).setEntryDate(poGRider.getServerDate());
+//                }
+//                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW || paBankApplications.get(lnCtr).getEditMode() == EditMode.UPDATE) {
+//                    paBankApplications.get(lnCtr).setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+//                    paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
+//                    poJSON = paBankApplications.get(lnCtr).saveRecord();
+//                    if ("error".equals((String) poJSON.get("result"))) {
+//                        System.out.println("Save Sales Inquiry Bank Application " + (String) poJSON.get("message"));
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", (String) poJSON.get("message"));
+//                        return poJSON;
+//                    }
+//                }
+//            }
             
             //Delete Record
             for (int lnCtr = 0; lnCtr <= getRequirementsRemovedCount()- 1; lnCtr++) {
