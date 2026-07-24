@@ -424,7 +424,7 @@ public class SalesBankApplication extends Transaction{
             //If current user is an ordinary user load only its inquiries
             if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                 lsSQL = MiscUtil.addCondition(lsSQL,
-                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                        " a.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
             }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -974,9 +974,9 @@ public class SalesBankApplication extends Transaction{
                 if (loRS.next()) {
                     if(loRS.getString("sModified") != null && !"".equals(loRS.getString("sModified"))){
                         if(loRS.getString("sModified").length() > 10){
-                            lsEntry = getSysUser(poGRider.Decrypt(loRS.getString("sModified")));
+                            lsEntry = getSysUser(poGRider.Decrypt(loRS.getString("sModified")), false);
                         } else {
-                            lsEntry = getSysUser(loRS.getString("sModified"));
+                            lsEntry = getSysUser(loRS.getString("sModified"), false);
                         }
                         // Get the LocalDateTime from your result set
                         LocalDateTime dModified = loRS.getObject("dModified", LocalDateTime.class);
@@ -998,7 +998,7 @@ public class SalesBankApplication extends Transaction{
         return poJSON;
     }
 
-    public String getSysUser(String fsId) throws SQLException, GuanzonException {
+    public String getSysUser(String fsId, boolean fbIsID) throws SQLException, GuanzonException {
         String lsEntry = "";
         String lsSQL =   " SELECT b.sCompnyNm from xxxSysUser a "
                 + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
@@ -1008,7 +1008,11 @@ public class SalesBankApplication extends Transaction{
         try {
             if (MiscUtil.RecordCount(loRS) > 0L) {
                 if (loRS.next()) {
-                    lsEntry = loRS.getString("sCompnyNm");
+                    if(fbIsID) {
+                        lsEntry = loRS.getString("sEmployNo");
+                    } else {
+                        lsEntry = loRS.getString("sCompnyNm");
+                    }
                 }
             }
             MiscUtil.close(loRS);
