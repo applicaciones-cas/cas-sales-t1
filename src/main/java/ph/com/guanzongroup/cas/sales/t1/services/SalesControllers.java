@@ -15,6 +15,7 @@ import org.guanzon.appdriver.base.MiscUtil;
 import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
 import ph.com.guanzongroup.cas.sales.t1.RequirementsSourcePerGroup;
 import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
+import ph.com.guanzongroup.cas.sales.t1.SalesBankApplication;
 import ph.com.guanzongroup.cas.sales.t1.SalesGiveaways;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
 import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
@@ -171,6 +172,26 @@ public class SalesControllers {
         
         return poRequirementSourcePerGroup;
     }
+
+    public SalesBankApplication SalesBankApplication(){
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.SalesBankApplication: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesBankApp != null){
+            return poSalesBankApp;
+        }
+
+        poSalesBankApp = new SalesBankApplication();
+        poSalesBankApp.setApplicationDriver(poGRider);
+        poSalesBankApp.setBranchCode(poGRider.getBranchCode());
+        poSalesBankApp.setVerifyEntryNo(false);
+        poSalesBankApp.setWithParent(false);
+        poSalesBankApp.setLogWrapper(poLogWrapper);
+
+        return poSalesBankApp;
+    }
     
     @Override
     protected void finalize() throws Throwable {
@@ -199,4 +220,5 @@ public class SalesControllers {
     private SalesGiveaways poSalesGiveaways;
     private RequirementsSource poRequirementSource;
     private RequirementsSourcePerGroup poRequirementSourcePerGroup;
+    private SalesBankApplication poSalesBankApp;
 }
