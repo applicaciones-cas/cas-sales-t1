@@ -953,9 +953,9 @@ public class SalesBankApplication extends Transaction{
         String lsSQL =  "SELECT " +
                 " b.sModified, b.dModified " +
                 " FROM "+Detail(fnRow).getTable()+" a " +
-                "  INNER JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox  " +
+                "  INNER JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sSourceNo  " +
                 "  INNER JOIN xxxAuditLogDetail c ON c.sSourceNo = b.sTransNox  " +
-                " WHERE a.sTransNox = "+SQLUtil.toSQL(Master().getTransactionNo()) +
+                " WHERE a.sTransNox = "+SQLUtil.toSQL(Detail(fnRow).getTransactionNo()) +
                 " AND b.sSourceNo = "+SQLUtil.toSQL(Master().getTransactionNo()) +
                 " AND b.sRemarksx = "+SQLUtil.toSQL(Master().getTable()) +
                 " AND c.sQryTypex = 'INSERT'  " +
@@ -1000,7 +1000,7 @@ public class SalesBankApplication extends Transaction{
 
     public String getSysUser(String fsId, boolean fbIsID) throws SQLException, GuanzonException {
         String lsEntry = "";
-        String lsSQL =   " SELECT b.sCompnyNm from xxxSysUser a "
+        String lsSQL =   " SELECT b.sCompnyNm, a.sEmployNo from xxxSysUser a "
                 + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
         lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId)) ;
         System.out.println("SQL " + lsSQL);
