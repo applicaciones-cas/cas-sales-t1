@@ -28,7 +28,7 @@ public class SalesInquiryStatic {
         public static final String SPCAR       = "0000006";   //CAR SP       
         public static final String GENERAL     = "0000007";   //General      
         public static final String FOOD        = "0000008";   //Food         
-//        public static final String HOSPITALITY = "0009";   //Hospitality 
+        public static final String HOSPITALITY = "0000009";   //Hospitality/MonarchFood 0009
     }
     
     public static class ClientType  {
