@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
@@ -35,7 +39,9 @@ import org.guanzon.cas.parameter.Brand;
 import org.guanzon.cas.parameter.CategoryLevel2;
 import org.guanzon.cas.parameter.Color;
 import org.guanzon.cas.parameter.ModelVariant;
+import org.guanzon.cas.parameter.model.Model_Brand;
 import org.guanzon.cas.parameter.services.ParamControllers;
+import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
@@ -45,6 +51,7 @@ import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
+import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryRequirements;
@@ -107,7 +114,60 @@ public class SalesInquiry extends Transaction {
     public JSONObject UpdateTransaction() {
         return updateTransaction();
     }
+    
+    public String getInquiryStatus(String lsStatus) {
+        switch (lsStatus) {
+            case SalesInquiryStatic.LOST:
+                return "Lost Sale";
+            case SalesInquiryStatic.CONFIRMED:
+                return "Confirmed";
+            case SalesInquiryStatic.QUOTED:
+                return "Quoted";
+            case SalesInquiryStatic.SALE:
+                return "Sale";
+            case SalesInquiryStatic.OPEN:
+                return "Open";
+            case SalesInquiryStatic.VOID:
+                return "Void";
+            case SalesInquiryStatic.CANCELLED:
+                return "Cancelled";
+            default:
+                return "Unknown";
+        }
+    }
+    
+    /**
+     * Call Approval for encoder
+     * @return 
+     */
+    public JSONObject callApproval(){
+        poJSON = new JSONObject();
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            poJSON = ShowDialogFX.getUserApproval(poGRider);
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+            if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "User is not an authorized approving officer.");
+                return poJSON;
+            }
+        }   
+        
+        poJSON.put("result", "success");
+        poJSON.put("message", "success");
+        return poJSON;
+    }
 
+    /**
+     * Confirm the transaction
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject ConfirmTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -116,7 +176,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.CONFIRMED;
-        boolean lbConfirm = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -152,38 +211,34 @@ public class SalesInquiry extends Transaction {
         }
                 
         //Require approval when user is not equal to sales man and user is not supervisor
-        if(!Master().getSalesMan().equals(poGRider.getUserID())){
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
-                        return poJSON;
-                    }
-                }
+        if(!Master().getSalesMan().equals(getSysUser(poGRider.getUserID(), true))){
+            poJSON = callApproval();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
             }
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbConfirm);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbConfirm) {
-            poJSON.put("message", "Transaction confirmed successfully.");
-        } else {
-            poJSON.put("message", "Transaction confirmation request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction confirmed successfully.");
         return poJSON;
     }
     
+    /**
+     * Quote the transaction
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject QuoteTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -192,7 +247,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.QUOTED;
-        boolean lbConfirm = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -213,22 +267,26 @@ public class SalesInquiry extends Transaction {
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbConfirm);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbConfirm) {
-            poJSON.put("message", "Transaction quoted successfully.");
-        } else {
-            poJSON.put("message", "Transaction quotation request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction quoted successfully.");
         return poJSON;
     }
     
+    /**
+     * Sale the transaction
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject SaleTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -237,7 +295,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.SALE;
-        boolean lbConfirm = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -258,22 +315,26 @@ public class SalesInquiry extends Transaction {
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbConfirm);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbConfirm) {
-            poJSON.put("message", "Transaction converted to sale successfully.");
-        } else {
-            poJSON.put("message", "Transaction convertion for sale request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction converted to sale successfully.");
         return poJSON;
     }
     
+    /**
+     * Lost the transaction 
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject LostTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -282,7 +343,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.LOST;
-        boolean lbConfirm = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -303,37 +363,33 @@ public class SalesInquiry extends Transaction {
         }
         
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if (!"success".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                } else {
-                    if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "User is not an authorized approving officer.");
-                        return poJSON;
-                    }
-                }
+            poJSON = callApproval();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
             }
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbConfirm);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbConfirm) {
-            poJSON.put("message", "Transaction tagged as lost/declined successfully.");
-        } else {
-            poJSON.put("message", "Transaction tagging as lost/declined request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction tagged as lost/declined successfully.");
         return poJSON;
     }
     
+    /**
+     * Cancel the transaction
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject CancelTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -342,7 +398,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.CANCELLED;
-        boolean lbCancelled = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -364,38 +419,34 @@ public class SalesInquiry extends Transaction {
 
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
             if(!Master().getSalesMan().equals(poGRider.getUserID())){
-                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                    poJSON = ShowDialogFX.getUserApproval(poGRider);
-                    if (!"success".equals((String) poJSON.get("result"))) {
-                        return poJSON;
-                    } else {
-                        if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                            poJSON.put("result", "error");
-                            poJSON.put("message", "User is not an authorized approving officer.");
-                            return poJSON;
-                        }
-                    }
+                poJSON = callApproval();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
                 }
             }
         }
 
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbCancelled);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbCancelled) {
-            poJSON.put("message", "Transaction cancelled successfully.");
-        } else {
-            poJSON.put("message", "Transaction cancellation request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction cancelled successfully.");
         return poJSON;
     }
-
+    
+    /**
+     * Void the transaction
+     * @param remarks
+     * @return JSONObject success or error
+     * @throws ParseException
+     * @throws SQLException
+     * @throws GuanzonException
+     * @throws CloneNotSupportedException 
+     */
     public JSONObject VoidTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -404,7 +455,6 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
 
         String lsStatus = SalesInquiryStatic.VOID;
-        boolean lbVoid = true;
 
         if (getEditMode() != EditMode.READY) {
             poJSON.put("result", "error");
@@ -426,38 +476,29 @@ public class SalesInquiry extends Transaction {
 
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
             if(!Master().getSalesMan().equals(poGRider.getUserID())){
-                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-                    poJSON = ShowDialogFX.getUserApproval(poGRider);
-                    if (!"success".equals((String) poJSON.get("result"))) {
-                        return poJSON;
-                    } else {
-                        if(Integer.parseInt(poJSON.get("nUserLevl").toString())<= UserRight.ENCODER){
-                            poJSON.put("result", "error");
-                            poJSON.put("message", "User is not an authorized approving officer.");
-                            return poJSON;
-                        }
-                    }
+                poJSON = callApproval();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
                 }
             }
         }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbVoid);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
-        if (lbVoid) {
-            poJSON.put("message", "Transaction voided successfully.");
-        } else {
-            poJSON.put("message", "Transaction voiding request submitted successfully.");
-        }
-
+        poJSON.put("message", "Transaction voided successfully.");
         return poJSON;
     }
     
+    /**
+     * Check for inquiry requirements
+     * @return 
+     */
     private JSONObject checkRequirements(){
         poJSON = new JSONObject();
         boolean lbIsWithRequirements = false;
@@ -477,7 +518,10 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
-    
+    /**
+     * Check Bank Application for PO or Financing Inquiry
+     * @return 
+     */
     private JSONObject checkBankApplication(){
         poJSON = new JSONObject();
         boolean lbIsWithBankApp = false;
@@ -501,7 +545,13 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
-    
+    /**
+     * Search Transaction
+     * @return
+     * @throws CloneNotSupportedException
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject searchTransaction()
             throws CloneNotSupportedException,
             SQLException,
@@ -526,7 +576,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -551,7 +601,15 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
     }
-    
+    /**
+     * Search transaction 
+     * @param fsClient via Client Name
+     * @param fsTransNo via transaction no
+     * @return JSONObject success or error
+     * @throws CloneNotSupportedException
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject searchTransaction(String fsClient, String fsTransNo)
             throws CloneNotSupportedException,
             SQLException,
@@ -580,7 +638,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -606,6 +664,18 @@ public class SalesInquiry extends Transaction {
         }
     }
     
+    /**
+     * Search Transaction
+     * @param fsIndustry filter by Industry 
+     * @param fsCompany filter by Company
+     * @param fsCategory filter by Category
+     * @param fsClient filter by Client
+     * @param fsTransNo filter by Transaction NO
+     * @return JSONObject success or error
+     * @throws CloneNotSupportedException
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject searchTransaction(String fsIndustry, String fsCompany, String fsCategory, String fsClient, String fsTransNo)
             throws CloneNotSupportedException,
             SQLException,
@@ -635,7 +705,7 @@ public class SalesInquiry extends Transaction {
         //If current user is an ordinary user load only its inquiries
         if (poGRider.getUserLevel() <= UserRight.ENCODER) {
             lsSQL = MiscUtil.addCondition(lsSQL, 
-                    " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                    " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
         if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -662,6 +732,14 @@ public class SalesInquiry extends Transaction {
     }
     
     /*Search Master References*/
+    /**
+     * Search for Inquiring customer
+     * @param value 
+     * @param byCode
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchClient(String value, boolean byCode)
             throws SQLException,
             GuanzonException {
@@ -691,6 +769,14 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    /**
+     * Search Referral Agent
+     * @param value
+     * @param byCode
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchReferralAgent(String value, boolean byCode)
             throws SQLException,
             GuanzonException {
@@ -706,6 +792,14 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    /**
+     * Search Sales Person
+     * @param value
+     * @param byCode
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchSalesPerson(String value, boolean byCode)
             throws SQLException,
             GuanzonException {
@@ -721,6 +815,14 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    /**
+     * Search Source
+     * @param value
+     * @param byCode
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchSource(String value, boolean byCode)
             throws SQLException,
             GuanzonException {
@@ -735,7 +837,16 @@ public class SalesInquiry extends Transaction {
 
         return poJSON;
     }
-    
+    /**
+     * Search Brand
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws ExceptionInInitializerError
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchBrand(String value, boolean byCode, int row)
             throws ExceptionInInitializerError,
             SQLException,
@@ -752,24 +863,49 @@ public class SalesInquiry extends Transaction {
         if ("error".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-        
-        Brand object = new ParamControllers(poGRider, logwrapr).Brand();
-        object.setRecordStatus(RecordStatus.ACTIVE);
+       
+        Model_Brand object = new ParamModels(poGRider).Brand();
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(object), "sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryId()));
+        System.out.println("Execute SQL : " + lsSQL);
+        poJSON = ShowDialogFX.Search(poGRider,
+                lsSQL,
+                value,
+                "ID»Description",
+                "sBrandIDx»sDescript",
+                "sBrandIDx»sDescript",
+                byCode ? 0 : 1);
 
-        poJSON = object.searchRecord(value, byCode, Master().getIndustryId());
-        if ("success".equals((String) poJSON.get("result"))) {
-            if (!object.getModel().getBrandId().equals(Detail(row).getBrandId())) {
-                Detail(row).setModelId("");
-                Detail(row).setModelVarianId("");
-                Detail(row).setColorId("");
-                Detail(row).setStockId("");
+        if (poJSON != null) {
+            String lsBrandId = (String) poJSON.get("sBrandIDx");
+            if( lsBrandId != null && !"".equals(lsBrandId)){
+                if (!lsBrandId.equals(Detail(row).getBrandId())) {
+                    Detail(row).setModelId("");
+                    Detail(row).setModelVarianId("");
+                    Detail(row).setColorId("");
+                    Detail(row).setStockId("");
+                }
+
+                Detail(row).setBrandId(lsBrandId);
             }
-
-            Detail(row).setBrandId(object.getModel().getBrandId());
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
         }
+        poJSON.put("result", "success");
         return poJSON;
     }
-
+    
+    /**
+     * Search Model
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchModel(String value, boolean byCode, int row)
             throws SQLException,
             GuanzonException {
@@ -806,11 +942,23 @@ public class SalesInquiry extends Transaction {
             Detail(row).setModelId(object.getModel().getModelId());
             Detail(row).setModelVarianId(object.getModel().getVariantId());
             Detail(row).setCategory("");
+            
+            System.out.println("MODEL : " + Detail(row).Model().getDescription());
+            System.out.println("MODEL Variant :" + Detail(row).ModelVariant().getDescription());
         }
 
         return poJSON;
     }
     
+    /**
+     * Search Color
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchColor(String value, boolean byCode, int row)
             throws SQLException,
             GuanzonException {
@@ -841,7 +989,7 @@ public class SalesInquiry extends Transaction {
             String lsCategoryId = "";
             Inventory inventory = new InvControllers(poGRider, logwrapr).Inventory();
             inventory.setRecordStatus(RecordStatus.ACTIVE); //Master().getCategoryType()
-            inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
+            poJSON = inventory.searchRecord(Master().getCategoryCode(), Detail(row).getBrandId(),  Detail(row).getModelId(),  Detail(row).getModelVarianId(),  object.getModel().getColorId());
             if (!"error".equals((String) poJSON.get("result"))) {
                 lsStockId = inventory.getModel().getStockId();
                 lsCategoryId = inventory.getModel().getCategoryFirstLevelId();
@@ -882,7 +1030,15 @@ public class SalesInquiry extends Transaction {
 
         return poJSON;
     }
-    
+    /**
+     * Search Category
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchCategory(String value, boolean byCode, int row) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         
@@ -924,6 +1080,15 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    /**
+     * Search Inventory
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchInventory(String value, boolean byCode, int row) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         
@@ -1117,24 +1282,25 @@ public class SalesInquiry extends Transaction {
 //        return poJSON;
 //    }
     
+    /**
+     * Check Existing product in detail
+     * @param row
+     * @param brandId
+     * @param modelId
+     * @param modelVariantId
+     * @param colorId
+     * @param stockId
+     * @return 
+     */
     private JSONObject checkExistingDetail(int row,String brandId, String modelId, String modelVariantId, String colorId, String stockId){
         poJSON = new JSONObject();
         poJSON.put("row", row);
-        if(brandId == null){
-            brandId = "";
-        }
-        if(modelId == null){
-            modelId = "";
-        }
-        if(modelVariantId == null){
-            modelVariantId = "";
-        }
-        if(colorId == null){
-            colorId = "";
-        }
-        if(stockId == null){
-            stockId = "";
-        }
+        
+        brandId = (brandId == null) ? "" : brandId;
+        modelId = (modelId == null) ? "" : modelId;
+        modelVariantId = (modelVariantId == null) ? "" : modelVariantId;
+        colorId = (colorId == null) ? "" : colorId;
+        stockId = (stockId == null) ? "" : stockId;
         
         for (int lnCtr = 0; lnCtr <= getDetailCount()- 1; lnCtr++) {
             if (lnCtr != row) {
@@ -1179,26 +1345,54 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
+    /**
+     * Validate maximum product to inquire
+     * @return 
+     */
     public JSONObject checkMaximumInqDetail(){
         poJSON = new JSONObject();
         //Check if client type is corporate allow only 5 inquiry detail
-        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.APPLIANCES)
-                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOBILEPHONE)){
-            
-            //Corporate
-            if(Master().getClientType().equals(SalesInquiryStatic.ClientType.CORPORATE)){
-                if(getDetailCount() > 5){
-                    poJSON.put("result", "error");
-                    poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
-                    return poJSON;
+        switch(Master().getCategoryCode()){
+            case SalesInquiryStatic.CategoryCode.CAR:
+            case SalesInquiryStatic.CategoryCode.MOTORCYCLE:
+            case SalesInquiryStatic.CategoryCode.APPLIANCES:
+            case SalesInquiryStatic.CategoryCode.MOBILEPHONE:
+                //Corporate
+                if(Master().getClientType().equals(SalesInquiryStatic.ClientType.CORPORATE)){
+                    if(getDetailCount() > 5){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
+                        return poJSON;
+                    }
                 }
-            }
+            break;
         }
+//        if(Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.CAR)
+//                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOTORCYCLE)
+//                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.APPLIANCES)
+//                || Master().getCategoryCode().equals(SalesInquiryStatic.CategoryCode.MOBILEPHONE)){
+//            
+//            //Corporate
+//            if(Master().getClientType().equals(SalesInquiryStatic.ClientType.CORPORATE)){
+//                if(getDetailCount() > 5){
+//                    poJSON.put("result", "error");
+//                    poJSON.put("message", "You can only inquire up to 5 items for corporate client.");
+//                    return poJSON;
+//                }
+//            }
+//        }
         return poJSON;
     }
     
+    /**
+     * Search Receiving Sales Man
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchReceivedBy(String value, boolean byCode, int row)
             throws SQLException,
             GuanzonException {
@@ -1213,7 +1407,15 @@ public class SalesInquiry extends Transaction {
 
         return poJSON;
     }
-    
+    /**
+     * Search Bank
+     * @param value
+     * @param byCode
+     * @param row
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject SearchBank(String value, boolean byCode, int row)
             throws SQLException,
             GuanzonException {
@@ -1245,7 +1447,12 @@ public class SalesInquiry extends Transaction {
         poJSON.put("row", row);
         return poJSON;
     }
-    
+    /**
+     * Check Existing Bank
+     * @param bankId
+     * @param row
+     * @return JSONObject success or error
+     */
     private JSONObject checkExistingBank(String bankId, int row){
         poJSON = new JSONObject();
         
@@ -1265,10 +1472,15 @@ public class SalesInquiry extends Transaction {
             }
         }
         
-    
         return poJSON;
     }
     
+    /**
+     * Load Requirements
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject loadRequirements()
             throws SQLException,
             GuanzonException {
@@ -1289,7 +1501,12 @@ public class SalesInquiry extends Transaction {
         }
         return poJSON;
     }
-    
+    /**
+     * Load Sales Inquiry Requirements
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     private List getSalesInquiryRequirements() throws SQLException, GuanzonException {
         String lsSQL = salesInquiryRequirementSQL();
         lsSQL = MiscUtil.addCondition(lsSQL, "sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
@@ -1301,7 +1518,13 @@ public class SalesInquiry extends Transaction {
         }
         return loList;
     }
-    
+    /**
+     * Load Requirements per group
+     * @param customerGroup
+     * @return JSONObject success or error
+     * @throws SQLException
+     * @throws GuanzonException 
+     */
     public JSONObject getRequirements(String customerGroup)
             throws SQLException,
             GuanzonException {
@@ -1605,17 +1828,14 @@ public class SalesInquiry extends Transaction {
             throws SQLException,
             GuanzonException {
         poJSON = new JSONObject();
-        paBankApplications = new ArrayList<>();
-
+        paBankApplications = null;
         List loList = getBankApplications();
         for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
-            paBankApplications.add(BankApplication());
-            poJSON = paBankApplications.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr), lnCtr+1);
-            if ("success".equals((String) poJSON.get("result"))) {
-                if(Master().getEditMode() == EditMode.UPDATE){
-                   poJSON = paBankApplications.get(getBankApplicationsCount() - 1).updateRecord();
-                }
+            if(paBankApplications == null){
+                paBankApplications = new ArrayList<>();
             }
+            paBankApplications.add(BankApplication());
+            poJSON = paBankApplications.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr));
             
         }
         return poJSON;
@@ -1655,44 +1875,46 @@ public class SalesInquiry extends Transaction {
             SQLException, 
             GuanzonException{     
         
-        if(getEditMode() == EditMode.ADDNEW || getEditMode() == EditMode.UPDATE){
-        } else {
-            return;
-        }
+//        if(getEditMode() == EditMode.ADDNEW || getEditMode() == EditMode.UPDATE){
+//        } else {
+//            return;
+//        }
                    
-        String lsBankApplicationNo = "";
-        int lnRow = getBankApplicationsCount() - 1;
-        while (lnRow >= 0) {
-            if (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId())) {
-                if (paBankApplications.get(lnRow).getApplicationNo()!= null
-                    && !"".equals(paBankApplications.get(lnRow).getApplicationNo())) {
-                    lsBankApplicationNo = paBankApplications.get(lnRow).getApplicationNo();
-                }
-                paBankApplications.remove(lnRow);
-            }
-            lnRow--;
-        }
-
-        if ((getBankApplicationsCount()- 1) >= 0) {
-            if (paBankApplications.get(getBankApplicationsCount() - 1).getBankId()!= null
-                    && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId())) {
-                addBankApplication();
-            }
-        }
-
-        if ((getBankApplicationsCount() - 1) < 0) {
-            addBankApplication();
-        }
-        
-        if (!lsBankApplicationNo.isEmpty()) {
-            paBankApplications.get(getBankApplicationsCount() - 1).setApplicationNo(lsBankApplicationNo);
-        }
-        
-        paBankApplications.get(getBankApplicationsCount() - 1).setPaymentMode(Master().getPurchaseType());
+//        String lsBankApplicationNo = "";
+//        int lnRow = getBankApplicationsCount() - 1;
+//        while (lnRow >= 0) {
+//            if (paBankApplications.get(lnRow).getBankId()== null || "".equals(paBankApplications.get(lnRow).getBankId())) {
+//                if (paBankApplications.get(lnRow).getApplicationNo()!= null
+//                    && !"".equals(paBankApplications.get(lnRow).getApplicationNo())) {
+//                    lsBankApplicationNo = paBankApplications.get(lnRow).getApplicationNo();
+//                }
+//                paBankApplications.remove(lnRow);
+//            }
+//            lnRow--;
+//        }
+//
+//        if ((getBankApplicationsCount()- 1) >= 0) {
+//            if (paBankApplications.get(getBankApplicationsCount() - 1).getBankId()!= null
+//                    && !"".equals(paBankApplications.get(getBankApplicationsCount() - 1).getBankId())) {
+//                addBankApplication();
+//            }
+//        }
+//
+//        if ((getBankApplicationsCount() - 1) < 0) {
+//            addBankApplication();
+//        }
+//        
+//        if (!lsBankApplicationNo.isEmpty()) {
+//            paBankApplications.get(getBankApplicationsCount() - 1).setApplicationNo(lsBankApplicationNo);
+//        }
+//        
+//        paBankApplications.get(getBankApplicationsCount() - 1).setPaymentMode(Master().getPurchaseType());
     }
     private List getBankApplications() throws SQLException, GuanzonException {
         String lsSQL = bankApplicationSQL();
-        lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(Master().getTransactionNo()));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sSourceNo = " + SQLUtil.toSQL(Master().getTransactionNo())
+                                                +  " AND sSourceCd = " + SQLUtil.toSQL(getSourceCode())
+                                                 );
         System.out.println("Executing SQL: " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         List<String> loList = new ArrayList();
@@ -1747,7 +1969,7 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "error");
         poJSON.put("message", "Not supported yet.");
 
-//        String lsStatus = BankApplicationStatus.APPROVED;
+//        String lsStatus = SalesInquiryStatic.APPROVED;
 //        boolean lbStatus = true;
 //        
 //        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
@@ -1796,7 +2018,7 @@ public class SalesInquiry extends Transaction {
 //            return poJSON;
 //        }
 //        
-//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.APPROVED);
+//        paBankApplications.get(row).setTransactionStatus(SalesInquiryStatic.APPROVED);
 //        poJSON = paBankApplications.get(row).saveRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
@@ -1822,7 +2044,7 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "error");
         poJSON.put("message", "Not supported yet.");
 
-//        String lsStatus = BankApplicationStatus.DISAPPROVED;
+//        String lsStatus = SalesInquiryStatic.DISAPPROVED;
 //        boolean lbStatus = true;
 //
 //        if (paBankApplications.get(row).getEditMode() != EditMode.READY) {
@@ -1870,7 +2092,7 @@ public class SalesInquiry extends Transaction {
 //            return poJSON;
 //        }
 //        
-//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.DISAPPROVED);
+//        paBankApplications.get(row).setTransactionStatus(SalesInquiryStatic.DISAPPROVED);
 //        poJSON = paBankApplications.get(row).saveRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
@@ -1896,7 +2118,7 @@ public class SalesInquiry extends Transaction {
         poJSON.put("result", "error");
         poJSON.put("message", "Not supported yet.");
 
-//        String lsStatus = BankApplicationStatus.CANCELLED;
+//        String lsStatus = SalesInquiryStatic.CANCELLED;
 //        boolean lbStatus = true;
 //        poJSON = paBankApplications.get(row).openRecord(paBankApplications.get(row).getTransactionNo(), row+1);
 //        if (!"success".equals((String) poJSON.get("result"))) {
@@ -1947,7 +2169,7 @@ public class SalesInquiry extends Transaction {
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-//        paBankApplications.get(row).setTransactionStatus(BankApplicationStatus.CANCELLED);
+//        paBankApplications.get(row).setTransactionStatus(SalesInquiryStatic.CANCELLED);
 //        System.out.println("edit mode : " + paBankApplications.get(row).getEditMode());
 //        poJSON = paBankApplications.get(row).saveRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
@@ -1972,7 +2194,7 @@ public class SalesInquiry extends Transaction {
 //            CloneNotSupportedException {
 //        poJSON = new JSONObject();
 //
-//        String lsStatus = BankApplicationStatus.CANCELLED;
+//        String lsStatus = SalesInquiryStatic.CANCELLED;
 //        boolean lbStatus = true;
 //        Model_Bank_Application object = new SalesModels(poGRider).BankApplication();
 //        object.initialize();
@@ -2025,7 +2247,7 @@ public class SalesInquiry extends Transaction {
 //        if (!"success".equals((String) poJSON.get("result"))) {
 //            return poJSON;
 //        }
-//        object.setTransactionStatus(BankApplicationStatus.CANCELLED);
+//        object.setTransactionStatus(SalesInquiryStatic.CANCELLED);
 //        System.out.println("edit mode : " + object.getEditMode());
 //        poJSON = object.saveRecord();
 //        if (!"success".equals((String) poJSON.get("result"))) {
@@ -2082,7 +2304,7 @@ public class SalesInquiry extends Transaction {
             //If current user is an ordinary user load only its inquiries
             if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                 lsSQL = MiscUtil.addCondition(lsSQL, 
-                        " a.sSalesman = " + SQLUtil.toSQL(poGRider.getUserID()));
+                        " a.sSalesman = "  + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
             }
 
             if (lsTransStat != null && !"".equals(lsTransStat)) {
@@ -2413,7 +2635,7 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
         
         if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            if(!Master().getSalesMan().equals(poGRider.getUserID())){
+            if(!Master().getSalesMan().equals(getSysUser(poGRider.getUserID(), true))){
                 if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                     poJSON = ShowDialogFX.getUserApproval(poGRider);
                     if (!"success".equals((String) poJSON.get("result"))) {
@@ -2485,13 +2707,13 @@ public class SalesInquiry extends Transaction {
         }
         
         //remove bank application without details
-        Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
-        while (bankApplication.hasNext()) {
-            Model_Bank_Application item = bankApplication.next();
-            if (item.getBankId() == null || "".equals(item.getBankId())){
-                bankApplication.remove();
-            }
-        }
+//        Iterator<Model_Bank_Application> bankApplication = paBankApplications.iterator();
+//        while (bankApplication.hasNext()) {
+//            Model_Bank_Application item = bankApplication.next();
+//            if (item.getBankId() == null || "".equals(item.getBankId())){
+//                bankApplication.remove();
+//            }
+//        }
         
         //remove bank application without details
         Iterator<Model_Sales_Inquiry_Requirements> requirements = paRequirements.iterator();
@@ -2603,23 +2825,23 @@ public class SalesInquiry extends Transaction {
             }
             
             //Save Bank Applications
-            for (int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++) {
-                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW){
-                    paBankApplications.get(lnCtr).setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
-                    paBankApplications.get(lnCtr).setEntryDate(poGRider.getServerDate());
-                }
-                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW || paBankApplications.get(lnCtr).getEditMode() == EditMode.UPDATE) {
-                    paBankApplications.get(lnCtr).setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
-                    paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
-                    poJSON = paBankApplications.get(lnCtr).saveRecord();
-                    if ("error".equals((String) poJSON.get("result"))) {
-                        System.out.println("Save Sales Inquiry Bank Application " + (String) poJSON.get("message"));
-                        poJSON.put("result", "error");
-                        poJSON.put("message", (String) poJSON.get("message"));
-                        return poJSON;
-                    }
-                }
-            }
+//            for (int lnCtr = 0; lnCtr <= getBankApplicationsCount()- 1; lnCtr++) {
+//                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW){
+//                    paBankApplications.get(lnCtr).setEntryBy(poGRider.Encrypt(poGRider.getUserID()));
+//                    paBankApplications.get(lnCtr).setEntryDate(poGRider.getServerDate());
+//                }
+//                if (paBankApplications.get(lnCtr).getEditMode() == EditMode.ADDNEW || paBankApplications.get(lnCtr).getEditMode() == EditMode.UPDATE) {
+//                    paBankApplications.get(lnCtr).setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+//                    paBankApplications.get(lnCtr).setModifiedDate(poGRider.getServerDate());
+//                    poJSON = paBankApplications.get(lnCtr).saveRecord();
+//                    if ("error".equals((String) poJSON.get("result"))) {
+//                        System.out.println("Save Sales Inquiry Bank Application " + (String) poJSON.get("message"));
+//                        poJSON.put("result", "error");
+//                        poJSON.put("message", (String) poJSON.get("message"));
+//                        return poJSON;
+//                    }
+//                }
+//            }
             
             //Delete Record
             for (int lnCtr = 0; lnCtr <= getRequirementsRemovedCount()- 1; lnCtr++) {
@@ -2658,7 +2880,7 @@ public class SalesInquiry extends Transaction {
             LocalDate currentDate = strToDate(xsDateShort(poGRider.getServerDate())).plusMonths(1);
             String formattedDate = currentDate.format(DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
             Master().setTargetDate(SQLUtil.toDate(formattedDate, SQLUtil.FORMAT_SHORT_DATE));
-            Master().setSalesMan(poGRider.getUserID());
+            Master().setSalesMan(getSysUser(poGRider.getUserID(), true));
             Master().setPurchaseType("0");
             if(SalesInquiryStatic.CategoryCode.CAR.equals(Master().getCategoryCode()) 
                     || SalesInquiryStatic.CategoryCode.MOTORCYCLE.equals(Master().getCategoryCode())){
@@ -2666,7 +2888,7 @@ public class SalesInquiry extends Transaction {
             }
             Master().setClientType("0");
 
-        } catch (SQLException ex) {
+        } catch (SQLException | GuanzonException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
             poJSON.put("result", "error");
             poJSON.put("message", MiscUtil.getException(ex));
@@ -2773,5 +2995,156 @@ public class SalesInquiry extends Transaction {
                 + " , sApplicNo "
                 + " , cTranStat "
                 + " FROM bank_application ";
+    }
+    
+    /**
+     * Loads status history, maps status codes to captions, and displays the status-history dialog.
+     *
+     * @throws SQLException If a database access error occurs.
+     * @throws GuanzonException If model operations fail.
+     * @throws Exception If UI rendering fails.
+     */
+    public void ShowStatusHistory() throws SQLException, GuanzonException, Exception{
+        CachedRowSet crs = getStatusHistory();
+
+        crs.beforeFirst();
+        while(crs.next()){
+            switch (crs.getString("cRefrStat")){
+                case "":
+                    crs.updateString("cRefrStat", "-");
+                    break;
+                case SalesInquiryStatic.OPEN:
+                    crs.updateString("cRefrStat", "OPEN");
+                    break;
+                case SalesInquiryStatic.CONFIRMED:
+                    crs.updateString("cRefrStat", "CONFIRMED");
+                    break;
+                case SalesInquiryStatic.QUOTED:
+                    crs.updateString("cRefrStat", "QUOTED");
+                    break;
+                case SalesInquiryStatic.LOST:
+                    crs.updateString("cRefrStat", "LOST");
+                    break;
+                case SalesInquiryStatic.CANCELLED:
+                    crs.updateString("cRefrStat", "CANCELLED");
+                    break;
+                case SalesInquiryStatic.SALE:
+                    crs.updateString("cRefrStat", "SALE");
+                    break;
+                case SalesInquiryStatic.VOID:
+                    crs.updateString("cRefrStat", "VOID");
+                    break;
+                default:
+                    char ch = crs.getString("cRefrStat").charAt(0);
+                    String stat = String.valueOf((int) ch - 64);
+
+                    switch (stat){
+                        case SalesInquiryStatic.OPEN:
+                            crs.updateString("cRefrStat", "OPEN");
+                            break;
+                        case SalesInquiryStatic.CONFIRMED:
+                            crs.updateString("cRefrStat", "CONFIRMED");
+                            break;
+                        case SalesInquiryStatic.QUOTED:
+                            crs.updateString("cRefrStat", "QUOTED");
+                            break;
+                        case SalesInquiryStatic.LOST:
+                            crs.updateString("cRefrStat", "LOST");
+                            break;
+                        case SalesInquiryStatic.CANCELLED:
+                            crs.updateString("cRefrStat", "CANCELLED");
+                            break;
+                        case SalesInquiryStatic.SALE:
+                            crs.updateString("cRefrStat", "SALE");
+                            break;
+                        case SalesInquiryStatic.VOID:
+                            crs.updateString("cRefrStat", "VOID");
+                            break;
+                    }
+            }
+            crs.updateRow();
+        }
+
+        JSONObject loJSON  = getEntryBy();
+        String entryBy = "";
+        String entryDate = "";
+
+        if ("success".equals((String) loJSON.get("result"))){
+            entryBy = (String) loJSON.get("sCompnyNm");
+            entryDate = (String) loJSON.get("sEntryDte");
+        }
+        showStatusHistoryUI("Sales Inquiry", Master().getTransactionNo(), entryBy, entryDate, crs);
+    }
+
+    /**
+     * Resolves encoder name and entry timestamp from audit logs for the current transaction.
+     *
+     * @return JSON result containing entry metadata.
+     * @throws SQLException If a database access error occurs.
+     * @throws GuanzonException If user lookup operations fail.
+     */
+    public JSONObject getEntryBy() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsEntry = "";
+        String lsEntryDate = "";
+        String lsSQL =  " SELECT b.sModified, b.dModified "
+                + " FROM "+Master().getTable()+" a "
+                + " LEFT JOIN xxxAuditLogMaster b ON b.sSourceNo = a.sTransNox AND b.sEventNme LIKE 'ADD%NEW' AND b.sRemarksx = " + SQLUtil.toSQL(Master().getTable());
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sTransNox =  " + SQLUtil.toSQL(Master().getTransactionNo()));
+        lsSQL = lsSQL + " ORDER BY b.dModified DESC ";
+        System.out.println("Execute SQL : " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    if(loRS.getString("sModified") != null && !"".equals(loRS.getString("sModified"))){
+                        if(loRS.getString("sModified").length() > 10){
+                            lsEntry = getSysUser(poGRider.Decrypt(loRS.getString("sModified")), false);
+                        } else {
+                            lsEntry = getSysUser(loRS.getString("sModified"), false);
+                        }
+                        // Get the LocalDateTime from your result set
+                        LocalDateTime dModified = loRS.getObject("dModified", LocalDateTime.class);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
+                        lsEntryDate =  dModified.format(formatter);
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+            return poJSON;
+        }
+
+        poJSON.put("result", "success");
+        poJSON.put("sCompnyNm", lsEntry);
+        poJSON.put("sEntryDte", lsEntryDate);
+        return poJSON;
+    }
+
+    public String getSysUser(String fsId, boolean fbIsID) throws SQLException, GuanzonException {
+        String lsEntry = "";
+        String lsSQL =   " SELECT b.sCompnyNm, a.sEmployNo from xxxSysUser a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId)) ;
+        System.out.println("SQL " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    if(fbIsID) {
+                        lsEntry = loRS.getString("sEmployNo");
+                    } else {
+                        lsEntry = loRS.getString("sCompnyNm");
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+        return lsEntry;
     }
 }

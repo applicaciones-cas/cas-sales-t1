@@ -6,6 +6,7 @@
 package ph.com.guanzongroup.cas.sales.t1.model;
 
 import static com.sun.corba.se.impl.activation.ServerMain.logError;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -133,31 +134,57 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
     
     public JSONObject setReceivedDate(Date receivedDate) {
+      if (receivedDate == null) {
+            try {
+                poEntity.updateNull("dReceived");
+            } catch (SQLException ex) {
+                Logger.getLogger(getClass().getName())
+                        .log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            }
+
+            return new JSONObject();
+        }
         return setValue("dReceived", receivedDate);
     }
 
-    public Date getReceivedDate() {
-//        System.out.println("Datetime " + getValue("dReceived"));
-//        System.out.println("Date " + (Date) getValue("dReceived"));
-        
-        
-//        try {
-//            System.out.println("getDate " + poEntity.getDate("dReceived"));
-//            return poEntity.getDate("dReceived");
-//        } catch (SQLException e) {
-//            logError(getReceivedDate() + "»" + e.getMessage());
-//        }
-        
-//        try {
-//            System.out.println("get date : " + poEntity.getString("dReceived"));
-//            System.out.println("toDate : " + SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP));
-//            return SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP);
-//        } catch (SQLException e) {
-//            logError(getReceivedDate() + "»" + e.getMessage());
-//        }
+//    public Date getReceivedDate() {
+////        System.out.println("Datetime " + getValue("dReceived"));
+////        System.out.println("Date " + (Date) getValue("dReceived"));
 //        
-//        return null;
-        
+//        
+////        try {
+////            System.out.println("getDate " + poEntity.getDate("dReceived"));
+////            return poEntity.getDate("dReceived");
+////        } catch (SQLException e) {
+////            logError(getReceivedDate() + "»" + e.getMessage());
+////        }
+//        
+////        try {
+////            System.out.println("get date : " + poEntity.getString("dReceived"));
+////            System.out.println("toDate : " + SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP));
+////            return SQLUtil.toDate(poEntity.getString("dReceived"), SQLUtil.FORMAT_TIMESTAMP);
+////        } catch (SQLException e) {
+////            logError(getReceivedDate() + "»" + e.getMessage());
+////        }
+////        
+////        return null;
+//        System.out.println("receive date getValue : " + getValue("dReceived"));
+//        return (Date) getValue("dReceived");
+//    }
+    public Date getReceivedDate() {
+        if((Date) getValue("dReceived") == null && getReceivedBy() != null && !"".equals(getReceivedBy()) ){
+            try {
+                String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(this), 
+                                    " sTransNox = " + SQLUtil.toSQL((String) getValue("sTransNox"))
+                                    );
+                ResultSet loRS = poGRider.executeQuery(lsSQL);
+                if (loRS.next()) {
+                    setReceivedDate(loRS.getTimestamp("dReceived"));
+                }
+            } catch (SQLException e) {
+                return (Date) getValue("dReceived");
+            } 
+        }
         return (Date) getValue("dReceived");
     }
     
@@ -226,23 +253,50 @@ public class Model_Sales_Inquiry_Requirements extends Model {
     }
     public Model_Salesman SalesPerson() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sReceived"))) {
-            if (poSalesPerson.getEditMode() == EditMode.READY
-                    && poSalesPerson.getEmployeeId().equals((String) getValue("sReceived"))) {
-                return poSalesPerson;
-            } else {
-                poJSON = poSalesPerson.openRecord((String) getValue("sReceived"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
+            String lsUserID = getSysUser((String) getValue("sReceived"));
+            if(!"".equals(lsUserID)){
+                if (poSalesPerson.getEditMode() == EditMode.READY
+                        && poSalesPerson.getEmployeeId().equals(lsUserID)) {
                     return poSalesPerson;
                 } else {
-                    poSalesPerson.initialize();
-                    return poSalesPerson;
+                    poJSON = poSalesPerson.openRecord(lsUserID);
+
+                    if ("success".equals((String) poJSON.get("result"))) {
+                        return poSalesPerson;
+                    } else {
+                        poSalesPerson.initialize();
+                        return poSalesPerson;
+                    }
                 }
+            } else {
+                poSalesPerson.initialize();
+                return poSalesPerson;
             }
         } else {
             poSalesPerson.initialize();
             return poSalesPerson;
         }
+    }
+    
+    public String getSysUser(String fsId) throws SQLException, GuanzonException {
+        String lsEntry = "";
+        String lsSQL =   " SELECT a.sEmployNo from xxxSysUser a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sEmployNo ";
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sUserIDxx =  " + SQLUtil.toSQL(fsId)) ;
+        System.out.println("SQL " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0L) {
+                if (loRS.next()) {
+                    lsEntry = loRS.getString("sEmployNo");
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+        return lsEntry;
     }
     
     //end - reference object models

@@ -19,6 +19,7 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
+import org.guanzon.appdriver.constant.UserRight;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
@@ -86,31 +87,38 @@ public class RequirementsSourcePerGroup extends Parameter {
     @Override
     public JSONObject isEntryOkay() throws SQLException, GuanzonException {
       poJSON = new JSONObject();
-        if (poModel.getRequirementId().isEmpty()) {
+      
+        if (poGRider.getUserLevel() < UserRight.SYSADMIN) {
             poJSON.put("result", "error");
-            poJSON.put("message", "Requirement id must not be empty.");
+            poJSON.put("message", "User is not allowed to save record.");
             return poJSON;
-        }
-        if (poModel.getRequirementCode().isEmpty()) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Requirement code must not be empty.");
-            return poJSON;
-        }
-        if (poModel.getCustomerGroup().isEmpty()) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Customer Group cannot be empty.");
-            return poJSON;
-        } 
-        if (poModel.getPaymentMode().isEmpty()) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "Payment mode cannot be empty.");
-            return poJSON;
-        } 
-        
-        if(getEditMode() == EditMode.ADDNEW){
-            poJSON = checkExistingSource();
-            if("error".equals((String) poJSON.get("result"))){
+        } else {
+            if (poModel.getRequirementId().isEmpty()) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Requirement id must not be empty.");
                 return poJSON;
+            }
+            if (poModel.getRequirementCode().isEmpty()) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Requirement code must not be empty.");
+                return poJSON;
+            }
+            if (poModel.getCustomerGroup().isEmpty()) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Customer Group cannot be empty.");
+                return poJSON;
+            } 
+            if (poModel.getPaymentMode().isEmpty()) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Payment mode cannot be empty.");
+                return poJSON;
+            } 
+
+            if(getEditMode() == EditMode.ADDNEW){
+                poJSON = checkExistingSource();
+                if("error".equals((String) poJSON.get("result"))){
+                    return poJSON;
+                }
             }
         }
         

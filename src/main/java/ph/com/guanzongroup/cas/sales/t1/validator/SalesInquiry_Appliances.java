@@ -100,37 +100,45 @@ public class SalesInquiry_Appliances implements GValidator{
         LocalDate oneYearAgo = serverDate.minusYears(1);
         
         if (loTransactionDate == null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Transaction Date.");
             return poJSON;
         }
 
         if ("1900-01-01".equals(xsDateShort(loTransactionDate))) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Transaction Date.");
             return poJSON;
         }
         
         if (loTargetDate == null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Invalid Target Date.");
             return poJSON;
         }
         
         if (poMaster.getIndustryId() == null) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Industry is not set.");
             return poJSON;
         }
         if (poMaster.getCompanyId() == null || "".equals(poMaster.getCompanyId())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Company is not set.");
             return poJSON;
         }
         if (poMaster.getCategoryCode()== null || "".equals(poMaster.getCategoryCode())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Category is not set.");
             return poJSON;
         }
         if (poMaster.getBranchCode()== null || "".equals(poMaster.getBranchCode())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Branch is not set.");
             return poJSON;
         }
         if (poMaster.getPurchaseType()== null || "".equals(poMaster.getPurchaseType())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Purchase Type is not set.");
             return poJSON;
         }
@@ -139,14 +147,17 @@ public class SalesInquiry_Appliances implements GValidator{
 //            return poJSON;
 //        }
         if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Inquiry Type is not set.");
             return poJSON;
         }
         if (poMaster.getSalesMan()== null || "".equals(poMaster.getSalesMan())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Sales Person is not set.");
             return poJSON;
         }
         if (poMaster.getClientId() == null || "".equals(poMaster.getClientId())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Client is not set.");
             return poJSON;
         }
@@ -159,6 +170,7 @@ public class SalesInquiry_Appliances implements GValidator{
 //            return poJSON;
 //        }
         if (poMaster.getInquiryStatus()== null || "".equals(poMaster.getInquiryStatus())) {
+            poJSON.put("result", "error");
             poJSON.put("message", "Inquiry Status is not set.");
             return poJSON;
         }
