@@ -15,6 +15,7 @@ import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.client.model.Model_Client_Address;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.model.Model_Client_Mobile;
+import org.guanzon.cas.client.model.Model_Client_Social_Media;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.parameter.model.Model_Branch;
 import org.guanzon.cas.parameter.model.Model_Company;
@@ -38,6 +39,7 @@ public class Model_Sales_Inquiry_Master extends Model {
     Model_Company poCompany;
     Model_Client_Master poClient;
     Model_Client_Address poClientAddress;
+    Model_Client_Social_Media poClientSocMed;
     Model_Client_Mobile poClientMobile;
     Model_Client_Master poAgent;
     Model_Salesman poSalesPerson;
@@ -88,6 +90,7 @@ public class Model_Sales_Inquiry_Master extends Model {
             poAgent = clientModel.ClientMaster();
             poClientAddress = clientModel.ClientAddress();
             poClientMobile = clientModel.ClientMobile();
+            poClientSocMed = clientModel.ClientSocMed();
             
             SalesModels sales = new SalesModels(poGRider);
             poSalesPerson = sales.Salesman();
@@ -413,6 +416,27 @@ public class Model_Sales_Inquiry_Master extends Model {
         } else {
             poClientAddress.initialize();
             return poClientAddress;
+        }
+    }
+
+    public Model_Client_Social_Media ClientSocMed() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sClientID"))) {
+            if (poClientSocMed.getEditMode() == EditMode.READY
+                    && poClientSocMed.getClientId().equals((String) getValue("sClientID"))) {
+                return poClientSocMed;
+            } else {
+                poJSON = poClientSocMed.openRecord((String) getValue("sClientID")); //sAddrssID
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poClientSocMed;
+                } else {
+                    poClientSocMed.initialize();
+                    return poClientSocMed;
+                }
+            }
+        } else {
+            poClientSocMed.initialize();
+            return poClientSocMed;
         }
     }
     
