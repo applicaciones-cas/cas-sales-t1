@@ -37,6 +37,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import ph.com.guanzongroup.cas.cashflow.CheckPayments;
 import ph.com.guanzongroup.cas.cashflow.services.CashflowControllers;
+import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
+import ph.com.guanzongroup.cas.cashflow.status.CheckTransferStatus;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Customer_Inquiry_FollowUp;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
@@ -70,11 +72,12 @@ import java.util.logging.Logger;
 
 public class CustomerInquiryFollowUp extends Parameter {
     Model_Customer_Inquiry_FollowUp poModel;
-
+    Model_Sales_Inquiry_Master poSalesMaster;
     @Override
     public void initialize() throws SQLException, GuanzonException {
         psRecdStat = RecordStatus.ACTIVE;
         poModel = new SalesModels(poGRider).CustomerInquiryFollowUp();
+        poSalesMaster = new SalesModels(poGRider).SalesInquiryMaster();
         super.initialize();
     }
 
@@ -246,6 +249,66 @@ public class CustomerInquiryFollowUp extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
+
+    @Override
+    public JSONObject willSave() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        try {
+
+                poJSON = setValueToOthers();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        poJSON.put("result", "success");
+        return this.poJSON;
+    }
+
+    private JSONObject setValueToOthers()
+            throws CloneNotSupportedException, SQLException, GuanzonException {
+
+        poJSON = new JSONObject();
+            UpdateSource(getModel().getSourceNo(),getModel().getResponseCode());
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+
+    private void UpdateSource(String fsSourceNo,String fsResponseCode)
+            throws GuanzonException, SQLException, CloneNotSupportedException {
+
+        poSalesMaster.openRecord(fsSourceNo);
+        poSalesMaster.updateRecord();
+        poSalesMaster.setFollowUpDate(poGRider.getServerDate());
+        if(fsResponseCode.equals(CustomerInquiryFollowUpStatic.RESPONSE_LOST_SALE)){
+            poSalesMaster.setTransactionStatus(SalesInquiryStatic.LOST);
+        }
+        poSalesMaster.setTransactionStatus(SalesInquiryStatic.LOST);
+        poSalesMaster.setModifyingId(poGRider.getUserID());
+        poSalesMaster.setModifiedDate(poGRider.getServerDate());
+    }
+
+    private JSONObject saveUpdates()
+            throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        poSalesMaster.saveRecord();
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    @Override
+    protected JSONObject saveOthers() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        try {
+            poJSON = saveUpdates();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+
     /**
      * Searches for a Customer Inquiry Follow Up record.
      *
@@ -619,7 +682,7 @@ public class CustomerInquiryFollowUp extends Parameter {
                 + " a.sSourceCd, "
                 + " a.sSourceNo"
                 + " FROM Customer_Inquiry_FollowUp a "
-                + " LEFT JOIN Sales_Inquiry_Master b ON a.sTransNox = b.sSourceNo "
+                + " LEFT JOIN Sales_Inquiry_Master b ON a.sSourceNo = b.sTransNox "
                 + " LEFT JOIN Salesman c ON a.sClientID = c.sEmployID "
                 + " LEFT JOIN Client_Master d ON b.sClientID = d.sClientID "
                 + " LEFT JOIN Client_Master e ON a.sClientID = e.sClientID ";
