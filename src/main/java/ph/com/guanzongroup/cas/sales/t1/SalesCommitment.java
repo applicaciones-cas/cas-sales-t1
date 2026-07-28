@@ -40,7 +40,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 import ph.com.guanzongroup.cas.cashflow.validator.CashAdvanceValidator;
-import ph.com.guanzongroup.cas.cashflow.validator.CashDisbursementValidator;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
@@ -51,7 +50,7 @@ import ph.com.guanzongroup.cas.sales.t1.validator.SalesCommitmentValidator;
 
 /**
  *
- * @author Arsiela 03/24/2026
+ * @author Arsiela 07282026
  */
 public class SalesCommitment extends Transaction {
     public String psCategoryId = "";
@@ -63,16 +62,6 @@ public class SalesCommitment extends Transaction {
     public List<Model> paMaster;
     public List<Model_Sales_Inquiry_Master> paSalesInquiry;
     
-    /**
-    * Initializes a new Cash Disbursement transaction.
-    * 
-    * This method sets the source code, instantiates the master, detail, and journal 
-    * controllers, and resets all associated data lists (Cash Advances, W-Tax, and Attachments).
-    * 
-    * @return a {@link JSONObject} containing the status of the initialization.
-    * @throws SQLException if a database access error occurs.
-    * @throws GuanzonException if a business logic or validation error occurs.
-    */
     public JSONObject InitTransaction() throws SQLException, GuanzonException {
         SOURCE_CODE = "Slcm";
 
@@ -554,23 +543,39 @@ public class SalesCommitment extends Transaction {
      */
     private JSONObject checkExistingBank(String bankId){
         poJSON = new JSONObject();
+        boolean lbExist = false;
+        try {
+            initSQL();
+            String lsSQL = MiscUtil.addCondition(SQL_BROWSE,
+                    " b.sSourceNo = " + SQLUtil.toSQL(Master().getSourceNo())
+                    + " AND b.sSourceCd = " + SQLUtil.toSQL(Master().getSourceCode())
+                    + " AND b.sIssuerID = " + SQLUtil.toSQL(bankId)
+                    + " AND ( a.cTranStat = " + SQLUtil.toSQL(BankApplicationStatus.OPEN)
+                    + " OR a.cTranStat = " + SQLUtil.toSQL(BankApplicationStatus.APPROVED)
+                    + " ) "
+                    );
+            System.out.println("Executing SQL: " + lsSQL);
+            ResultSet loRS = poGRider.executeQuery(lsSQL);
+            poJSON = new JSONObject();
+            if (MiscUtil.RecordCount(loRS) >= 0) {
+                lbExist = loRS.next();
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            System.out.println("ERROR: " + e.getMessage());
+            poJSON.put("result", "error");
+            poJSON.put("message",  e.getMessage());
+            return poJSON;
+        }
         
-//        for(int lnCtr = 0;lnCtr <= getDetailCount() - 1; lnCtr++){
-//            if(lnCtr != row){
-//                if(Detail(lnCtr).getTransactionStatus().equals(BankApplicationStatus.OPEN)
-//                    || Detail(lnCtr).getTransactionStatus().equals(BankApplicationStatus.APPROVED)){
-//                    
-//                    if(bankId.equals(Detail(lnCtr).getBankId())){
-//                        poJSON.put("result", "error");
-//                        poJSON.put("message", "Bank already exists in the table at row " + (lnCtr+1) + ".");
-//                        poJSON.put("row", lnCtr);
-//                        return poJSON;
-//                    }
-//                    
-//                }
-//            }
-//        }
+        if(lbExist){
+            poJSON.put("result", "error");
+            poJSON.put("message",  "Found existing sales commitment for the selected bank.");
+            return poJSON;
+        }
         
+        poJSON.put("result", "success");
+        poJSON.put("message", "success");
         return poJSON;
     }
     
