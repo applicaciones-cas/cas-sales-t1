@@ -47,6 +47,7 @@ import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
+import ph.com.guanzongroup.cas.sales.t1.validator.SalesCommitmentValidator;
 
 /**
  *
@@ -93,6 +94,8 @@ public class SalesCommitment extends Transaction {
     public void setIndustryId(String industryId) { psIndustryId = industryId; }
     public void setCompanyId(String companyId) { psCompanyId = companyId; }
     public void setCategoryId(String categoryId) { psCategoryId = categoryId; }
+    public void setClient(String client) { psClient = client; }
+    public String getClient() { return psClient;}
     /**
     * Creates a JSONObject with "result" and "message" fields.
     *
@@ -224,7 +227,7 @@ public class SalesCommitment extends Transaction {
         }
     }
     
-    public JSONObject ApproveTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException, ScriptException {
+    public JSONObject ApproveTransaction() throws ParseException, SQLException, GuanzonException, CloneNotSupportedException, ScriptException {
         poJSON = new JSONObject();
         String lsStatus = BankApplicationStatus.APPROVED;
         
@@ -236,7 +239,7 @@ public class SalesCommitment extends Transaction {
         Model_Sales_Commitment_Master loObject = new SalesModels(poGRider).SalesCommitmentMaster();
         poJSON = loObject.openRecord(Master().getTransactionNo());
         if (!isJSONSuccess(poJSON)) {
-            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction.\n" + (String) poJSON.get("message"));
+            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction. " + (String) poJSON.get("message"));
             return poJSON;
         }
         
@@ -322,7 +325,7 @@ public class SalesCommitment extends Transaction {
         Model_Sales_Commitment_Master loObject = new SalesModels(poGRider).SalesCommitmentMaster();
         poJSON = loObject.openRecord(Master().getTransactionNo());
         if (!isJSONSuccess(poJSON)) {
-            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction.\n" + (String) poJSON.get("message"));
+            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction. " + (String) poJSON.get("message"));
             return poJSON;
         }
         
@@ -383,7 +386,7 @@ public class SalesCommitment extends Transaction {
         Model_Sales_Commitment_Master loObject = new SalesModels(poGRider).SalesCommitmentMaster();
         poJSON = loObject.openRecord(Master().getTransactionNo());
         if (!isJSONSuccess(poJSON)) {
-            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction.\n" + (String) poJSON.get("message"));
+            poJSON = setJSON((String) poJSON.get("result"), "Unable to load transaction. " + (String) poJSON.get("message"));
             return poJSON;
         }
         
@@ -479,7 +482,7 @@ public class SalesCommitment extends Transaction {
         }
     }
     
-    public JSONObject SearchClient(String value, boolean byCode)
+    public JSONObject SearchClient(String value, boolean byCode, boolean isSearch)
             throws SQLException,
             GuanzonException {
         poJSON = new JSONObject();
@@ -489,12 +492,14 @@ public class SalesCommitment extends Transaction {
         object.Master().setClientType(Master().getClientType());
         poJSON = object.Master().searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
-            Master().setClientId(object.Master().getModel().getClientId());
+            if(isSearch) {
+                 setClient(object.Master().getModel().getCompanyName());
+            } else {
+                Master().setClientId(object.Master().getModel().getClientId());
+                System.out.println("Client : " + Master().Client().getCompanyName());
+            }
         }
         
-        System.out.println("Client ID : " + Master().getClientId());
-        System.out.println("Address ID : " + Master().getAddressId());
-        System.out.println("Contact ID : " + Master().getContactId());
 
         return poJSON;
     }
@@ -741,29 +746,28 @@ public class SalesCommitment extends Transaction {
         return poJSON;
     }
     
-    public JSONObject loadTransactionList(String fsIndustry, String fsPayee, String fsVoucherNo) throws SQLException, GuanzonException {
+    public JSONObject loadTransactionList(String fsClient, String fsTransactionNo) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         paMaster = new ArrayList<>();
-        if (fsIndustry == null || "".equals(fsIndustry)) { 
-            poJSON = setJSON("error", "Industry cannot be empty.");
-            return poJSON;
-        }
-        if (fsPayee == null) { fsPayee = ""; }
-        if (fsVoucherNo == null) { fsVoucherNo = ""; }
         
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE,
-                " a.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
-                + " AND c.sDescript LIKE " + SQLUtil.toSQL("%" + fsIndustry + "%")
-                + " AND e.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsPayee + "%")
-                + " AND a.sVoucherx LIKE " + SQLUtil.toSQL("%" + fsVoucherNo + "%")
+                " b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                + " AND b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
+                + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
+                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
+                + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
+                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransactionNo + "%")
             );
         
-        if(!psIndustryId.equals(System.getProperty("sys.main.industry"))){
-           lsSQL = lsSQL + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode());
+       
+        //If current user is an ordinary user load only its inquiries
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL,
+                    " b.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
         }
         
-        lsSQL = lsSQL + " GROUP BY a.sTransNox ORDER BY a.dTransact ASC ";
+        lsSQL = lsSQL + " ORDER BY a.dTransact, c.sCompnyNm  ASC ";
         System.out.println("Executing SQL: " + lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         if (MiscUtil.RecordCount(loRS) <= 0) {
@@ -787,22 +791,15 @@ public class SalesCommitment extends Transaction {
     public JSONObject loadSalesInquiryList(String fsClient) throws SQLException, GuanzonException {
           try {
 
-            String lsTransStat = "";
-            if (psTranStat != null) {
-                if (psTranStat.length() > 1) {
-                    for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
-                        lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
-                    }
-                    lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
-                } else {
-                    lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
-                }
-            }
-
-            initSQL();
-            String lsSQL = MiscUtil.addCondition(SQL_BROWSE, " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+            String lsSQL = MiscUtil.addCondition(salesInquirySQL(), 
+                            " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                            + " AND a.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
+                            + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
                             + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                             + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient)
+                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
+                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.QUOTED)
             );
 
             //If current user is an ordinary user load only its inquiries
@@ -811,11 +808,7 @@ public class SalesCommitment extends Transaction {
                         " a.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
             }
 
-            if (lsTransStat != null && !"".equals(lsTransStat)) {
-                lsSQL = lsSQL + lsTransStat;
-            }
-
-            lsSQL = lsSQL + " ORDER BY a.dTransact DESC ";
+            lsSQL = lsSQL + " ORDER BY a.dTransact, d.sCompnyNm ASC ";
 
             System.out.println("Executing SQL: " + lsSQL);
             ResultSet loRS = poGRider.executeQuery(lsSQL);
@@ -1050,7 +1043,7 @@ public class SalesCommitment extends Transaction {
      */
     @Override
     protected JSONObject isEntryOkay(String status) {
-        GValidator loValidator = new CashDisbursementValidator();
+        GValidator loValidator = new SalesCommitmentValidator();
         loValidator.setApplicationDriver(poGRider);
         loValidator.setTransactionStatus(status);
         loValidator.setMaster(Master());
@@ -1176,74 +1169,66 @@ public class SalesCommitment extends Transaction {
             }
         }
 
-        SQL_BROWSE =  "  SELECT "
-                    + "   a.sTransNox "
-                    + " , a.sCompnyID "
-                    + " , a.sBranchCd "
-                    + " , a.sIndstCdx "
-                    + " , a.nEntryNox "
-                    + " , a.dTransact "
-                    + " , a.sVoucherx "
-                    + " , a.sCashFIDx "
-                    + " , a.sClientID "
-                    + " , a.sPayeeNme "
-                    + " , a.sCrdtedTo "
-                    + " , a.sDeptReqs "
-                    + " , a.sAddressx "
-                    + " , a.sRemarksx "
-                    + " , a.sReferNox "
-                    + " , a.sSourceCd "
-                    + " , a.sSourceNo "
-                    + " , a.nTranTotl "
-                    + " , a.nVATSales "
-                    + " , a.nVATAmtxx "
-                    + " , a.nZroVATSl "
-                    + " , a.nVatExmpt "
-                    + " , a.nWTaxTotl "
-                    + " , a.nNetTotal "
-                    + " , a.cVchrPrnt "
-                    + " , a.cCollectd "
-                    + " , a.cTranStat "
-                    + " , a.sApproved "
-                    + " , b.sCompnyNm AS sCompanyx "
-                    + " , c.sDescript AS sIndustry "
-                    + " , d.sDeptName AS sDeptName "
-                    + " , e.sCompnyNm AS sPayeexxx "
-                    + " , f.sCashFDsc AS sCashFund "
-                    + " , g.sBranchNm AS sBranchNm "
-                    + " , h.sCompnyNm AS sCreditTo "
-                    + " FROM Cash_Disbursement a   "
-                    + " LEFT JOIN Company b ON b.sCompnyID = a.sCompnyID       "
-                    + " LEFT JOIN Industry c ON c.sIndstCdx = a.sIndstCdx      "
-                    + " LEFT JOIN Department d ON d.sDeptIDxx = a.sDeptReqs    "
-                    + " LEFT JOIN Client_Master e ON e.sClientID = a.sClientID "
-                    + " LEFT JOIN CashFund f ON f.sCashFIDx = a.sCashFIDx      "
-                    + " LEFT JOIN Branch g ON g.sBranchCd = a.sBranchCd        "
-                    + " LEFT JOIN Client_Master h ON h.sClientID = a.sCrdtedTo ";
+        SQL_BROWSE =" SELECT " +
+                    "  a.sTransNox " +
+                    " , a.dTransact " +
+                    " , a.sClientID " +
+                    " , a.sSourceCd " +
+                    " , a.sSourceNo " +
+                    " , a.cIssuerxx " +
+                    " , a.sIssuerID " +
+                    " , a.cPayModex " +
+                    " , a.sTermCode " +
+                    " , a.sPONumber " +
+                    " , a.sATDNumbr " +
+                    " , a.nTranTotl " +
+                    " , a.nVATRatex " +
+                    " , a.nVATSales " +
+                    " , a.nVATAmtxx " +
+                    " , a.nVATExmpt " +
+                    " , a.nWTaxRate " +
+                    " , a.nTWithHld " +
+                    " , a.dAppliedx " +
+                    " , a.dApproved " +
+                    " , a.dDueDatex " +
+                    " , a.sRemarksx " +
+                    " , a.nSalesAmt " +
+                    " , a.cTranStat " +
+                    " , c.sCompnyNm AS sClientNm " +
+                    " , e.sBranchNm AS  sBranchNm " +
+                    " , dd.sCompnyNm AS sSalesman " +
+                    "FROM Sales_Commitment_Master a " +
+                    "LEFT JOIN Sales_Inquiry_Master b ON b.sTransNox = a.sSourceNo " +
+                    "LEFT JOIN client_master c ON c.sClientID = a.sClientID  " +
+                    "LEFT JOIN salesman d ON d.sEmployID = b.sSalesman  " +
+                    "LEFT JOIN client_master dd ON dd.sClientID = d.sEmployID  " +
+                    "LEFT JOIN branch e ON e.sBranchCd = b.sBranchCd  " +
+                    "LEFT JOIN company f ON f.sCompnyID = b.sCompnyID  " +
+                    "LEFT JOIN industry g ON g.sIndstCdx = b.sIndstCdx ";
         if(lsCondition != null && !"".equals(lsCondition)){
             SQL_BROWSE = MiscUtil.addCondition(SQL_BROWSE, lsCondition);
         }
     }
     
-    public String cashAdvanceSQL() {
-        return  " SELECT        "
-                + " a.sTransNox   "
+    public String salesInquirySQL() {
+        return   " SELECT "
+                + " a.sTransNox "
                 + " , a.dTransact "
-                + " , a.sCashFIDx "
                 + " , a.cTranStat "
-                + " , b.sCompnyNm AS sCompanyx "
-                + " , c.sDescript AS sIndustry "
-                + " , d.sDeptName AS sDeptName "
-                + " , e.sCompnyNm AS sPayeexxx "
-                + " , f.sCashFDsc AS sCashFund "
-                + ", g.sBranchNm AS sBranchNm "
-                + " FROM CashAdvance a         "
-                + " LEFT JOIN Company b ON b.sCompnyID = a.sCompnyID       "
-                + " LEFT JOIN Industry c ON c.sIndstCdx = a.sIndstCdx      "
-                + " LEFT JOIN Department d ON d.sDeptIDxx = a.sDeptReqs    "
-                + " LEFT JOIN Client_Master e ON e.sClientID = a.sClientID "
-                + " LEFT JOIN CashFund f ON f.sCashFIDx = a.sCashFIDx      "
-                + " LEFT JOIN Branch g ON g.sBranchCd = a.sBranchCd ";
+                + " , a.sClientID "
+                + " , b.sCompnyNm AS sClientNm "
+                + " , concat(c.sLastName,', ',c.sFrstName, ' ',c.sMiddName) AS sSalePrsn "
+                + " , d.sCompnyNm AS sAgentNme "
+                + " , e.sBranchNm "
+                + " , f.sCompnyNm "
+                + " , g.sDescript "
+                + " FROM sales_inquiry_master a "
+                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
+                + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
+                + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
+                + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
+                + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
+                + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx ";
     }
     
     public JSONObject getUpdateStatusBy(String fsStatus) throws SQLException, GuanzonException {

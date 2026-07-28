@@ -180,22 +180,6 @@ public class Model_Sales_Commitment_Master extends Model {
     public String getClientId() {
         return (String) getValue("sClientID");
     }
-
-    public JSONObject setAddressId(String addressId) {
-        return setValue("sAddrssID", addressId);
-    }
-
-    public String getAddressId() {
-        return (String) getValue("sAddrssID");
-    }
-
-    public JSONObject setContactId(String contactId) {
-        return setValue("sContctID", contactId);
-    }
-
-    public String getContactId() {
-        return (String) getValue("sContctID");
-    }
     
     public JSONObject setRemarks(String remarks) {
         return setValue("sRemarksx", remarks);

@@ -2945,13 +2945,13 @@ public class SalesInquiry extends Transaction {
                     + " , e.sBranchNm "
                     + " , f.sCompnyNm "
                     + " , g.sDescript "
-                    + " FROM sales_inquiry_master a "
-                    + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                    + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
-                    + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
-                    + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
-                    + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
-                    + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx " ;
+                    + " FROM Sales_Inquiry_Master a "
+                    + " LEFT JOIN Client_Master b ON b.sClientID = a.sClientID "
+                    + " LEFT JOIN Salesman c ON c.sEmployID = a.sSalesman "
+                    + " LEFT JOIN Client_Master d ON d.sClientID = a.sAgentIDx "
+                    + " LEFT JOIN Branch e ON e.sBranchCd = a.sBranchCd "
+                    + " LEFT JOIN Company f ON f.sCompnyID = a.sCompnyID "
+                    + " LEFT JOIN Industry g ON g.sIndstCdx = a.sIndstCdx " ;
         
     }
     
@@ -2966,8 +2966,8 @@ public class SalesInquiry extends Transaction {
               + " , a.sModified "
               + " , a.dModified "
               + " , b.sDescript "
-              + "  FROM requirement_source_pergroup a "
-              + " LEFT JOIN requirement_source b ON b.sRqrmtCde = a.sRqrmtCde ";
+              + "  FROM Requirement_Source_PerGroup a "
+              + " LEFT JOIN Requirement_Source b ON b.sRqrmtCde = a.sRqrmtCde ";
     }
     
     private String salesInquiryRequirementSQL(){
@@ -2981,7 +2981,7 @@ public class SalesInquiry extends Transaction {
                 + "  , dReceived "
                 + "  , sModified "
                 + "  , dModified "
-                + " FROM sales_inquiry_requirements ";
+                + " FROM Sales_Inquiry_Requirements ";
     }
     
     private String bankApplicationSQL(){
@@ -2990,7 +2990,7 @@ public class SalesInquiry extends Transaction {
                 + " , nEntryNox "
                 + " , sApplicNo "
                 + " , cTranStat "
-                + " FROM bank_application ";
+                + " FROM Bank_Application ";
     }
     
     /**
