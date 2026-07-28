@@ -112,19 +112,29 @@ public class SalesCommitmentValidator implements GValidator{
             poJSON.put("message", "PO Number is not set.");
             return poJSON;
         }
-        if (poMaster.getATDNumber() == null || "".equals(poMaster.getATDNumber())) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "ATD Number is not set.");
-            return poJSON;
-        }
+//        if (poMaster.getATDNumber() == null || "".equals(poMaster.getATDNumber())) {
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "ATD Number is not set.");
+//            return poJSON;
+//        }
         if (poMaster.getPaymentMode()== null || "".equals(poMaster.getPaymentMode())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Payment Mode is not set.");
             return poJSON;
         }
-        if (poMaster.getBank()== null || "".equals(poMaster.getBank())) {
+        if (poMaster.getBankId()== null || "".equals(poMaster.getBankId())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Bank is not set.");
+            return poJSON;
+        }
+        if (poMaster.getSourceCode()== null || "".equals(poMaster.getSourceCode())) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Source Code is not set.");
+            return poJSON;
+        }
+        if (poMaster.getSourceNo() == null || "".equals(poMaster.getSourceNo())) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Source No is not set.");
             return poJSON;
         }
         poJSON.put("result", "success");

@@ -539,7 +539,7 @@ public class SalesCommitment extends Transaction {
             if ("error".equals((String) poJSON.get("result"))) {
                 return poJSON;
             }
-            Master().setBank(object.getModel().getBankID());
+            Master().setBankId(object.getModel().getBankID());
         }
         
         System.out.println("Bank Name : " + Master().Bank().getBankName());
@@ -797,9 +797,10 @@ public class SalesCommitment extends Transaction {
                             + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
                             + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                             + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient)
-                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
-                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
-                            + " AND a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.QUOTED)
+                            + " AND ( a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+                            + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
+                            + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.QUOTED)
+                            + " ) "
             );
 
             //If current user is an ordinary user load only its inquiries
@@ -1076,7 +1077,7 @@ public class SalesCommitment extends Transaction {
             Master().setTransactionNo(Master().getNextCode());
         }
         
-        JSONObject loJSON = checkExistingBank(Master().getBank());
+        JSONObject loJSON = checkExistingBank(Master().getBankId());
         if(isJSONSuccess(loJSON)){
             return poJSON;
         }

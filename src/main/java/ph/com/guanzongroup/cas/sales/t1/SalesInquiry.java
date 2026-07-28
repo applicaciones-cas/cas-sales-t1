@@ -42,6 +42,7 @@ import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
@@ -66,7 +67,7 @@ public class SalesInquiry extends Transaction {
     List<Model> paDetailRemoved;
     List<Model_Sales_Inquiry_Requirements> paRequirements;
     List<Model_Sales_Inquiry_Requirements> paRequirementsRemoved;
-    List<Model_Bank_Application> paBankApplications;
+    List<Model_Sales_Commitment_Master> paBankApplications;
     
     public JSONObject InitTransaction() {
         SOURCE_CODE = "SInq";
@@ -1737,9 +1738,9 @@ public class SalesInquiry extends Transaction {
     
     public JSONObject removeBankApplications() throws SQLException, GuanzonException {
         poJSON = new JSONObject();
-        Iterator<Model_Bank_Application> object = BankApplicationsList().iterator();
+        Iterator<Model_Sales_Commitment_Master> object = BankApplicationsList().iterator();
         while (object.hasNext()) {
-            Model_Bank_Application item = object.next();
+            Model_Sales_Commitment_Master item = object.next();
             if(item.getEditMode() == EditMode.ADDNEW){
                 object.remove();
             }
@@ -1804,7 +1805,7 @@ public class SalesInquiry extends Transaction {
             paBankApplications.add(BankApplication());
             poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
         } else {
-            if ((paBankApplications.get(paBankApplications.size() - 1).getApplicationNo() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getApplicationNo()))
+            if ((paBankApplications.get(paBankApplications.size() - 1).getPONumber() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getPONumber()))
                 && (paBankApplications.get(paBankApplications.size() - 1).getBankId()!= null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getBankId()))) {
                 paBankApplications.add(BankApplication());
                 poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
@@ -1920,8 +1921,8 @@ public class SalesInquiry extends Transaction {
         return loList;
     }
     
-    private Model_Bank_Application BankApplication() {
-        return new SalesModels(poGRider).BankApplication();
+    private Model_Sales_Commitment_Master BankApplication() {
+        return new SalesModels(poGRider).SalesCommitmentMaster();
     }
     
     public int getBankApplicationsCount() {
@@ -1932,11 +1933,11 @@ public class SalesInquiry extends Transaction {
         return paBankApplications.size();
     }
     
-    public Model_Bank_Application BankApplicationsList(int row) {
-        return (Model_Bank_Application) paBankApplications.get(row);
+    public Model_Sales_Commitment_Master BankApplicationsList(int row) {
+        return (Model_Sales_Commitment_Master) paBankApplications.get(row);
     }
     
-    public List<Model_Bank_Application> BankApplicationsList() {
+    public List<Model_Sales_Commitment_Master> BankApplicationsList() {
         return paBankApplications;
     }
     

@@ -38,7 +38,7 @@ public class Model_Sales_Commitment_Detail extends Model {
             poEntity.updateObject("nQuantity", 0);
             poEntity.updateObject("nQtyRelsd", 0);
             poEntity.updateObject("nUnitPrce", 0.0000);
-            poEntity.updateString("cReversex", "+");
+//            poEntity.updateString("cReversex", "+");
             // end - assign default values
             InvModels invModel = new InvModels(poGRider);
             poInventory = invModel.Inventory();

@@ -64,7 +64,7 @@ public class Model_Sales_Commitment_Master extends Model {
             poEntity.updateString("cIssuerxx", "0");
             poEntity.updateString("cPayModex", "0");
             poEntity.updateString("cTranStat", "0");
-            poEntity.updateObject("nEntryNox", 0);
+//            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cTranStat", BankApplicationStatus.OPEN);
             
             poEntity.updateObject("nSalesAmt", 0.0000);
@@ -197,11 +197,11 @@ public class Model_Sales_Commitment_Master extends Model {
         return (String) getValue("cIssuerxx");
     }
 
-    public JSONObject setBank(String bankId) {
+    public JSONObject setBankId(String bankId) {
         return setValue("sIssuerID", bankId);
     }
 
-    public String getBank() {
+    public String getBankId() {
         return (String) getValue("sIssuerID");
     }
 
