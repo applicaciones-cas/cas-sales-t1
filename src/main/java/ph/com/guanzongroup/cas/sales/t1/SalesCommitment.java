@@ -549,7 +549,7 @@ public class SalesCommitment extends Transaction {
             String lsSQL = MiscUtil.addCondition(SQL_BROWSE,
                     " b.sSourceNo = " + SQLUtil.toSQL(Master().getSourceNo())
                     + " AND b.sSourceCd = " + SQLUtil.toSQL(Master().getSourceCode())
-                    + " AND b.sIssuerID = " + SQLUtil.toSQL(bankId)
+                    + " AND a.sIssuerID = " + SQLUtil.toSQL(bankId)
                     + " AND ( a.cTranStat = " + SQLUtil.toSQL(BankApplicationStatus.OPEN)
                     + " OR a.cTranStat = " + SQLUtil.toSQL(BankApplicationStatus.APPROVED)
                     + " ) "
@@ -1083,7 +1083,7 @@ public class SalesCommitment extends Transaction {
         }
         
         JSONObject loJSON = checkExistingBank(Master().getBankId());
-        if(isJSONSuccess(loJSON)){
+        if(!isJSONSuccess(loJSON)){
             return poJSON;
         }
         
