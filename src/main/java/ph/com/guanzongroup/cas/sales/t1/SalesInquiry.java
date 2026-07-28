@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sql.rowset.CachedRowSet;
-import javax.sql.rowset.RowSetFactory;
-import javax.sql.rowset.RowSetProvider;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
@@ -35,7 +33,6 @@ import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
 import org.guanzon.cas.parameter.Banks;
-import org.guanzon.cas.parameter.Brand;
 import org.guanzon.cas.parameter.CategoryLevel2;
 import org.guanzon.cas.parameter.Color;
 import org.guanzon.cas.parameter.ModelVariant;
@@ -51,7 +48,6 @@ import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
-import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 import ph.com.guanzongroup.cas.sales.t1.validator.BankApplication;
 import ph.com.guanzongroup.cas.sales.t1.validator.SalesInquiryRequirements;
@@ -760,7 +756,7 @@ public class SalesInquiry extends Transaction {
             Master().setClientId(object.Master().getModel().getClientId());
             System.out.println("Get Address " + Master().ClientAddress().getAddressId());
             Master().setAddressId(Master().ClientAddress().getAddressId()); //TODO
-            Master().setContactId(""); //TODO
+            Master().setContactId(Master().ClientMobile().getMobileId()); //TODO
         }
         
         System.out.println("Client ID : " + Master().getClientId());
@@ -2778,16 +2774,16 @@ public class SalesInquiry extends Transaction {
             } 
         }
         
-        for(lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
-            BankApplicationsList(lnRow).setTransactionNo(Master().getTransactionNo());
-            BankApplicationsList(lnRow).setEntryNo(lnRow+1);
-            
-            poJSON = isEntryOkay_BankApplication(BankApplicationsList(lnRow).getTransactionStatus(), BankApplicationsList(lnRow));
-            if (!"success".equals((String) poJSON.get("result"))) {
-                poJSON.put("result", "error");
-                return poJSON;
-            } 
-        }
+//        for(lnRow = 0; lnRow <= getBankApplicationsCount()- 1; lnRow++){
+//            BankApplicationsList(lnRow).setTransactionNo(Master().getTransactionNo());
+//            BankApplicationsList(lnRow).setEntryNo(lnRow+1);
+//            
+//            poJSON = isEntryOkay_BankApplication(BankApplicationsList(lnRow).getTransactionStatus(), BankApplicationsList(lnRow));
+//            if (!"success".equals((String) poJSON.get("result"))) {
+//                poJSON.put("result", "error");
+//                return poJSON;
+//            } 
+//        }
         
         poJSON.put("result", "success");
         return poJSON;
