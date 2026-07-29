@@ -1,0 +1,10 @@
+INSERT INTO `salesman`
+(`sEmployID`,`sBranchCd`,`sLastName`,`sFrstName`,`sMiddName`,`cRecdStat`,`sModified`,`dModified`,`dTimeStmp`)
+VALUES
+('M00119002059','GCO1','Tejada','Harold Alexis','Lomboy','1','','2026-07-21 17:09:22','2026-07-21 17:09:22'),
+('M00122000888','M015','Abad','Ariel','Castillo','0','M001250014','2026-07-16 17:01:07','2026-07-16 17:01:07'),
+('M00123001229','GCO1','Abapo','Jocelle','Marcojos','1','GK01250001','2026-07-18 14:19:58','2026-07-21 13:04:44'),
+('M00125000372','GK01','Abanilla','Janell','Nepomuceno','1','','2026-07-18 13:47:25','2026-07-20 17:12:51'),
+('M01604000018','M016','Abalos','Judifel','Anyog','1','','2026-07-21 17:09:42','2026-07-21 17:09:42'),
+('M04711000708','GCO1','Tejada','John','Tejada','1','','2026-07-21 17:07:31','2026-07-21 17:07:31');
+
