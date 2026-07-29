@@ -38,8 +38,6 @@ import org.guanzon.cas.parameter.Term;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
-import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
-import ph.com.guanzongroup.cas.cashflow.validator.CashAdvanceValidator;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
@@ -425,9 +423,9 @@ public class SalesCommitment extends Transaction {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction No»Transaction Date»Voucher No»Payee»Requesting Department",
-                "sTransNox»dTransact»sVoucherx»sPayeexxx»sDeptName",
-                "a.sTransNox»a.dTransact»a.sVoucherx»e.sCompnyNm»d.sDeptName",
+                "Transaction Date»Transaction No»Client»Sales Person",
+                "dTransact»sTransNox»sClientNm»sSalesman",
+                "a.dTransact»a.sTransNox»c.sCompnyNm»concat(d.sLastName,', ',d.sFrstName, ' ',d.sMiddName)",
                 0);
 
         if (poJSON != null) {
@@ -443,13 +441,22 @@ public class SalesCommitment extends Transaction {
     public JSONObject SearchTransaction(String fsClient, String fsTransaction) throws CloneNotSupportedException, SQLException, GuanzonException, ScriptException{
         poJSON = new JSONObject();
         int lnSort = 0;
+        
+        if(fsTransaction != null && !"".equals(fsTransaction)){
+            lnSort = 1;
+        }
+        
+        if(fsClient != null && !"".equals(fsClient)){
+            lnSort = 2;
+        }
+        
         initSQL();
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE,
                 " b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
                 + " AND b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
                 + " AND b.sBranchCd = " + SQLUtil.toSQL(psBranchCode)
-                + " AND e.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
+                + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransaction + "%"));
         
         lsSQL = lsSQL + " GROUP BY a.sTransNox ";
@@ -457,10 +464,10 @@ public class SalesCommitment extends Transaction {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction No»Transaction Date»Voucher No»Payee»Branch»Requesting Department",
-                "sTransNox»dTransact»sVoucherx»sPayeexxx»sBranchNm»sDeptName",
-                "a.sTransNox»a.dTransact»a.sVoucherx»e.sCompnyNm»g.sBranchNm»d.sDeptName",
-                lnSort);
+                "Transaction Date»Transaction No»Client»Sales Person",
+                "dTransact»sTransNox»sClientNm»sSalesman",
+                "a.dTransact»a.sTransNox»c.sCompnyNm»concat(d.sLastName,', ',d.sFrstName, ' ',d.sMiddName)",
+                0);
 
         if (poJSON != null) {
             return OpenTransaction((String) poJSON.get("sTransNox"));
@@ -485,6 +492,8 @@ public class SalesCommitment extends Transaction {
                  setClient(object.Master().getModel().getCompanyName());
             } else {
                 Master().setClientId(object.Master().getModel().getClientId());
+                Master().setSourceNo("");
+                Master().setSourceCode("");
                 System.out.println("Client : " + Master().Client().getCompanyName());
             }
         }
@@ -498,6 +507,12 @@ public class SalesCommitment extends Transaction {
             GuanzonException {
         poJSON = new JSONObject();
 
+        if(Master().getSourceNo() == null || "".equals(Master().getSourceNo())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Inquiry details cannot be empty.");
+            return poJSON;
+        }
+        
         Term object = new ParamControllers(poGRider, logwrapr).Term();
         object.getModel().setRecordStatus(RecordStatus.ACTIVE);
 
@@ -512,6 +527,12 @@ public class SalesCommitment extends Transaction {
             throws SQLException,
             GuanzonException {
         poJSON = new JSONObject();
+        
+        if(Master().getSourceNo() == null || "".equals(Master().getSourceNo())){
+            poJSON.put("result", "error");
+            poJSON.put("message", "Inquiry details cannot be empty.");
+            return poJSON;
+        }
         
         if(!(Master().Inquiry().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.PO)
             || Master().Inquiry().getPurchaseType().equals(SalesInquiryStatic.PurchaseType.FINANCING))){
@@ -760,7 +781,7 @@ public class SalesCommitment extends Transaction {
                 " b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
                 + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
-                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
+//                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                 + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransactionNo + "%")
             );
@@ -963,7 +984,7 @@ public class SalesCommitment extends Transaction {
      * Resets the master record to its default initial state.
      */
     public void resetMaster() {
-        poMaster = new CashflowModels(poGRider).CashDisbursementMaster();
+        poMaster = new SalesModels(poGRider).SalesCommitmentMaster();
     }
     
     /**
@@ -1041,12 +1062,6 @@ public class SalesCommitment extends Transaction {
         return poJSON;
     }
 
-    /**
-     * Validates the transaction record using the {@link CashAdvanceValidator}.
-     * 
-     * @param status The target transaction status to be validated against.
-     * @return A {@link JSONObject} containing success or specific validation error messages.
-     */
     @Override
     protected JSONObject isEntryOkay(String status) {
         GValidator loValidator = new SalesCommitmentValidator();
@@ -1151,14 +1166,6 @@ public class SalesCommitment extends Transaction {
         poJSON = setJSON("success", "success");
         return poJSON;
     }
-    /**
-     * Initializes the base SQL query used for browsing Cash Advance records.
-     * 
-     * This method constructs a complex SELECT statement joining tables for Company, 
-     * Industry, Department, Client Master, Cash Fund, and Branch. It dynamically 
-     * appends filtering conditions based on the current transaction status {@code psTranStat}, 
-     * supporting both single-status equality and multi-status {@code IN} clauses.
-     */
     @Override
     public void initSQL() {
         String lsCondition = "";
@@ -1202,15 +1209,15 @@ public class SalesCommitment extends Transaction {
                     " , a.cTranStat " +
                     " , c.sCompnyNm AS sClientNm " +
                     " , e.sBranchNm AS  sBranchNm " +
-                    " , dd.sCompnyNm AS sSalesman " +
+                    " , CONCAT(d.sLastName,', ',d.sFrstName, ' ',d.sMiddName) AS sSalesman " +
                     "FROM Sales_Commitment_Master a " +
                     "LEFT JOIN Sales_Inquiry_Master b ON b.sTransNox = a.sSourceNo " +
-                    "LEFT JOIN client_master c ON c.sClientID = a.sClientID  " +
-                    "LEFT JOIN salesman d ON d.sEmployID = b.sSalesman  " +
-                    "LEFT JOIN client_master dd ON dd.sClientID = d.sEmployID  " +
-                    "LEFT JOIN branch e ON e.sBranchCd = b.sBranchCd  " +
-                    "LEFT JOIN company f ON f.sCompnyID = b.sCompnyID  " +
-                    "LEFT JOIN industry g ON g.sIndstCdx = b.sIndstCdx ";
+                    "LEFT JOIN Client_Master c ON c.sClientID = a.sClientID  " +
+                    "LEFT JOIN Salesman d ON d.sEmployID = b.sSalesman  " +
+                    "LEFT JOIN Client_Master dd ON dd.sClientID = d.sEmployID  " +
+                    "LEFT JOIN Branch e ON e.sBranchCd = b.sBranchCd  " +
+                    "LEFT JOIN Company f ON f.sCompnyID = b.sCompnyID  " +
+                    "LEFT JOIN Industry g ON g.sIndstCdx = b.sIndstCdx ";
         if(lsCondition != null && !"".equals(lsCondition)){
             SQL_BROWSE = MiscUtil.addCondition(SQL_BROWSE, lsCondition);
         }
@@ -1228,13 +1235,13 @@ public class SalesCommitment extends Transaction {
                 + " , e.sBranchNm "
                 + " , f.sCompnyNm "
                 + " , g.sDescript "
-                + " FROM sales_inquiry_master a "
-                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
-                + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
-                + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
-                + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
-                + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx ";
+                + " FROM Sales_Inquiry_Master a "
+                + " LEFT JOIN Client_Master b ON b.sClientID = a.sClientID "
+                + " LEFT JOIN Salesman c ON c.sEmployID = a.sSalesman "
+                + " LEFT JOIN Client_Master d ON d.sClientID = a.sAgentIDx "
+                + " LEFT JOIN Branch e ON e.sBranchCd = a.sBranchCd "
+                + " LEFT JOIN Company f ON f.sCompnyID = a.sCompnyID "
+                + " LEFT JOIN Industry g ON g.sIndstCdx = a.sIndstCdx ";
     }
     
     public JSONObject getUpdateStatusBy(String fsStatus) throws SQLException, GuanzonException {
@@ -1276,16 +1283,6 @@ public class SalesCommitment extends Transaction {
         return poJSON;
     }
     
-    /**
-    * Displays the status history of a Cash Advance transaction.
-    *
-    * Retrieves status records, maps status codes to readable text, and
-    * shows them in the UI along with entry details.
-    *
-    * @throws SQLException if a database error occurs
-    * @throws GuanzonException if application-specific error occurs
-    * @throws Exception for other unexpected errors
-    */
     public void ShowStatusHistory() throws SQLException, GuanzonException, Exception {
         CachedRowSet crs = getStatusHistory();
 

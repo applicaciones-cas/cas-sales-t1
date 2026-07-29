@@ -11,6 +11,7 @@ import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.cas.client.model.Model_Client_Address;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.parameter.model.Model_Banks;
@@ -43,6 +44,7 @@ public class Model_Sales_Commitment_Master extends Model {
     Model_Term poTerm;
     Model_Client_Master poClient;
     Model_Sales_Inquiry_Master poSalesInquiry;
+    Model_Client_Address poClientAddress;
     Model_Banks poBank;
 
     @Override
@@ -64,7 +66,7 @@ public class Model_Sales_Commitment_Master extends Model {
             poEntity.updateString("cIssuerxx", "0");
             poEntity.updateString("cPayModex", "0");
             poEntity.updateString("cTranStat", "0");
-//            poEntity.updateObject("nEntryNox", 0);
+            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateString("cTranStat", BankApplicationStatus.OPEN);
             
             poEntity.updateObject("nSalesAmt", 0.0000);
@@ -96,6 +98,7 @@ public class Model_Sales_Commitment_Master extends Model {
 
             ClientModels clientModel = new ClientModels(poGRider);
             poClient = clientModel.ClientMaster();
+            poClientAddress = clientModel.ClientAddress();
             
             SalesModels salesModel = new SalesModels(poGRider);
             poSalesInquiry = salesModel.SalesInquiryMaster();
@@ -305,11 +308,11 @@ public class Model_Sales_Commitment_Master extends Model {
     }
 
     public JSONObject setVATExmpt(double vatExmpt) {
-        return setValue("nVatExmpt", vatExmpt);
+        return setValue("nVATExmpt", vatExmpt);
     }
 
     public double getVATExmpt() {
-        return Double.parseDouble(String.valueOf(getValue("nVatExmpt")));
+        return Double.parseDouble(String.valueOf(getValue("nVATExmpt")));
     }
 
     public JSONObject setVATRates(double vatRates) {
@@ -470,6 +473,27 @@ public class Model_Sales_Commitment_Master extends Model {
             return poClient;
         }
     }
+    
+    public Model_Client_Address ClientAddress() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sClientID"))) {
+            if (poClientAddress.getEditMode() == EditMode.READY
+                    && poClientAddress.getClientId().equals((String) getValue("sClientID"))) {
+                return poClientAddress;
+            } else {
+                poJSON = poClientAddress.openRecord((String) getValue("sClientID")); //sAddrssID
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poClientAddress;
+                } else {
+                    poClientAddress.initialize();
+                    return poClientAddress;
+                }
+            }
+        } else {
+            poClientAddress.initialize();
+            return poClientAddress;
+        }
+    }
 
     public Model_Sales_Inquiry_Master Inquiry() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sSourceNo"))) {
@@ -493,12 +517,12 @@ public class Model_Sales_Commitment_Master extends Model {
     }
     
     public Model_Banks Bank() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sBankIDxx"))) {
+        if (!"".equals((String) getValue("sIssuerID"))) {
             if (poBank.getEditMode() == EditMode.READY
-                    && poBank.getBankCode().equals((String) getValue("sBankIDxx"))) {
+                    && poBank.getBankCode().equals((String) getValue("sIssuerID"))) {
                 return poBank;
             } else {
-                poJSON = poBank.openRecord((String) getValue("sBankIDxx"));
+                poJSON = poBank.openRecord((String) getValue("sIssuerID"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poBank;

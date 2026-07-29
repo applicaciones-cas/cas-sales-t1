@@ -15,6 +15,7 @@ import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.inv.model.Model_Inventory;
 import org.guanzon.cas.inv.services.InvModels;
 import org.json.simple.JSONObject;
+import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
 
 /**
  *
@@ -38,7 +39,7 @@ public class Model_Sales_Commitment_Detail extends Model {
             poEntity.updateObject("nQuantity", 0);
             poEntity.updateObject("nQtyRelsd", 0);
             poEntity.updateObject("nUnitPrce", 0.0000);
-//            poEntity.updateString("cReversex", "+");
+            poEntity.updateString("cReversex", BankApplicationStatus.Reverse.INCLUDE);
             // end - assign default values
             InvModels invModel = new InvModels(poGRider);
             poInventory = invModel.Inventory();
