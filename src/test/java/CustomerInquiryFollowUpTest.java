@@ -685,13 +685,27 @@ public class CustomerInquiryFollowUpTest {
             "test-data/sales_inquiry_master_schema.sql",
             "test-data/sales_inquiry_detail_schema.sql",
             "test-data/client_master_schema.sql",
+            "test-data/client_address_schema.sql",
+            "test-data/client_email_address_schema.sql",
+            "test-data/client_mobile_schema.sql",
+            "test-data/client_social_media_schema.sql",
             "test-data/salesman_schema.sql",
+            "test-data/barangay_schema.sql",
+            "test-data/towncity_schema.sql",
+            "test-data/province_schema.sql",
             "test-data/customer_inquiry_followup_data.sql",
             "test-data/transaction_attachment_data.sql",
             "test-data/sales_inquiry_master_data.sql",
             "test-data/sales_inquiry_detail_data.sql",
             "test-data/client_master_data.sql",
-            "test-data/salesman_data.sql",};
+            "test-data/client_address_data.sql",
+            "test-data/client_email_address_data.sql",
+            "test-data/client_mobile_data.sql",
+            "test-data/client_social_media_data.sql",
+            "test-data/salesman_data.sql",
+            "test-data/barangay_data.sql",
+            "test-data/towncity_data.sql",
+            "test-data/province_data.sql"};
 
         for (String script : scripts) {
             runMySqlDumpOnH2(script);
