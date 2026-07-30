@@ -439,15 +439,11 @@ public class SalesCommitment extends Transaction {
         }
     }
     
-    public JSONObject SearchTransaction(String fsClient, String fsTransaction) throws CloneNotSupportedException, SQLException, GuanzonException, ScriptException{
+    public JSONObject SearchTransaction(String fsClient, String fsTransaction, boolean fbIsSearchClient) throws CloneNotSupportedException, SQLException, GuanzonException, ScriptException{
         poJSON = new JSONObject();
-        int lnSort = 0;
+        int lnSort = 1;
         
-        if(fsTransaction != null && !"".equals(fsTransaction)){
-            lnSort = 1;
-        }
-        
-        if(fsClient != null && !"".equals(fsClient)){
+        if(fbIsSearchClient){
             lnSort = 2;
         }
         
@@ -468,7 +464,7 @@ public class SalesCommitment extends Transaction {
                 "Transaction Date»Transaction No»Client»Sales Person",
                 "dTransact»sTransNox»sClientNm»sSalesman",
                 "a.dTransact»a.sTransNox»c.sCompnyNm»concat(d.sLastName,', ',d.sFrstName, ' ',d.sMiddName)",
-                0);
+                lnSort);
 
         if (poJSON != null) {
             return OpenTransaction((String) poJSON.get("sTransNox"));
@@ -910,6 +906,7 @@ public class SalesCommitment extends Transaction {
                                 " sTransNox = " + SQLUtil.toSQL(Master().getSourceNo())
                                 + " AND nPriority = '1'" 
                                 );
+            System.out.println("SQL : " + lsSQL);
             ResultSet loRS = poGRider.executeQuery(lsSQL);
             if (loRS.next()) {
                 poJSON = loObject.openRecord(Master().getSourceNo(), loRS.getInt("nEntryNox"));
