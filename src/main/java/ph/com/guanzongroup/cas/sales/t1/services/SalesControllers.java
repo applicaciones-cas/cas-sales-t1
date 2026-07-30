@@ -12,14 +12,7 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.appdriver.base.MiscUtil;
-import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
-import ph.com.guanzongroup.cas.sales.t1.RequirementsSourcePerGroup;
-import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
-import ph.com.guanzongroup.cas.sales.t1.SalesBankApplication;
-import ph.com.guanzongroup.cas.sales.t1.SalesGiveaways;
-import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
-import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
-import ph.com.guanzongroup.cas.sales.t1.Salesman;
+import ph.com.guanzongroup.cas.sales.t1.*;
 
 /**
  *
@@ -192,6 +185,26 @@ public class SalesControllers {
 
         return poSalesBankApp;
     }
+    public CustomerInquiryFollowUp CustomerInquiryFollowUp(){
+        try {
+            if (poGRider == null) {
+                poLogWrapper.severe("SalesControllers.CustomerInquiryFollowUp: Application driver is not set.");
+                return null;
+            }
+            if (poCustomerInquiryFollowUp != null){
+                return poCustomerInquiryFollowUp;
+            }
+            poCustomerInquiryFollowUp = new CustomerInquiryFollowUp();
+            poCustomerInquiryFollowUp.setApplicationDriver(poGRider);
+            poCustomerInquiryFollowUp.setWithParentClass(false);
+            poCustomerInquiryFollowUp.setLogWrapper(poLogWrapper);
+            poCustomerInquiryFollowUp.initialize();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        }
+
+        return poCustomerInquiryFollowUp;
+    }
     
     @Override
     protected void finalize() throws Throwable {
@@ -203,6 +216,7 @@ public class SalesControllers {
             poSalesGiveaways = null;
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
+            poCustomerInquiryFollowUp = null;
             poLogWrapper = null;
             poGRider = null;
         } finally {
@@ -221,4 +235,5 @@ public class SalesControllers {
     private RequirementsSource poRequirementSource;
     private RequirementsSourcePerGroup poRequirementSourcePerGroup;
     private SalesBankApplication poSalesBankApp;
+    private CustomerInquiryFollowUp poCustomerInquiryFollowUp;
 }

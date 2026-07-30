@@ -61,7 +61,7 @@ public class SalesInquiry extends Transaction {
     private String psIndustryId = "";
     private String psCompanyId = "";
     private String psCategorCd = "";
-    
+    public String sourceCode = "";
     List<Model_Sales_Inquiry_Master> paMasterList;
     List<Model> paDetailRemoved;
     List<Model_Sales_Inquiry_Requirements> paRequirements;
@@ -71,6 +71,7 @@ public class SalesInquiry extends Transaction {
     public JSONObject InitTransaction() {
         SOURCE_CODE = "SInq";
 
+        sourceCode = SOURCE_CODE;
         poMaster = new SalesModels(poGRider).SalesInquiryMaster();
         poDetail = new SalesModels(poGRider).SalesInquiryDetails();
 
