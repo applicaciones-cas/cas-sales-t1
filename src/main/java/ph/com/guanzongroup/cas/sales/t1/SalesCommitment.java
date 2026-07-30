@@ -788,14 +788,21 @@ public class SalesCommitment extends Transaction {
             fsValue = "0.00";
         }
         
+        Double ldblValue = Double.parseDouble(fsValue);
         Double lnTotalAmount = Master().getTransactionTotal();
+        
+        if(ldblValue <= 0.0000){
+            Master().setVATRates(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
         if (lnTotalAmount == 0.0000) {
             poJSON.put("message", "You're not allowed to enter vat rate, no transaction total amount.");
             poJSON.put("result", "error");
             Master().setVATRates(0.00);
             return poJSON;
         }
-        Double ldblValue = Double.parseDouble(fsValue);
         if (ldblValue < 0.00 || ldblValue > 100.00) {
             poJSON.put("message", "Invalid vat rate. Must be between 0.00 and 100.00");
             poJSON.put("result", "error");
@@ -814,7 +821,15 @@ public class SalesCommitment extends Transaction {
             fsValue = "0.0000";
         }
         
+        Double ldblValue = Double.parseDouble(fsValue);
         Double ldblTotalAmount = Master().getTransactionTotal();
+        
+        if(ldblValue <= 0.0000){
+            Master().setVATSale(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
         if (ldblTotalAmount == 0.0000) {
             poJSON.put("message", "You're not allowed to enter vatable sales, no transaction total amount.");
             poJSON.put("result", "error");
@@ -822,7 +837,6 @@ public class SalesCommitment extends Transaction {
             return poJSON;
         }
         
-        Double ldblValue = Double.parseDouble(fsValue);
         if (ldblValue < 0.00) {
             poJSON.put("message", "Invalid vatable sales.");
             poJSON.put("result", "error");
@@ -849,6 +863,14 @@ public class SalesCommitment extends Transaction {
         
         Double ldblTotalAmount = Master().getTransactionTotal();
         Double ldblVatableSales = Master().getVATSale();
+        Double ldblValue = Double.parseDouble(fsValue);
+        
+        if(ldblValue <= 0.0000){
+            Master().setVATAmount(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
         if (ldblTotalAmount == 0.0000) {
             poJSON.put("message", "You're not allowed to enter vat amount, no transaction total amount.");
             poJSON.put("result", "error");
@@ -856,7 +878,6 @@ public class SalesCommitment extends Transaction {
             return poJSON;
         }
         
-        Double ldblValue = Double.parseDouble(fsValue);
         if (ldblValue < 0.00) {
             poJSON.put("message", "Invalid vat amount.");
             poJSON.put("result", "error");
