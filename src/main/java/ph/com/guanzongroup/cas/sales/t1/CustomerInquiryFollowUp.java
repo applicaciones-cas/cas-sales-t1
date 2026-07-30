@@ -32,6 +32,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import ph.com.guanzongroup.cas.cashflow.OtherPayments;
+import ph.com.guanzongroup.cas.cashflow.services.CashflowControllers;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Customer_Inquiry_FollowUp;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
@@ -75,7 +77,9 @@ public class CustomerInquiryFollowUp extends Parameter {
     Model_Customer_Inquiry_FollowUp poModel;
     Model_Sales_Inquiry_Master poSalesMaster;
     List<TransactionAttachment> paAttachments;
-    String SourceCode = "CIFu";
+    private String SourceCode = "CIFu";
+    private String lsResponse = null;
+    private String lsSourceNo = null;
     @Override
     public void initialize() throws SQLException, GuanzonException {
         psRecdStat = RecordStatus.ACTIVE;
@@ -596,14 +600,12 @@ public class CustomerInquiryFollowUp extends Parameter {
 
     private void UpdateSource(String fsSourceNo,String fsResponseCode)
             throws GuanzonException, SQLException, CloneNotSupportedException {
+        lsResponse = fsResponseCode;
+        lsSourceNo = fsSourceNo;
 
         poSalesMaster.openRecord(fsSourceNo);
         poSalesMaster.updateRecord();
         poSalesMaster.setFollowUpDate(poGRider.getServerDate());
-        if(fsResponseCode.equals(CustomerInquiryFollowUpStatic.RESPONSE_LOST_SALE)){
-            poSalesMaster.setTransactionStatus(SalesInquiryStatic.LOST);
-        }
-        poSalesMaster.setTransactionStatus(SalesInquiryStatic.LOST);
         poSalesMaster.setModifyingId(poGRider.getUserID());
         poSalesMaster.setModifiedDate(poGRider.getServerDate());
     }
@@ -626,14 +628,27 @@ public class CustomerInquiryFollowUp extends Parameter {
                     paAttachments.get(lnCtr).getModel().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
                     paAttachments.get(lnCtr).getModel().setModifiedDate(poGRider.getServerDate());
                     paAttachments.get(lnCtr).setWithParentClass(true);
-                    System.out.println("CHECK ATTACHMENT RECORD STAT : " + paAttachments.get(lnCtr).getModel().getRecordStatus());
                     poJSON = paAttachments.get(lnCtr).saveRecord();
                     if ("error".equals((String) poJSON.get("result"))) {
                         return poJSON;
                     }
                 }
             }
-        } catch (CloneNotSupportedException e) {
+            if(lsResponse.equals(CustomerInquiryFollowUpStatic.RESPONSE_LOST_SALE)){
+                SalesInquiry loObject = new SalesControllers(poGRider, logwrapr).SalesInquiry();
+                loObject.InitTransaction();
+                loObject.setWithParent(true);
+                poJSON = loObject.OpenTransaction(lsSourceNo);
+                if ("error".equals((String) poJSON.get("result"))){
+                    return poJSON;
+                }
+                poJSON = loObject.LostTransaction ("");
+                if ("error".equals((String) poJSON.get("result"))){
+                    return poJSON;
+                }
+
+            }
+        } catch (CloneNotSupportedException | ParseException e) {
             throw new RuntimeException(e);
         }
         poJSON.put("result", "success");
