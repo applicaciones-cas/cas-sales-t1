@@ -2989,9 +2989,9 @@ public class SalesInquiry extends Transaction {
         return " SELECT "
                 + "   sTransNox "
                 + " , nEntryNox "
-                + " , sApplicNo "
+                + " , sPONumber "
                 + " , cTranStat "
-                + " FROM Bank_Application ";
+                + " FROM Sales_Commitment_Master ";
     }
     
     /**
