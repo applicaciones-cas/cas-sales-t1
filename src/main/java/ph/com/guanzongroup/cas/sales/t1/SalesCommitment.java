@@ -912,7 +912,7 @@ public class SalesCommitment extends Transaction {
                 poJSON = loObject.openRecord(Master().getSourceNo(), loRS.getInt("nEntryNox"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
-                    if(loObject.getStockId() != null && !"".equals(loObject)){
+                    if(loObject.getStockId() != null && !"".equals(loObject.getStockId())){
                         lsBrand = loObject.Inventory().Brand().getDescription();
                         lsModel = loObject.Inventory().Model().getDescription();
                         lsModelVariant = loObject.Inventory().Variant().getDescription();
