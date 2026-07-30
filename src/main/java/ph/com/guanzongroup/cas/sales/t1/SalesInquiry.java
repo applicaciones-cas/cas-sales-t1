@@ -3020,7 +3020,7 @@ public class SalesInquiry extends Transaction {
                     crs.updateString("cRefrStat", "QUOTED");
                     break;
                 case SalesInquiryStatic.LOST:
-                    crs.updateString("cRefrStat", "LOST");
+                    crs.updateString("cRefrStat", "LOST SALE");
                     break;
                 case SalesInquiryStatic.CANCELLED:
                     crs.updateString("cRefrStat", "CANCELLED");
@@ -3046,7 +3046,7 @@ public class SalesInquiry extends Transaction {
                             crs.updateString("cRefrStat", "QUOTED");
                             break;
                         case SalesInquiryStatic.LOST:
-                            crs.updateString("cRefrStat", "LOST");
+                            crs.updateString("cRefrStat", "LOST SALE");
                             break;
                         case SalesInquiryStatic.CANCELLED:
                             crs.updateString("cRefrStat", "CANCELLED");
