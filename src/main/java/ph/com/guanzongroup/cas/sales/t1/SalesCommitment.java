@@ -708,69 +708,82 @@ public class SalesCommitment extends Transaction {
     *         name where a validation failure occurred.
     */
     public JSONObject computeFields(boolean isValidate) {
-        poJSON = new JSONObject();
-        poJSON.put("column", "");
-        Double ldblTransactionTotal = 0.0000;
-        Double ldblVATSalesTotal = 0.0000;
-        Double ldblVATAmountTotal = 0.0000;
-        Double ldblVATExemptTotal = 0.0000;
-        Double ldblZeroVATSales = 0.0000;
-        
-        for (int lnCntr = 0; lnCntr <= getDetailCount() - 1; lnCntr++) {
-            if(Detail(lnCntr).isReversed()){
-                ldblTransactionTotal += Detail(lnCntr).getUnitPrice();
-
+        try {
+            poJSON = new JSONObject();
+            poJSON.put("column", "");
+            Double ldblTransactionTotal = 0.0000;
+            Double ldblVATSalesTotal = 0.0000;
+            Double ldblVATAmountTotal = 0.0000;
+            Double ldblVATExemptTotal = 0.0000;
+            Double ldblZeroVATSales = 0.0000;
+            Double ldblNetAmountDue = 0.0000;
+            
+            if(SalesInquiryStatic.CategoryCode.CAR.equals(Master().Inquiry().getCategoryCode())){
+                ldblTransactionTotal = Master().getSalesAmount();
+            } else {
+                for (int lnCntr = 0; lnCntr <= getDetailCount() - 1; lnCntr++) {
+                    if(Detail(lnCntr).isReversed()){
+                        ldblTransactionTotal += Detail(lnCntr).getUnitPrice();
+                        
+                    }
+                }
+            
+                ldblNetAmountDue = ldblTransactionTotal - Master().getWithholdingTax();
+                if (ldblNetAmountDue < 0.0000) {
+                    poJSON = setJSON("error", "Invalid Net Total Amount.");
+                    poJSON.put("column", "nNetTotal");
+                    if(isValidate){
+                        return poJSON;
+                    }
+                }
+                
+                if(ldblVATExemptTotal < 0.0000) {
+                    poJSON = setJSON("error", "Invalid Vat Exempt Total.");
+                    poJSON.put("column", "nVatExmpt");
+                    if(isValidate){
+                        return poJSON;
+                    }
+                }
             }
-        }
-        
-        if(ldblTransactionTotal < 0.0000) {
-            poJSON = setJSON("error", "Invalid Transaction Total.");
-            poJSON.put("column", "nTranTotl");
-            if(isValidate){
-                return poJSON;
+            
+            if(ldblTransactionTotal < 0.0000) {
+                poJSON = setJSON("error", "Invalid Transaction Total.");
+                poJSON.put("column", "nTranTotl");
+                if(isValidate){
+                    return poJSON;
+                }
             }
-        }
-        if(ldblVATSalesTotal < 0.0000) {
-            poJSON = setJSON("error", "Invalid Vat Sales Total.");
-            poJSON.put("column", "nVATSales");
-            if(isValidate){
-                return poJSON;
+            if(ldblVATSalesTotal < 0.0000) {
+                poJSON = setJSON("error", "Invalid Vat Sales Total.");
+                poJSON.put("column", "nVATSales");
+                if(isValidate){
+                    return poJSON;
+                }
             }
-        }
-        if(ldblVATAmountTotal < 0.0000) {
-            poJSON = setJSON("error", "Invalid Vat Amount Total.");
-            poJSON.put("column", "nVATAmtxx");
-            if(isValidate){
-                return poJSON;
+            if(ldblVATAmountTotal < 0.0000) {
+                poJSON = setJSON("error", "Invalid Vat Amount Total.");
+                poJSON.put("column", "nVATAmtxx");
+                if(isValidate){
+                    return poJSON;
+                }
             }
-        }
-        if(ldblVATExemptTotal < 0.0000) {
-            poJSON = setJSON("error", "Invalid Vat Exempt Total.");
-            poJSON.put("column", "nVatExmpt");
-            if(isValidate){
-                return poJSON;
-            }
-        }
-        
-        double lnNetAmountDue = ldblTransactionTotal - Master().getWithholdingTax();
-        if (lnNetAmountDue < 0.0000) {
-            poJSON = setJSON("error", "Invalid Net Total Amount.");
-            poJSON.put("column", "nNetTotal");
-            if(isValidate){
-                return poJSON;
-            }
-        }
-
-        Master().setTransactionTotal(ldblTransactionTotal);
-        Master().setVATSale(ldblVATSalesTotal);
-        Master().setVATAmount(ldblVATAmountTotal);
-        Master().setVATExmpt(ldblVATExemptTotal);
-        Master().setVATRates(ldblZeroVATSales);
-        Master().setSalesAmount(lnNetAmountDue);
-        
-        poJSON = setJSON("success", "computed successfully");
-        poJSON.put("column", "");
-        return poJSON;
+            
+            Master().setSalesAmount(ldblTransactionTotal);
+            Master().setTransactionTotal(ldblTransactionTotal);
+//            Master().setVATSale(ldblVATSalesTotal);
+//            Master().setVATAmount(ldblVATAmountTotal);
+//            Master().setVATExmpt(ldblVATExemptTotal);
+//            Master().setVATRates(ldblZeroVATSales);
+            
+            poJSON = setJSON("success", "computed successfully");
+            poJSON.put("column", "");
+            return poJSON;
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(SalesCommitment.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON = setJSON("error", MiscUtil.getException(ex));
+            poJSON.put("column", "");
+            return poJSON;
+        } 
     }
     
     public JSONObject loadTransactionList(String fsClient, String fsTransactionNo) throws SQLException, GuanzonException {
@@ -1162,25 +1175,38 @@ public class SalesCommitment extends Transaction {
             return poJSON;
         }
         
-        Iterator<Model> detail = Detail().iterator();
-        while (detail.hasNext()) {
-            Model item = detail.next(); // Store the item before checking conditions
-            String lsDetail = (String) item.getValue("sStockIDx");
-            int lnQty = Integer.parseInt(String.valueOf(item.getValue("nQuantity")));
-            if ((lnQty == 0.0000 || (lsDetail == null || "".equals(lsDetail)))){
-                if(item.getEditMode() == EditMode.ADDNEW){
-                    detail.remove(); // Correctly remove the item
-                } else {
-                    item.setValue("cReversex", BankApplicationStatus.Reverse.EXCLUDE);
+        if(SalesInquiryStatic.CategoryCode.CAR.equals(Master().Inquiry().getCategoryCode())){
+            //Do not save detail for CAR
+            Detail().clear();
+        } else {
+            Iterator<Model> detail = Detail().iterator();
+            while (detail.hasNext()) {
+                Model item = detail.next(); // Store the item before checking conditions
+                String lsDetail = (String) item.getValue("sStockIDx");
+                int lnQty = Integer.parseInt(String.valueOf(item.getValue("nQuantity")));
+                if ((lnQty == 0.0000 || (lsDetail == null || "".equals(lsDetail)))){
+                    if(item.getEditMode() == EditMode.ADDNEW){
+                        detail.remove(); // Correctly remove the item
+                    } else {
+                        item.setValue("cReversex", BankApplicationStatus.Reverse.EXCLUDE);
+                    }
                 }
+            }
+            
+            //Validate detail after removing all zero qty and empty stock Id
+            if (getDetailCount() <= 0) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "No transaction detail to be save.");
+                return poJSON;
+            }
+            
+            for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+                Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
+                Detail(lnCtr).setEntryNo(lnCtr + 1);
+                Detail(lnCtr).setModifiedDate(poGRider.getServerDate());
             }
         }
         
-        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
-            Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
-            Detail(lnCtr).setEntryNo(lnCtr + 1);
-            Detail(lnCtr).setModifiedDate(poGRider.getServerDate());
-        }
         //Recompute amounts
         computeFields(false);
         

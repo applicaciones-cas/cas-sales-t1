@@ -82,6 +82,7 @@ public class SalesCommitmentValidator implements GValidator{
         poJSON = new JSONObject();
         Date loAppliedDate = poMaster.getAppliedDate();
         Date loApprovedDate = poMaster.getApprovedDate();
+        Date loDuedate = poMaster.getDueDate();
         LocalDate serverDate = strToDate(xsDateShort(poGRider.getServerDate()));
         LocalDate oneYearAgo = serverDate.minusYears(1);
         
@@ -94,6 +95,17 @@ public class SalesCommitmentValidator implements GValidator{
         if ("1900-01-01".equals(xsDateShort(loAppliedDate))) {
             poJSON.put("result", "error");
             poJSON.put("message", "Invalid Applied Date.");
+            return poJSON;
+        }
+        if (loDuedate == null) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid Due Date.");
+            return poJSON;
+        }
+
+        if ("1900-01-01".equals(xsDateShort(loDuedate))) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid Due Date.");
             return poJSON;
         }
         
@@ -163,6 +175,11 @@ public class SalesCommitmentValidator implements GValidator{
         if (loApprovedDate.isBefore(loAppliedDate)) {
             poJSON.put("result", "error");
             poJSON.put("message", "Approve date cannot be before the applied date.");
+            return poJSON;
+        }
+        
+        poJSON = validateNew();
+        if("error".equals((String) poJSON.get("result"))){
             return poJSON;
         }
         
