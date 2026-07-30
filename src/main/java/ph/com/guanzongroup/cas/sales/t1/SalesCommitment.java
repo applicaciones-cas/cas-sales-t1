@@ -40,6 +40,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.services.SalesModels;
 import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
@@ -877,6 +878,49 @@ public class SalesCommitment extends Transaction {
             poJSON.put("message", MiscUtil.getException(ex));
         }
         return poJSON;
+    }
+    
+    public String getPriorityUnit(){
+        String lsBrand = "";
+        String lsModel = "";
+        String lsModelVariant = "";
+        String lsColor = "";
+        try {
+            Model_Sales_Inquiry_Detail loObject = new SalesModels(poGRider).SalesInquiryDetails();
+            loObject.initialize();
+            String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loObject), 
+                                " sTransNox = " + SQLUtil.toSQL(Master().getSourceNo())
+                                + " AND nPriority = '1'" 
+                                );
+            ResultSet loRS = poGRider.executeQuery(lsSQL);
+            if (loRS.next()) {
+                poJSON = loObject.openRecord(Master().getSourceNo(), loRS.getInt("nEntryNox"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    if(loObject.getStockId() != null && !"".equals(loObject)){
+                        lsBrand = loObject.Inventory().Brand().getDescription();
+                        lsModel = loObject.Inventory().Model().getDescription();
+                        lsModelVariant = loObject.Inventory().Variant().getDescription();
+                        lsColor = loObject.Inventory().Color().getDescription();
+                    } else {
+                        lsBrand = loObject.Brand().getDescription();
+                        lsModel = loObject.Model().getDescription();
+                        lsModelVariant = loObject.ModelVariant().getDescription();
+                        lsColor = loObject.Color().getDescription();
+                    }
+                               
+                    return (lsBrand == null ? "" : lsBrand)
+                            + (lsModel == null ? "" : " " + lsModel)
+                            + (lsModelVariant == null ? "" : " " + lsModelVariant)
+                            + (lsColor == null ? "" : " " + lsColor);
+                } else {
+                    return "";
+                }
+            }
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(SalesCommitment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
     }
     
     private Model_Sales_Inquiry_Master SalesInquiryMaster() {
