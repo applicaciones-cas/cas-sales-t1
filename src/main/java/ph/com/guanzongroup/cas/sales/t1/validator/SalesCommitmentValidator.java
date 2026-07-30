@@ -114,7 +114,7 @@ public class SalesCommitmentValidator implements GValidator{
 //            return poJSON;
 //        }
         
-        if (poMaster.getTransactionNo()== null) {
+        if (poMaster.getTransactionNo() == null || "".equals(poMaster.getTransactionNo())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Transaction no is not set.");
             return poJSON;
@@ -147,6 +147,21 @@ public class SalesCommitmentValidator implements GValidator{
         if (poMaster.getSourceNo() == null || "".equals(poMaster.getSourceNo())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Source No is not set.");
+            return poJSON;
+        }
+        if (poMaster.getClientId() == null || "".equals(poMaster.getClientId())) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Client is not set.");
+            return poJSON;
+        }
+        if (poMaster.getSalesAmount() <= 0.0000) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid sales amount.");
+            return poJSON;
+        }
+        if (poMaster.getTransactionTotal() <= 0.0000) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid transaction total.");
             return poJSON;
         }
         poJSON.put("result", "success");

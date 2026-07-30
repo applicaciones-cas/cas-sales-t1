@@ -781,6 +781,100 @@ public class SalesCommitment extends Transaction {
         } 
     }
     
+    //according to ma'am grace for the mean time user input for vat in CAR 07302026
+    public JSONObject setVatRate(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.00";
+        }
+        
+        Double lnTotalAmount = Master().getTransactionTotal();
+        if (lnTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter vat rate, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setVATRates(0.00);
+            return poJSON;
+        }
+        Double ldblValue = Double.parseDouble(fsValue);
+        if (ldblValue < 0.00 || ldblValue > 100.00) {
+            poJSON.put("message", "Invalid vat rate. Must be between 0.00 and 100.00");
+            poJSON.put("result", "error");
+            Master().setVATRates(0.00);
+            return poJSON;
+        }
+
+        Master().setVATRates(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    public JSONObject setVatableSales(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.0000";
+        }
+        
+        Double ldblTotalAmount = Master().getTransactionTotal();
+        if (ldblTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter vatable sales, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setVATSale(0.00);
+            return poJSON;
+        }
+        
+        Double ldblValue = Double.parseDouble(fsValue);
+        if (ldblValue < 0.00) {
+            poJSON.put("message", "Invalid vatable sales.");
+            poJSON.put("result", "error");
+            Master().setVATSale(0.00);
+            return poJSON;
+        }
+        if (ldblValue > ldblTotalAmount) {
+            poJSON.put("message", "Vatable sales cannot be greater than transaction total.");
+            poJSON.put("result", "error");
+            Master().setVATSale(0.00);
+            return poJSON;
+        }
+
+        Master().setVATSale(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    public JSONObject setVatableAmount(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.0000";
+        }
+        
+        Double ldblTotalAmount = Master().getTransactionTotal();
+        Double ldblVatableSales = Master().getVATSale();
+        if (ldblTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter vat amount, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setVATAmount(0.00);
+            return poJSON;
+        }
+        
+        Double ldblValue = Double.parseDouble(fsValue);
+        if (ldblValue < 0.00) {
+            poJSON.put("message", "Invalid vat amount.");
+            poJSON.put("result", "error");
+            Master().setVATAmount(0.00);
+            return poJSON;
+        }
+        if (ldblValue > ldblTotalAmount || ldblValue > ldblVatableSales) {
+            poJSON.put("message", "Vat amount cannot be greater than vatable sales or transaction total.");
+            poJSON.put("result", "error");
+            Master().setVATAmount(0.00);
+            return poJSON;
+        }
+
+        Master().setVATAmount(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
     public JSONObject loadTransactionList(String fsClient, String fsTransactionNo) throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         paMaster = new ArrayList<>();
