@@ -250,7 +250,7 @@ public class SalesCommitment extends Transaction {
             }
         }
         
-        poGRider.beginTrans("UPDATE STATUS", "ConfirmTransaction", SOURCE_CODE, Master().getTransactionNo());
+        poGRider.beginTrans("UPDATE STATUS", "ApproveTransaction", SOURCE_CODE, Master().getTransactionNo());
         
         Model_Sales_Commitment_Master loModel = new SalesModels(poGRider).SalesCommitmentMaster();
         loModel.initialize();
@@ -260,11 +260,10 @@ public class SalesCommitment extends Transaction {
             return poJSON;
         }
         if(loModel.getApprovedDate() == null){
-            poJSON = loObject.updateRecord();
+            poJSON = loModel.updateRecord();
             if (!isJSONSuccess(poJSON)) {
                 return poJSON;
             }
-
             loModel.setApprovedDate(Master().getApprovedDate());
             poJSON = loModel.saveRecord();
             if (!isJSONSuccess(poJSON)) {
@@ -281,7 +280,7 @@ public class SalesCommitment extends Transaction {
         poGRider.commitTrans();
         
         poJSON = new JSONObject();
-        poJSON = setJSON("success", "Transaction confirmed successfully.");
+        poJSON = setJSON("success", "Transaction approved successfully.");
         return poJSON;
     }
     
@@ -342,7 +341,7 @@ public class SalesCommitment extends Transaction {
             return poJSON;
         }
         poJSON = new JSONObject();
-        poJSON = setJSON("success", "Transaction voided successfully.");
+        poJSON = setJSON("success", "Transaction disapproved successfully.");
         return poJSON;
     }
     
@@ -1077,21 +1076,6 @@ public class SalesCommitment extends Transaction {
         }
     }
     
-    /*Convert Date to String*/
-    private static String xsDateShort(Date fdValue) {
-        if(fdValue == null){
-            return "1900-01-01";
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String date = sdf.format(fdValue);
-        return date;
-    }
-
-    private LocalDate strToDate(String val) {
-        DateTimeFormatter date_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(val, date_formatter);
-        return localDate;
-    }
     /**
      * Sets default master record values for a new transaction.
      * 
@@ -1108,6 +1092,7 @@ public class SalesCommitment extends Transaction {
             poJSON = new JSONObject();
             Master().setIndustryId(psIndustryId);
             Master().setCompanyId(psCompanyId);
+            Master().setCategoryCode(psCategoryId);
             Master().setTransactionDate(poGRider.getServerDate());
             Master().setAppliedDate(poGRider.getServerDate());
             Master().setTransactionStatus(BankApplicationStatus.OPEN);

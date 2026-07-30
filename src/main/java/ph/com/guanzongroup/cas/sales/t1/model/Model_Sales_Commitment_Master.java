@@ -6,6 +6,7 @@
 package ph.com.guanzongroup.cas.sales.t1.model;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
@@ -137,7 +138,8 @@ public class Model_Sales_Commitment_Master extends Model {
     }
     
     public JSONObject setApprovedDate(Date approvedDate) {
-        return setValue("dApproved", approvedDate);
+        java.sql.Date date = new java.sql.Date(approvedDate.getTime());
+        return setValue("dApproved", date);
     }
 
     public Date getApprovedDate() {
