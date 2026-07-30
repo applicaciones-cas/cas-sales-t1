@@ -359,15 +359,15 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
-        if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            poJSON = callApproval();
-            if (!"success".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            }
-        }
+//        if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
+//            poJSON = callApproval();
+//            if (!"success".equals((String) poJSON.get("result"))) {
+//                return poJSON;
+//            }
+//        }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false, true);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
