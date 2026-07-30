@@ -885,6 +885,11 @@ public class SalesCommitment extends Transaction {
         String lsModel = "";
         String lsModelVariant = "";
         String lsColor = "";
+        
+        if(Master().getSourceNo() == null || "".equals(Master().getSourceNo())){
+            return "";
+        }
+        
         try {
             Model_Sales_Inquiry_Detail loObject = new SalesModels(poGRider).SalesInquiryDetails();
             loObject.initialize();
