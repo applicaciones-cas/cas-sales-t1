@@ -730,7 +730,7 @@ public class SalesCommitment extends Transaction {
             } else {
                 for (int lnCntr = 0; lnCntr <= getDetailCount() - 1; lnCntr++) {
                     if(Detail(lnCntr).isReversed()){
-                        ldblTransactionTotal += Detail(lnCntr).getUnitPrice();
+                        ldblTransactionTotal += (Detail(lnCntr).getUnitPrice() * Detail(lnCntr).getQuantity());
                         
                     }
                 }
