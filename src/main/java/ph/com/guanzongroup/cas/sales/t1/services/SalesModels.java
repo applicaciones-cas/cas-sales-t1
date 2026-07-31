@@ -6,17 +6,7 @@
 package ph.com.guanzongroup.cas.sales.t1.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Item;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Master;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Sources;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
+import ph.com.guanzongroup.cas.sales.t1.model.*;
 
 /**
  *
@@ -214,7 +204,24 @@ public class SalesModels {
 
         return poRequirementSourcePerGroup;
     }
-    
+
+    public Model_Customer_Inquiry_FollowUp CustomerInquiryFollowUp(){
+        if (poGRider == null){
+            System.err.println("SalesModels.CustomerInquiryFollowUp: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesInquiryFollowUp == null){
+            poSalesInquiryFollowUp = new Model_Customer_Inquiry_FollowUp();
+            poSalesInquiryFollowUp.setApplicationDriver(poGRider);
+            poSalesInquiryFollowUp.setXML("Model_Customer_Inquiry_FollowUp");
+            poSalesInquiryFollowUp.setTableName("Customer_Inquiry_FollowUp");
+            poSalesInquiryFollowUp.initialize();
+        }
+
+        return poSalesInquiryFollowUp;
+    }
+
     @Override
     protected void finalize() throws Throwable {
         try {                    
@@ -228,6 +235,7 @@ public class SalesModels {
             poSalesGiveawaysItem = null;
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
+            poSalesInquiryFollowUp = null;
 
             poGRider = null;
         } finally {
@@ -248,4 +256,6 @@ public class SalesModels {
     private Model_Bank_Application poBankApplication;
     private Model_Requirement_Source poRequirementSource;
     private Model_Requirement_Source_PerGroup poRequirementSourcePerGroup;
+
+    private Model_Customer_Inquiry_FollowUp poSalesInquiryFollowUp;
 }
