@@ -37,7 +37,7 @@ public class testSalesInquiry {
         poSalesInquiryController = new SalesControllers(instance, null).SalesInquiry();
     }
 
-//    @Test
+    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
         String industryId = "05";
@@ -95,22 +95,22 @@ public class testSalesInquiry {
                 System.out.println("Category Code : " + poSalesInquiryController.Master().getCategoryCode());
                 System.out.println("TransNox : " + poSalesInquiryController.Master().getTransactionNo());
                 
-                poSalesInquiryController.getRequirements("2");
+//                poSalesInquiryController.getRequirements("2");
+//                
+//                poSalesInquiryController.addBankApplication();
+//                poSalesInquiryController.BankApplicationsList(0).setApplicationNo("00011");
+//                poSalesInquiryController.BankApplicationsList(0).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
+//                poSalesInquiryController.BankApplicationsList(0).setBankId("M00125001");
+//                poSalesInquiryController.BankApplicationsList(0).setAppliedDate(instance.getServerDate());
+//                poSalesInquiryController.BankApplicationsList(0).setRemarks("Test Bank Application");
                 
-                poSalesInquiryController.addBankApplication();
-                poSalesInquiryController.BankApplicationsList(0).setApplicationNo("00011");
-                poSalesInquiryController.BankApplicationsList(0).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
-                poSalesInquiryController.BankApplicationsList(0).setBankId("M00125001");
-                poSalesInquiryController.BankApplicationsList(0).setAppliedDate(instance.getServerDate());
-                poSalesInquiryController.BankApplicationsList(0).setRemarks("Test Bank Application");
                 
-                
-                poSalesInquiryController.addBankApplication();
-                poSalesInquiryController.BankApplicationsList(1).setApplicationNo("0002");
-                poSalesInquiryController.BankApplicationsList(1).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
-                poSalesInquiryController.BankApplicationsList(1).setBankId("M00125001");
-                poSalesInquiryController.BankApplicationsList(1).setAppliedDate(instance.getServerDate());
-                poSalesInquiryController.BankApplicationsList(1).setRemarks("Test Bank Application");
+//                poSalesInquiryController.addBankApplication();
+//                poSalesInquiryController.BankApplicationsList(1).setApplicationNo("0002");
+//                poSalesInquiryController.BankApplicationsList(1).setPaymentMode(poSalesInquiryController.Master().getPurchaseType());
+//                poSalesInquiryController.BankApplicationsList(1).setBankId("M00125001");
+//                poSalesInquiryController.BankApplicationsList(1).setAppliedDate(instance.getServerDate());
+//                poSalesInquiryController.BankApplicationsList(1).setRemarks("Test Bank Application");
                 
                 loJSON = poSalesInquiryController.SaveTransaction();
                 if (!"success".equals((String) loJSON.get("result"))) {
@@ -129,7 +129,7 @@ public class testSalesInquiry {
         }
     }
 
-    @Test
+//    @Test
     public void testUpdateTransaction() {
         JSONObject loJSON;
 
@@ -178,7 +178,6 @@ public class testSalesInquiry {
                     System.out.println(poSalesInquiryController.BankApplicationsList(lnCtr).getColumn(lnCol) + " ->> " + poSalesInquiryController.BankApplicationsList(lnCtr).getValue(lnCol));
                 }
             }
-            poSalesInquiryController.BankApplicationsList(0).setApplicationNo("19");
             
             loJSON = poSalesInquiryController.SaveTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {

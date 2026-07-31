@@ -42,6 +42,7 @@ import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
@@ -66,7 +67,7 @@ public class SalesInquiry extends Transaction {
     List<Model> paDetailRemoved;
     List<Model_Sales_Inquiry_Requirements> paRequirements;
     List<Model_Sales_Inquiry_Requirements> paRequirementsRemoved;
-    List<Model_Bank_Application> paBankApplications;
+    List<Model_Sales_Commitment_Master> paBankApplications;
     
     public JSONObject InitTransaction() {
         SOURCE_CODE = "SInq";
@@ -359,15 +360,15 @@ public class SalesInquiry extends Transaction {
             return poJSON;
         }
         
-        if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
-            poJSON = callApproval();
-            if (!"success".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            }
-        }
+//        if (SalesInquiryStatic.CONFIRMED.equals(Master().getTransactionStatus())) {
+//            poJSON = callApproval();
+//            if (!"success".equals((String) poJSON.get("result"))) {
+//                return poJSON;
+//            }
+//        }
         
         //change status
-        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false);
+        poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, false, true);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -1738,9 +1739,9 @@ public class SalesInquiry extends Transaction {
     
     public JSONObject removeBankApplications() throws SQLException, GuanzonException {
         poJSON = new JSONObject();
-        Iterator<Model_Bank_Application> object = BankApplicationsList().iterator();
+        Iterator<Model_Sales_Commitment_Master> object = BankApplicationsList().iterator();
         while (object.hasNext()) {
-            Model_Bank_Application item = object.next();
+            Model_Sales_Commitment_Master item = object.next();
             if(item.getEditMode() == EditMode.ADDNEW){
                 object.remove();
             }
@@ -1805,7 +1806,7 @@ public class SalesInquiry extends Transaction {
             paBankApplications.add(BankApplication());
             poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
         } else {
-            if ((paBankApplications.get(paBankApplications.size() - 1).getApplicationNo() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getApplicationNo()))
+            if ((paBankApplications.get(paBankApplications.size() - 1).getPONumber() != null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getPONumber()))
                 && (paBankApplications.get(paBankApplications.size() - 1).getBankId()!= null && !"".equals(paBankApplications.get(paBankApplications.size() - 1).getBankId()))) {
                 paBankApplications.add(BankApplication());
                 poJSON = paBankApplications.get(getBankApplicationsCount()- 1).newRecord();
@@ -1921,8 +1922,8 @@ public class SalesInquiry extends Transaction {
         return loList;
     }
     
-    private Model_Bank_Application BankApplication() {
-        return new SalesModels(poGRider).BankApplication();
+    private Model_Sales_Commitment_Master BankApplication() {
+        return new SalesModels(poGRider).SalesCommitmentMaster();
     }
     
     public int getBankApplicationsCount() {
@@ -1933,11 +1934,11 @@ public class SalesInquiry extends Transaction {
         return paBankApplications.size();
     }
     
-    public Model_Bank_Application BankApplicationsList(int row) {
-        return (Model_Bank_Application) paBankApplications.get(row);
+    public Model_Sales_Commitment_Master BankApplicationsList(int row) {
+        return (Model_Sales_Commitment_Master) paBankApplications.get(row);
     }
     
-    public List<Model_Bank_Application> BankApplicationsList() {
+    public List<Model_Sales_Commitment_Master> BankApplicationsList() {
         return paBankApplications;
     }
     
@@ -2946,13 +2947,13 @@ public class SalesInquiry extends Transaction {
                     + " , e.sBranchNm "
                     + " , f.sCompnyNm "
                     + " , g.sDescript "
-                    + " FROM sales_inquiry_master a "
-                    + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-                    + " LEFT JOIN salesman c ON c.sEmployID = a.sSalesman "
-                    + " LEFT JOIN client_master d ON d.sClientID = a.sAgentIDx "
-                    + " LEFT JOIN branch e ON e.sBranchCd = a.sBranchCd "
-                    + " LEFT JOIN company f ON f.sCompnyID = a.sCompnyID "
-                    + " LEFT JOIN industry g ON g.sIndstCdx = a.sIndstCdx " ;
+                    + " FROM Sales_Inquiry_Master a "
+                    + " LEFT JOIN Client_Master b ON b.sClientID = a.sClientID "
+                    + " LEFT JOIN Salesman c ON c.sEmployID = a.sSalesman "
+                    + " LEFT JOIN Client_Master d ON d.sClientID = a.sAgentIDx "
+                    + " LEFT JOIN Branch e ON e.sBranchCd = a.sBranchCd "
+                    + " LEFT JOIN Company f ON f.sCompnyID = a.sCompnyID "
+                    + " LEFT JOIN Industry g ON g.sIndstCdx = a.sIndstCdx " ;
         
     }
     
@@ -2967,8 +2968,8 @@ public class SalesInquiry extends Transaction {
               + " , a.sModified "
               + " , a.dModified "
               + " , b.sDescript "
-              + "  FROM requirement_source_pergroup a "
-              + " LEFT JOIN requirement_source b ON b.sRqrmtCde = a.sRqrmtCde ";
+              + "  FROM Requirement_Source_PerGroup a "
+              + " LEFT JOIN Requirement_Source b ON b.sRqrmtCde = a.sRqrmtCde ";
     }
     
     private String salesInquiryRequirementSQL(){
@@ -2982,16 +2983,16 @@ public class SalesInquiry extends Transaction {
                 + "  , dReceived "
                 + "  , sModified "
                 + "  , dModified "
-                + " FROM sales_inquiry_requirements ";
+                + " FROM Sales_Inquiry_Requirements ";
     }
     
     private String bankApplicationSQL(){
         return " SELECT "
                 + "   sTransNox "
                 + " , nEntryNox "
-                + " , sApplicNo "
+                + " , sPONumber "
                 + " , cTranStat "
-                + " FROM bank_application ";
+                + " FROM Sales_Commitment_Master ";
     }
     
     /**
@@ -3020,7 +3021,7 @@ public class SalesInquiry extends Transaction {
                     crs.updateString("cRefrStat", "QUOTED");
                     break;
                 case SalesInquiryStatic.LOST:
-                    crs.updateString("cRefrStat", "LOST");
+                    crs.updateString("cRefrStat", "LOST SALE");
                     break;
                 case SalesInquiryStatic.CANCELLED:
                     crs.updateString("cRefrStat", "CANCELLED");
@@ -3046,7 +3047,7 @@ public class SalesInquiry extends Transaction {
                             crs.updateString("cRefrStat", "QUOTED");
                             break;
                         case SalesInquiryStatic.LOST:
-                            crs.updateString("cRefrStat", "LOST");
+                            crs.updateString("cRefrStat", "LOST SALE");
                             break;
                         case SalesInquiryStatic.CANCELLED:
                             crs.updateString("cRefrStat", "CANCELLED");

@@ -14,4 +14,10 @@ public class BankApplicationStatus {
     public static final  String APPROVED = "1";
     public static final  String DISAPPROVED = "2"; 
     public static final  String CANCELLED = "3"; 
+    
+    public static class Reverse  {
+        public static final  String INCLUDE = "+"; 
+        public static final  String EXCLUDE = "-"; 
+    }
+
 }
