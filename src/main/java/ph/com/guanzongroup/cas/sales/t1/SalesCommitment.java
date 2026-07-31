@@ -1072,7 +1072,9 @@ public class SalesCommitment extends Transaction {
                             + " AND a.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
                             + " AND a.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                             + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient)
-                            + " AND ( a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
+                            + " AND ( a.cPurcType = " + SQLUtil.toSQL(SalesInquiryStatic.PurchaseType.PO)
+                            + " OR a.cPurcType = " + SQLUtil.toSQL(SalesInquiryStatic.PurchaseType.FINANCING)
+                            + " ) AND ( a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.OPEN)
                             + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.CONFIRMED)
                             + " OR a.cTranStat = " + SQLUtil.toSQL(SalesInquiryStatic.QUOTED)
                             + " ) "
