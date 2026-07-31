@@ -723,45 +723,45 @@ public class SalesCommitment extends Transaction {
                     }
                 }
             
-                ldblNetAmountDue = ldblTransactionTotal - Master().getWithholdingTax();
-                if (ldblNetAmountDue < 0.0000) {
-                    poJSON = setJSON("error", "Invalid Net Total Amount.");
-                    poJSON.put("column", "nNetTotal");
-                    if(isValidate){
-                        return poJSON;
-                    }
-                }
-                
-                if(ldblVATExemptTotal < 0.0000) {
-                    poJSON = setJSON("error", "Invalid Vat Exempt Total.");
-                    poJSON.put("column", "nVatExmpt");
-                    if(isValidate){
-                        return poJSON;
-                    }
-                }
+//                ldblNetAmountDue = ldblTransactionTotal - Master().getWithholdingTax();
+//                if (ldblNetAmountDue < 0.0000) {
+//                    poJSON = setJSON("error", "Invalid Net Total Amount.");
+//                    poJSON.put("column", "nNetTotal");
+//                    if(isValidate){
+//                        return poJSON;
+//                    }
+//                }
+//                
+//                if(ldblVATExemptTotal < 0.0000) {
+//                    poJSON = setJSON("error", "Invalid Vat Exempt Total.");
+//                    poJSON.put("column", "nVatExmpt");
+//                    if(isValidate){
+//                        return poJSON;
+//                    }
+//                }
             }
             
-            if(ldblTransactionTotal < 0.0000) {
-                poJSON = setJSON("error", "Invalid Transaction Total.");
-                poJSON.put("column", "nTranTotl");
-                if(isValidate){
-                    return poJSON;
-                }
-            }
-            if(ldblVATSalesTotal < 0.0000) {
-                poJSON = setJSON("error", "Invalid Vat Sales Total.");
-                poJSON.put("column", "nVATSales");
-                if(isValidate){
-                    return poJSON;
-                }
-            }
-            if(ldblVATAmountTotal < 0.0000) {
-                poJSON = setJSON("error", "Invalid Vat Amount Total.");
-                poJSON.put("column", "nVATAmtxx");
-                if(isValidate){
-                    return poJSON;
-                }
-            }
+//            if(ldblTransactionTotal < 0.0000) {
+//                poJSON = setJSON("error", "Invalid Transaction Total.");
+//                poJSON.put("column", "nTranTotl");
+//                if(isValidate){
+//                    return poJSON;
+//                }
+//            }
+//            if(ldblVATSalesTotal < 0.0000) {
+//                poJSON = setJSON("error", "Invalid Vat Sales Total.");
+//                poJSON.put("column", "nVATSales");
+//                if(isValidate){
+//                    return poJSON;
+//                }
+//            }
+//            if(ldblVATAmountTotal < 0.0000) {
+//                poJSON = setJSON("error", "Invalid Vat Amount Total.");
+//                poJSON.put("column", "nVATAmtxx");
+//                if(isValidate){
+//                    return poJSON;
+//                }
+//            }
             
             Master().setSalesAmount(ldblTransactionTotal);
             Master().setTransactionTotal(ldblTransactionTotal);
@@ -791,7 +791,7 @@ public class SalesCommitment extends Transaction {
         Double ldblValue = Double.parseDouble(fsValue);
         Double lnTotalAmount = Master().getTransactionTotal();
         
-        if(ldblValue <= 0.0000){
+        if(ldblValue == 0.0000){
             Master().setVATRates(ldblValue);
             poJSON.put("result", "success");
             return poJSON;
@@ -824,7 +824,7 @@ public class SalesCommitment extends Transaction {
         Double ldblValue = Double.parseDouble(fsValue);
         Double ldblTotalAmount = Master().getTransactionTotal();
         
-        if(ldblValue <= 0.0000){
+        if(ldblValue == 0.0000){
             Master().setVATSale(ldblValue);
             poJSON.put("result", "success");
             return poJSON;
@@ -865,7 +865,7 @@ public class SalesCommitment extends Transaction {
         Double ldblVatableSales = Master().getVATSale();
         Double ldblValue = Double.parseDouble(fsValue);
         
-        if(ldblValue <= 0.0000){
+        if(ldblValue == 0.0000){
             Master().setVATAmount(ldblValue);
             poJSON.put("result", "success");
             return poJSON;
@@ -892,6 +892,119 @@ public class SalesCommitment extends Transaction {
         }
 
         Master().setVATAmount(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    public JSONObject setWTaxRate(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.00";
+        }
+        
+        Double ldblValue = Double.parseDouble(fsValue);
+        Double lnTotalAmount = Master().getTransactionTotal();
+        
+        if(ldblValue == 0.0000){
+            Master().setWTaxRate(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
+        if (lnTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter tax rate, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setWTaxRate(0.00);
+            return poJSON;
+        }
+        if (ldblValue < 0.00 || ldblValue > 100.00) {
+            poJSON.put("message", "Invalid tax rate. Must be between 0.00 and 100.00");
+            poJSON.put("result", "error");
+            Master().setWTaxRate(0.00);
+            return poJSON;
+        }
+
+        Master().setWTaxRate(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    public JSONObject setWithholdingTax(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.0000";
+        }
+        
+        Double ldblValue = Double.parseDouble(fsValue);
+        Double ldblTotalAmount = Master().getTransactionTotal();
+        
+        if(ldblValue == 0.0000){
+            Master().setWithholdingTax(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
+        if (ldblTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter withholding tax amount, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setWithholdingTax(0.00);
+            return poJSON;
+        }
+        
+        if (ldblValue < 0.00) {
+            poJSON.put("message", "Invalid withholding tax.");
+            poJSON.put("result", "error");
+            Master().setWithholdingTax(0.00);
+            return poJSON;
+        }
+        if (ldblValue > ldblTotalAmount) {
+            poJSON.put("message", "Withholding tax cannot be greater than transaction total.");
+            poJSON.put("result", "error");
+            Master().setWithholdingTax(0.00);
+            return poJSON;
+        }
+
+        Master().setWithholdingTax(ldblValue);
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    public JSONObject setVatExempt(String fsValue) {
+        poJSON = new JSONObject();
+        if (fsValue == null || fsValue.isEmpty()) {
+            fsValue = "0.0000";
+        }
+        
+        Double ldblValue = Double.parseDouble(fsValue);
+        Double ldblTotalAmount = Master().getTransactionTotal();
+        
+        if(ldblValue == 0.0000){
+            Master().setVATExmpt(ldblValue);
+            poJSON.put("result", "success");
+            return poJSON;
+        }
+        
+        if (ldblTotalAmount == 0.0000) {
+            poJSON.put("message", "You're not allowed to enter vat exempt, no transaction total amount.");
+            poJSON.put("result", "error");
+            Master().setVATExmpt(0.00);
+            return poJSON;
+        }
+        
+        if (ldblValue < 0.00) {
+            poJSON.put("message", "Invalid vat exempt.");
+            poJSON.put("result", "error");
+            Master().setVATExmpt(0.00);
+            return poJSON;
+        }
+        if (ldblValue > ldblTotalAmount) {
+            poJSON.put("message", "Vat exempt cannot be greater than transaction total.");
+            poJSON.put("result", "error");
+            Master().setVATExmpt(0.00);
+            return poJSON;
+        }
+
+        Master().setVATExmpt(ldblValue);
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -1325,19 +1438,6 @@ public class SalesCommitment extends Transaction {
         return isEntryOkay(BankApplicationStatus.OPEN);
     }
 
-    /**
-     * Handles the saving of supplementary data, specifically transaction attachments.
-     * 
-     * Iterates through the attachment list and commits any new or modified records 
-     * to the database after updating audit metadata (User ID and Server Date).
-     * 
-     * @return A {@link JSONObject} indicating the success or failure of the auxiliary save.
-     */
-    @Override
-    public JSONObject saveOthers() {
-        poJSON = setJSON("success", "success");
-        return poJSON;
-    }
     @Override
     public void initSQL() {
         String lsCondition = "";
