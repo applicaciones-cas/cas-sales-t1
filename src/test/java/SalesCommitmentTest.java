@@ -157,32 +157,28 @@ public class SalesCommitmentTest {
     @Test
     public void test06StatusMethodsRequireLoadedTransaction() throws Exception {
 
-//        resetController();
-//        JSONObject loJSON = poController.InitTransaction();
-//        Assert.assertEquals("success", loJSON.get("result"));
-//
-//        // Load existing transaction master directly, then force transaction into READY mode.
-//        loJSON = poController.OpenTransaction(psSalesCommitmentNo);
-//        Assert.assertEquals("success", loJSON.get("result"));
-//        setTransactionEditMode(poController);
-//
-//        // Trigger early status validation branches after loading an existing record.
-////        poController.Master().setApprovedDate(instance.getServerDate());
-////        poController.Master().setDueDate(instance.getServerDate());
-////        poController.Master().setTransactionStatus(BankApplicationStatus.APPROVED);
-////        loJSON = poController.ApproveTransaction();
-////        Assert.assertEquals("error", loJSON.get("result"));
-////        Assert.assertEquals("Record was already approved.", loJSON.get("message"));
-//
-//        poController.Master().setTransactionStatus(BankApplicationStatus.DISAPPROVED);
-//        loJSON = poController.DisapproveTransaction();
+        resetController();
+        JSONObject loJSON = poController.InitTransaction();
+        Assert.assertEquals("success", loJSON.get("result"));
+
+        // Load existing transaction master directly, then force transaction into READY mode.
+        loJSON = poController.OpenTransaction(psSalesCommitmentNo);
+        Assert.assertEquals("success", loJSON.get("result"));
+        setTransactionEditMode(poController);
+
+        // Trigger early status validation branches after loading an existing record.
+//        poController.Master().setApprovedDate(instance.getServerDate());
+//        poController.Master().setDueDate(instance.getServerDate());
+//        poController.Master().setTransactionStatus(BankApplicationStatus.APPROVED);
+//        loJSON = poController.ApproveTransaction();
 //        Assert.assertEquals("error", loJSON.get("result"));
-//        Assert.assertEquals("Record was already disapproved.", loJSON.get("message"));
-//
-//        poController.Master().setTransactionStatus(BankApplicationStatus.CANCELLED);
-//        loJSON = poController.CancelTransaction();
-//        Assert.assertEquals("error", loJSON.get("result"));
-//        Assert.assertEquals("Record was already cancelled.", loJSON.get("message"));
+//        Assert.assertEquals("Record was already approved.", loJSON.get("message"));
+
+        loJSON = poController.DisapproveTransaction();
+        Assert.assertEquals("success", loJSON.get("result"));
+
+        loJSON = poController.CancelTransaction();
+        Assert.assertEquals("success", loJSON.get("result"));
     }
 
     @Test
@@ -898,6 +894,7 @@ public class SalesCommitmentTest {
         schemaScripts.add("model_schema");
         schemaScripts.add("model_variant_schema");
         schemaScripts.add("color_schema");
+        schemaScripts.add("transaction_status_history_schema");
 
         dataScripts.add("sales_inquiry_master_data");
         dataScripts.add("sales_inquiry_detail_data");
@@ -913,6 +910,7 @@ public class SalesCommitmentTest {
         dataScripts.add("model_data");
         dataScripts.add("model_variant_data");
         dataScripts.add("color_data");
+        dataScripts.add("transaction_status_history_data");
 
         for (String schema : schemaScripts) {
             try (FileReader schemaReader = new FileReader("test-data/" + schema + ".sql")) {
