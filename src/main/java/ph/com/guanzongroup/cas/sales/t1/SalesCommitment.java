@@ -416,7 +416,13 @@ public class SalesCommitment extends Transaction {
                 " b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
                 + " AND b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
-                + " AND b.sBranchCd = " + SQLUtil.toSQL(psBranchCode));
+                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
+        
+        //If current user is an ordinary user load only its inquiries
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL,
+                    " b.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
+        }
         
         lsSQL = lsSQL + " GROUP BY a.sTransNox ";
         System.out.println("Executing SQL: " + lsSQL);
@@ -451,9 +457,15 @@ public class SalesCommitment extends Transaction {
                 " b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
                 + " AND b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
-                + " AND b.sBranchCd = " + SQLUtil.toSQL(psBranchCode)
+                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                 + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransaction + "%"));
+        
+        //If current user is an ordinary user load only its inquiries
+        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+            lsSQL = MiscUtil.addCondition(lsSQL,
+                    " b.sSalesman = " + SQLUtil.toSQL(getSysUser(poGRider.getUserID(), true)));
+        }
         
         lsSQL = lsSQL + " GROUP BY a.sTransNox ";
         System.out.println("Executing SQL: " + lsSQL);
@@ -945,7 +957,7 @@ public class SalesCommitment extends Transaction {
         }
         
         if (ldblTotalAmount == 0.0000) {
-            poJSON.put("message", "You're not allowed to enter withholding tax amount, no transaction total amount.");
+            poJSON.put("message", "You're not allowed to enter withholding tax, no transaction total amount.");
             poJSON.put("result", "error");
             Master().setWithholdingTax(0.00);
             return poJSON;
@@ -1018,7 +1030,7 @@ public class SalesCommitment extends Transaction {
                 " b.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND b.sCompnyID = " + SQLUtil.toSQL(psCompanyId)
                 + " AND b.sCategrCd = " + SQLUtil.toSQL(psCategoryId)
-//                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
+                + " AND b.sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode())
                 + " AND c.sCompnyNm LIKE " + SQLUtil.toSQL("%" + fsClient + "%")
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransactionNo + "%")
             );
