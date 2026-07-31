@@ -13,6 +13,15 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.appdriver.base.MiscUtil;
 import ph.com.guanzongroup.cas.sales.t1.*;
+import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
+import ph.com.guanzongroup.cas.sales.t1.RequirementsSourcePerGroup;
+import ph.com.guanzongroup.cas.sales.t1.SalesAgent;
+import ph.com.guanzongroup.cas.sales.t1.SalesBankApplication;
+import ph.com.guanzongroup.cas.sales.t1.SalesCommitment;
+import ph.com.guanzongroup.cas.sales.t1.SalesGiveaways;
+import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
+import ph.com.guanzongroup.cas.sales.t1.SalesInquirySources;
+import ph.com.guanzongroup.cas.sales.t1.Salesman;
 
 /**
  *
@@ -206,6 +215,26 @@ public class SalesControllers {
         return poCustomerInquiryFollowUp;
     }
     
+    public SalesCommitment SalesCommitment(){
+        if (poGRider == null) {
+            poLogWrapper.severe("SalesControllers.SalesCommitment: Application driver is not set.");
+            return null;
+        }
+
+        if (poSalesCommitment != null){
+            return poSalesCommitment;
+        }
+
+        poSalesCommitment = new SalesCommitment();
+        poSalesCommitment.setApplicationDriver(poGRider);
+        poSalesCommitment.setBranchCode(poGRider.getBranchCode());
+        poSalesCommitment.setVerifyEntryNo(false);
+        poSalesCommitment.setWithParent(false);
+        poSalesCommitment.setLogWrapper(poLogWrapper);
+
+        return poSalesCommitment;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {
@@ -217,6 +246,7 @@ public class SalesControllers {
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
             poCustomerInquiryFollowUp = null;
+            poSalesCommitment = null;
             poLogWrapper = null;
             poGRider = null;
         } finally {
@@ -236,4 +266,5 @@ public class SalesControllers {
     private RequirementsSourcePerGroup poRequirementSourcePerGroup;
     private SalesBankApplication poSalesBankApp;
     private CustomerInquiryFollowUp poCustomerInquiryFollowUp;
+    private SalesCommitment poSalesCommitment;
 }

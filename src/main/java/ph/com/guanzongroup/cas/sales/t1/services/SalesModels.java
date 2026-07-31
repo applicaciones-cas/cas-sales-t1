@@ -7,6 +7,19 @@ package ph.com.guanzongroup.cas.sales.t1.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
 import ph.com.guanzongroup.cas.sales.t1.model.*;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Requirement_Source_PerGroup;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Agent;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Detail;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Item;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Giveaways_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Requirements;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Sources;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Salesman;
 
 /**
  *
@@ -222,6 +235,40 @@ public class SalesModels {
         return poSalesInquiryFollowUp;
     }
 
+    public Model_Sales_Commitment_Master SalesCommitmentMaster(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesCommitmentMaster: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesCommitmentMaster == null){
+            poSalesCommitmentMaster = new Model_Sales_Commitment_Master();
+            poSalesCommitmentMaster.setApplicationDriver(poGRider);
+            poSalesCommitmentMaster.setXML("Model_Sales_Commitment_Master");
+            poSalesCommitmentMaster.setTableName("Sales_Commitment_Master");
+            poSalesCommitmentMaster.initialize();
+        }
+
+        return poSalesCommitmentMaster;
+    }
+    
+    public Model_Sales_Commitment_Detail SalesCommitmentDetail(){
+        if (poGRider == null){
+            System.err.println("SalesModels.SalesCommitmentDetail: Application driver is not set.");
+            return null;
+        }
+        
+        if (poSalesCommitmentDetail == null){
+            poSalesCommitmentDetail = new Model_Sales_Commitment_Detail();
+            poSalesCommitmentDetail.setApplicationDriver(poGRider);
+            poSalesCommitmentDetail.setXML("Model_Sales_Commitment_Detail");
+            poSalesCommitmentDetail.setTableName("Sales_Commitment_Detail");
+            poSalesCommitmentDetail.initialize();
+        }
+
+        return poSalesCommitmentDetail;
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {                    
@@ -236,6 +283,8 @@ public class SalesModels {
             poRequirementSource = null;
             poRequirementSourcePerGroup = null;
             poSalesInquiryFollowUp = null;
+            poSalesCommitmentMaster = null;
+            poSalesCommitmentDetail = null;
 
             poGRider = null;
         } finally {
@@ -256,6 +305,7 @@ public class SalesModels {
     private Model_Bank_Application poBankApplication;
     private Model_Requirement_Source poRequirementSource;
     private Model_Requirement_Source_PerGroup poRequirementSourcePerGroup;
-
     private Model_Customer_Inquiry_FollowUp poSalesInquiryFollowUp;
+    private Model_Sales_Commitment_Master poSalesCommitmentMaster;
+    private Model_Sales_Commitment_Detail poSalesCommitmentDetail;
 }
