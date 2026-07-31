@@ -134,6 +134,11 @@ public class SalesCommitmentValidator implements GValidator{
             poJSON.put("message", "Payment Mode is not set.");
             return poJSON;
         }
+        if (poMaster.getTermCode() == null || "".equals(poMaster.getTermCode())) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Term is not set.");
+            return poJSON;
+        }
         if (poMaster.getBankId()== null || "".equals(poMaster.getBankId())) {
             poJSON.put("result", "error");
             poJSON.put("message", "Bank is not set.");
