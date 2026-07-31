@@ -236,6 +236,7 @@ public class SalesCommitmentTest {
         poController.Master().setRemarks("TEST Save");
         poController.Master().setTransactionTotal(110000.00);
         poController.Master().setSalesAmount(110000.00);
+        poController.Master().setTermCode("M0W1003");
 
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
@@ -257,6 +258,7 @@ public class SalesCommitmentTest {
         poController.Master().setPONumber("Test");
         poController.Master().setPaymentMode("0");
         poController.Master().setBankId(psBankId);
+        poController.Master().setTermCode("M0W1003");
         poController.Master().setRemarks("TEST Save");
         poController.Master().setSourceCode("SInq");
         poController.Master().setSourceNo(psTransNo);
@@ -294,6 +296,7 @@ public class SalesCommitmentTest {
         poController.Master().setTransactionNo("");
         poController.Master().setTransactionTotal(110000.00);
         poController.Master().setSalesAmount(110000.00);
+        poController.Master().setTermCode("M0W1003");
         // Use business-rule validation directly to avoid hitting DB constraints first.
         JSONObject loJSON = poController.save();
         Assert.assertEquals("error", loJSON.get("result"));
@@ -312,6 +315,7 @@ public class SalesCommitmentTest {
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
+        poController.Master().setTermCode("M0W1003");
         JSONObject loJSON = poController.save();
         Assert.assertEquals("error", loJSON.get("result"));
         Assert.assertEquals("Invalid Due Date.", loJSON.get("message"));
@@ -327,6 +331,7 @@ public class SalesCommitmentTest {
         poController.Master().setPONumber("");
         poController.Master().setRemarks("TEST Save");
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -347,6 +352,7 @@ public class SalesCommitmentTest {
         poController.Master().setBankId("");
         poController.Master().setRemarks("TEST Save");
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -367,6 +373,7 @@ public class SalesCommitmentTest {
         poController.Master().setBankId("");
         poController.Master().setRemarks("TEST Save");
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -385,6 +392,7 @@ public class SalesCommitmentTest {
         poController.Master().setBankId(psBankId);
         poController.Master().setRemarks("TEST Save");
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -404,6 +412,7 @@ public class SalesCommitmentTest {
         poController.Master().setRemarks("TEST Save");
         poController.Master().setSourceCode("SInq");
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -424,6 +433,7 @@ public class SalesCommitmentTest {
         poController.Master().setSourceCode("SInq");
         poController.Master().setSourceNo(psTransNo);
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -443,6 +453,7 @@ public class SalesCommitmentTest {
         poController.Master().setRemarks("TEST Save");
         poController.populateDetail(psTransNo);
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
@@ -463,6 +474,7 @@ public class SalesCommitmentTest {
         poController.populateDetail(psTransNo);
         poController.Master().setSalesAmount(110000.00);
 
+        poController.Master().setTermCode("M0W1003");
         poController.Detail(0).setStockId(psStockId);
         poController.Detail(0).setQuantity(1);
 
