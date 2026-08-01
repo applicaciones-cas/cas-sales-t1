@@ -42,6 +42,7 @@ import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Customer_Inquiry_FollowUp;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
@@ -68,6 +69,7 @@ public class SalesInquiry extends Transaction {
     List<Model_Sales_Inquiry_Requirements> paRequirements;
     List<Model_Sales_Inquiry_Requirements> paRequirementsRemoved;
     List<Model_Sales_Commitment_Master> paBankApplications;
+    List<Model_Customer_Inquiry_FollowUp> paFollowUpHistory;
     
     public JSONObject InitTransaction() {
         SOURCE_CODE = "SInq";
@@ -82,6 +84,7 @@ public class SalesInquiry extends Transaction {
         paRequirements = new ArrayList<>();
         paRequirementsRemoved = new ArrayList<>();
         paBankApplications = new ArrayList<>();
+        paFollowUpHistory = new ArrayList<>();
 
         return initialize();
     }
@@ -1839,7 +1842,6 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    
 //    public void loadBankApplicationList() 
 //            throws CloneNotSupportedException, 
 //            SQLException, 
@@ -2263,6 +2265,59 @@ public class SalesInquiry extends Transaction {
 //        return poJSON;
 //    }
     
+    
+    public JSONObject loadFollowUpHistory()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        paFollowUpHistory = null;
+        List loList = getFollowUpHistory();
+        for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
+            if(paFollowUpHistory == null){
+                paFollowUpHistory = new ArrayList<>();
+            }
+            paFollowUpHistory.add(FollowUpHistory());
+            poJSON = paFollowUpHistory.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr));
+            
+        }
+        return poJSON;
+    }
+    
+    private List getFollowUpHistory() throws SQLException, GuanzonException {
+        Model_Customer_Inquiry_FollowUp loModel = new SalesModels(poGRider).CustomerInquiryFollowUp();
+        loModel.initialize();
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loModel), " sSourceNo = " + SQLUtil.toSQL(Master().getTransactionNo())
+                                                +  " AND sSourceCd = " + SQLUtil.toSQL(getSourceCode())
+                                                 );
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        List<String> loList = new ArrayList();
+        while (loRS.next()) {
+             loList.add(loRS.getString("sTransNox")); 
+        }
+        return loList;
+    }
+    
+    private Model_Customer_Inquiry_FollowUp FollowUpHistory() {
+        return new SalesModels(poGRider).CustomerInquiryFollowUp();
+    }
+    
+    public int getFollowUpHistoryCount() {
+        if (paFollowUpHistory == null) {
+            paFollowUpHistory = new ArrayList<>();
+        }
+
+        return paFollowUpHistory.size();
+    }
+    
+    public Model_Customer_Inquiry_FollowUp FollowUpHistoryList(int row) {
+        return (Model_Customer_Inquiry_FollowUp) paFollowUpHistory.get(row);
+    }
+    
+    public List<Model_Customer_Inquiry_FollowUp> FollowUpHistoryList() {
+        return paFollowUpHistory;
+    }
+    
     public JSONObject loadSalesInquiry(String industryId, String client, String referenceNo) {
         try {
             if (industryId == null) {
@@ -2480,6 +2535,7 @@ public class SalesInquiry extends Transaction {
         paBankApplications = new ArrayList<>();
         paRequirementsRemoved = new ArrayList<>();
         paDetailRemoved = new ArrayList<>();
+        paFollowUpHistory = new ArrayList<>();
     }
     
     public void resetMaster() {
