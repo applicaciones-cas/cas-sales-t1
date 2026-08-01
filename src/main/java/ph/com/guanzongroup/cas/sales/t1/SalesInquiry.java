@@ -23,15 +23,18 @@ import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
+import org.guanzon.appdriver.base.CommonUtils;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.base.WebFile;
+import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.client.Client;
+import org.guanzon.cas.client.ClientGUI;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
@@ -2441,6 +2444,53 @@ public class SalesInquiry extends Transaction {
         }
 
         return paAttachments.size();
+    }
+    
+    public JSONObject addClient() throws SQLException, GuanzonException, Exception {
+        //initialize new json for result
+        JSONObject loResult = new JSONObject();
+
+        String lsClientId = Master().getClientId();
+        lsClientId = (lsClientId == null || lsClientId.isEmpty()) ? "" : lsClientId;
+
+        //initialize Client GUI
+        ClientGUI loClient = new ClientGUI();
+
+        loClient.setGRider(poGRider);
+        loClient.setLogWrapper(null);
+
+        //filter client type
+        loClient.setClientType(ClientType.INDIVIDUAL);
+
+        //searchRecord(fsValue,fbByCode) will run make sure to set client and bycode
+        //bycode true client id
+        //bycode false company
+
+        //set search by code
+        loClient.setByCode(false);
+
+        //set cilent empty, to create a new record
+        //Arsiela - 05-22-2026 - Load Client of Create new Client
+        loClient.setClientId(lsClientId);
+
+        //load record
+        CommonUtils.showModal(loClient);
+
+        //load if button
+        if (!loClient.isCancelled()) {
+            lsClientId = loClient.getClient().getModel().getClientId();
+//            //check existing record of client id to other supplier accreditation records
+//            loResult = checkDuplicateAgent(lsClientId); //Moved script to method by Arsiela 05-23-2026 09:19 AM
+//            if ("error".equals((String) loResult.get("result"))) {
+//                return loResult;
+//            }
+
+            //set company id for supplier accreditation
+            Master().setClientId(lsClientId != null ? lsClientId : "");
+
+        }
+        loResult.put("result", "success");
+        return loResult;
     }
     
     public JSONObject loadSalesInquiry(String industryId, String client, String referenceNo) {
