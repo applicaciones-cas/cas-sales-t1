@@ -2340,6 +2340,13 @@ public class SalesInquiry extends Transaction {
         poJSON = new JSONObject();
         paAttachments = new ArrayList<>();
         paAttachmentsSource = new ArrayList<>();
+        
+        if(getFollowUpHistoryCount() <= 0){
+            poJSON.put("result", "success");
+            poJSON.put("message", "success");
+            return poJSON;
+        }
+        
         String lsSourceNo = "";
         String lsSourceCode = "";
         TransactionAttachment loAttachment = new SysTableContollers(poGRider, null).TransactionAttachment();
