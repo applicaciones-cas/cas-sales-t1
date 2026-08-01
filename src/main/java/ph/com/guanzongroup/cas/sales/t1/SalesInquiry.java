@@ -2277,7 +2277,7 @@ public class SalesInquiry extends Transaction {
                 paFollowUpHistory = new ArrayList<>();
             }
             paFollowUpHistory.add(FollowUpHistory());
-            poJSON = paFollowUpHistory.get(getBankApplicationsCount()- 1).openRecord((String) loList.get(lnCtr));
+            poJSON = paFollowUpHistory.get(getFollowUpHistoryCount()- 1).openRecord((String) loList.get(lnCtr));
             
         }
         return poJSON;
