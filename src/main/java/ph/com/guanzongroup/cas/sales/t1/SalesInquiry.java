@@ -2350,7 +2350,7 @@ public class SalesInquiry extends Transaction {
         String lsSourceNo = "";
         String lsSourceCode = "";
         TransactionAttachment loAttachment = new SysTableContollers(poGRider, null).TransactionAttachment();
-        for(int lnRow = 0; lnRow <= getDetailCount() - 1;lnRow++){
+        for(int lnRow = 0; lnRow <= getFollowUpHistoryCount() - 1;lnRow++){
             lsSourceNo = FollowUpHistoryList(lnRow).getTransactionNo();
             lsSourceCode = "CIFu";
 
