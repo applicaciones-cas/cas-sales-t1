@@ -21,14 +21,20 @@ import javax.sql.rowset.CachedRowSet;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
+import org.guanzon.appdriver.agent.systables.SysTableContollers;
+import org.guanzon.appdriver.agent.systables.TransactionAttachment;
+import org.guanzon.appdriver.base.CommonUtils;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.base.WebFile;
+import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.client.Client;
+import org.guanzon.cas.client.ClientGUI;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.inv.Inventory;
 import org.guanzon.cas.inv.services.InvControllers;
@@ -42,6 +48,7 @@ import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
+import ph.com.guanzongroup.cas.sales.t1.model.Model_Customer_Inquiry_FollowUp;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Commitment_Master;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Detail;
 import ph.com.guanzongroup.cas.sales.t1.model.Model_Sales_Inquiry_Master;
@@ -68,6 +75,8 @@ public class SalesInquiry extends Transaction {
     List<Model_Sales_Inquiry_Requirements> paRequirements;
     List<Model_Sales_Inquiry_Requirements> paRequirementsRemoved;
     List<Model_Sales_Commitment_Master> paBankApplications;
+    List<Model_Customer_Inquiry_FollowUp> paFollowUpHistory;
+    public List<TransactionAttachment> paAttachments;
     
     public JSONObject InitTransaction() {
         SOURCE_CODE = "SInq";
@@ -82,6 +91,8 @@ public class SalesInquiry extends Transaction {
         paRequirements = new ArrayList<>();
         paRequirementsRemoved = new ArrayList<>();
         paBankApplications = new ArrayList<>();
+        paFollowUpHistory = new ArrayList<>();
+        paAttachments = new ArrayList<>();
 
         return initialize();
     }
@@ -1839,7 +1850,6 @@ public class SalesInquiry extends Transaction {
         return poJSON;
     }
     
-    
 //    public void loadBankApplicationList() 
 //            throws CloneNotSupportedException, 
 //            SQLException, 
@@ -2263,6 +2273,233 @@ public class SalesInquiry extends Transaction {
 //        return poJSON;
 //    }
     
+    
+    public JSONObject loadFollowUpHistory()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        paFollowUpHistory = null;
+        List loList = getFollowUpHistory();
+        for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
+            if(paFollowUpHistory == null){
+                paFollowUpHistory = new ArrayList<>();
+            }
+            paFollowUpHistory.add(FollowUpHistory());
+            poJSON = paFollowUpHistory.get(getFollowUpHistoryCount()- 1).openRecord((String) loList.get(lnCtr));
+            
+        }
+        return poJSON;
+    }
+    
+    private List getFollowUpHistory() throws SQLException, GuanzonException {
+        Model_Customer_Inquiry_FollowUp loModel = new SalesModels(poGRider).CustomerInquiryFollowUp();
+        loModel.initialize();
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loModel), " sSourceNo = " + SQLUtil.toSQL(Master().getTransactionNo())
+                                                +  " AND sSourceCd = " + SQLUtil.toSQL(getSourceCode())
+                                                 );
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        List<String> loList = new ArrayList();
+        while (loRS.next()) {
+             loList.add(loRS.getString("sTransNox")); 
+        }
+        return loList;
+    }
+    
+    private Model_Customer_Inquiry_FollowUp FollowUpHistory() {
+        return new SalesModels(poGRider).CustomerInquiryFollowUp();
+    }
+    
+    public int getFollowUpHistoryCount() {
+        if (paFollowUpHistory == null) {
+            paFollowUpHistory = new ArrayList<>();
+        }
+
+        return paFollowUpHistory.size();
+    }
+    
+    public Model_Customer_Inquiry_FollowUp FollowUpHistoryList(int row) {
+        return (Model_Customer_Inquiry_FollowUp) paFollowUpHistory.get(row);
+    }
+    
+    public List<Model_Customer_Inquiry_FollowUp> FollowUpHistoryList() {
+        return paFollowUpHistory;
+    }
+    
+    List<String> paAttachmentsSource;
+    /**
+    * Loads and downloads all attachments for transaction details.
+    *
+    * @return JSONObject containing load result and message
+    * @throws SQLException if a database error occurs
+    * @throws GuanzonException if a business logic error occurs
+    */
+    public JSONObject loadAttachments()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        paAttachments = new ArrayList<>();
+        paAttachmentsSource = new ArrayList<>();
+        
+        if(getFollowUpHistoryCount() <= 0){
+            poJSON.put("result", "success");
+            poJSON.put("message", "success");
+            return poJSON;
+        }
+        
+        String lsSourceNo = "";
+        String lsSourceCode = "";
+        TransactionAttachment loAttachment = new SysTableContollers(poGRider, null).TransactionAttachment();
+        for(int lnRow = 0; lnRow <= getFollowUpHistoryCount() - 1;lnRow++){
+            lsSourceNo = FollowUpHistoryList(lnRow).getTransactionNo();
+            lsSourceCode = "CIFu";
+
+            List loList = loAttachment.getAttachments(lsSourceCode, lsSourceNo);
+            for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
+                paAttachmentsSource.add(FollowUpHistoryList(lnRow).getTransactionNo() + "-" + xsDateShort(FollowUpHistoryList(lnRow).getTransactionDate()));
+                paAttachments.add(TransactionAttachment());
+                poJSON = paAttachments.get(getTransactionAttachmentCount() - 1).openRecord((String) loList.get(lnCtr));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    if(Master().getEditMode() == EditMode.UPDATE){
+                       poJSON = paAttachments.get(getTransactionAttachmentCount() - 1).updateRecord();
+                    }
+                    System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getTransactionNo());
+                    System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceNo());
+                    System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceCode());
+                    System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getFileName());
+
+                    //Download Attachments
+                    poJSON = WebFile.DownloadFile(WebFile.getAccessToken(System.getProperty("sys.default.access.token"))
+                            , "0032" //Constant
+                            , "" //Empty
+                            , paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getFileName()
+                            , paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceCode()
+                            , paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceNo()
+                            , "");
+                    if ("success".equals((String) poJSON.get("result"))) {
+
+                        poJSON = (JSONObject) poJSON.get("payload");
+                        if(WebFile.Base64ToFile((String) poJSON.get("data")
+                                , (String) poJSON.get("hash")
+                                , System.getProperty("sys.default.path.temp.attachments") + "/"
+                                , (String) poJSON.get("filename"))){
+                            System.out.println("poJSON success: " +  poJSON.toJSONString());
+                            System.out.println("File downloaded succesfully.");
+                        } else {
+                            System.out.println("poJSON error: " + poJSON.toJSONString());
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "Unable to download file.");
+                        }
+
+                    } else {
+                        poJSON = (JSONObject) poJSON.get("error");
+                        poJSON.put("result", "error");
+                        System.out.println("ERROR WebFile.DownloadFile: " + poJSON.get("message"));
+                        System.out.println("poJSON error WebFile.DownloadFile: " + poJSON.toJSONString());
+                        System.out.println("SKIP THE FILE TO LOAD");
+                    }
+                }
+            }
+        }
+        
+        poJSON.put("result", "success");
+        poJSON.put("message", "success");
+        return poJSON;
+    }
+
+    /**
+    * Creates a new TransactionAttachment instance.
+    *
+    * @return new TransactionAttachment object
+    * @throws SQLException if a database error occurs
+    * @throws GuanzonException if a business logic error occurs
+    */
+    private TransactionAttachment TransactionAttachment()
+            throws SQLException,
+            GuanzonException {
+        return new SysTableContollers(poGRider, null).TransactionAttachment();
+    }
+    
+    /**
+    * Gets a transaction attachment by row index.
+    *
+    * @param row index of the attachment
+    * @return TransactionAttachment object
+    */
+    public TransactionAttachment TransactionAttachmentList(int row) {
+        return (TransactionAttachment) paAttachments.get(row);
+    }
+    
+    /**
+    * Gets the source description of a transaction attachment.
+    *
+    * @param row index of the attachment
+    * @return source description string
+    */
+    public String TransactionAttachmentSource(int row) {
+        return (String) paAttachmentsSource.get(row);
+    }
+
+    /**
+    * Gets the total number of transaction attachments.
+    *
+    * @return attachment count
+    */
+    public int getTransactionAttachmentCount() {
+        if (paAttachments == null) {
+            paAttachments = new ArrayList<>();
+        }
+
+        return paAttachments.size();
+    }
+    
+    public JSONObject addClient() throws SQLException, GuanzonException, Exception {
+        //initialize new json for result
+        JSONObject loResult = new JSONObject();
+
+        String lsClientId = Master().getClientId();
+        lsClientId = (lsClientId == null || lsClientId.isEmpty()) ? "" : lsClientId;
+
+        //initialize Client GUI
+        ClientGUI loClient = new ClientGUI();
+
+        loClient.setGRider(poGRider);
+        loClient.setLogWrapper(null);
+
+        //filter client type
+        loClient.setClientType(ClientType.INDIVIDUAL);
+
+        //searchRecord(fsValue,fbByCode) will run make sure to set client and bycode
+        //bycode true client id
+        //bycode false company
+
+        //set search by code
+        loClient.setByCode(false);
+
+        //set cilent empty, to create a new record
+        //Arsiela - 05-22-2026 - Load Client of Create new Client
+        loClient.setClientId(lsClientId);
+
+        //load record
+        CommonUtils.showModal(loClient);
+
+        //load if button
+        if (!loClient.isCancelled()) {
+            lsClientId = loClient.getClient().getModel().getClientId();
+//            //check existing record of client id to other supplier accreditation records
+//            loResult = checkDuplicateAgent(lsClientId); //Moved script to method by Arsiela 05-23-2026 09:19 AM
+//            if ("error".equals((String) loResult.get("result"))) {
+//                return loResult;
+//            }
+
+            //set company id for supplier accreditation
+            Master().setClientId(lsClientId != null ? lsClientId : "");
+
+        }
+        loResult.put("result", "success");
+        return loResult;
+    }
+    
     public JSONObject loadSalesInquiry(String industryId, String client, String referenceNo) {
         try {
             if (industryId == null) {
@@ -2480,6 +2717,9 @@ public class SalesInquiry extends Transaction {
         paBankApplications = new ArrayList<>();
         paRequirementsRemoved = new ArrayList<>();
         paDetailRemoved = new ArrayList<>();
+        paFollowUpHistory = new ArrayList<>();
+        paAttachments = new ArrayList<>();
+        paAttachmentsSource = new ArrayList<>();
     }
     
     public void resetMaster() {
