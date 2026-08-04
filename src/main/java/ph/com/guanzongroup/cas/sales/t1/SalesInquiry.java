@@ -2466,8 +2466,11 @@ public class SalesInquiry extends Transaction {
         loClient.setGRider(poGRider);
         loClient.setLogWrapper(null);
 
+        loClient.setClientType(Master().getClientType());
         //filter client type
-        loClient.setClientType(ClientType.INDIVIDUAL);
+        if(!ClientType.INDIVIDUAL.equals(Master().getClientType())){ // For institution entry
+            loClient.setCategoryCode(Master().getCategoryCode());
+        }
 
         //searchRecord(fsValue,fbByCode) will run make sure to set client and bycode
         //bycode true client id
@@ -2494,6 +2497,8 @@ public class SalesInquiry extends Transaction {
 
             //set company id for supplier accreditation
             Master().setClientId(lsClientId != null ? lsClientId : "");
+            Master().setAddressId(Master().ClientAddress().getAddressId()); //TODO
+            Master().setContactId(Master().ClientMobile().getMobileId()); //TODO
 
         }
         loResult.put("result", "success");
