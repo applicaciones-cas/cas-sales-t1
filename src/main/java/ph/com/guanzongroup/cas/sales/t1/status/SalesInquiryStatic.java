@@ -31,6 +31,17 @@ public class SalesInquiryStatic {
         public static final String HOSPITALITY = "0000009";   //Hospitality/MonarchFood 0009
     }
     
+    //Industry
+    public static class Industry  {
+        public static final String MOBILEPHONE = "02";   //Cellphone    
+        public static final String APPLIANCES  = "07";   //Appliances   
+        public static final String MOTORCYCLE  = "01";   //Motorcycle   / SP MC
+        public static final String CAR         = "03";   //CAR  / SP CAR        
+        public static final String GENERAL     = "09";   //General      
+        public static final String LPFOOD      = "05";   //Food         
+        public static final String HOSPITALITY = "04";   //Hospitality  
+    }
+    
     public static class ClientType  {
         //Client Type
         public static final  String INDIVIDUAL = "0"; //Individual

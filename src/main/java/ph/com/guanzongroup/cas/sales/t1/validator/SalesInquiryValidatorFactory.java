@@ -6,6 +6,7 @@
 package ph.com.guanzongroup.cas.sales.t1.validator;
 
 import org.guanzon.appdriver.iface.GValidator;
+import ph.com.guanzongroup.cas.sales.t1.status.SalesInquiryStatic;
 
 /**
  *
@@ -14,17 +15,17 @@ import org.guanzon.appdriver.iface.GValidator;
 public class SalesInquiryValidatorFactory {
     public static GValidator make(String industryId){
         switch (industryId) {
-            case "01": //Mobile Phone
+            case SalesInquiryStatic.Industry.MOBILEPHONE: //Mobile Phone
                 return new SalesInquiry_MP();
-            case "02": //Motorcycle
+            case SalesInquiryStatic.Industry.MOTORCYCLE: //Motorcycle
                 return new SalesInquiry_MC();
-            case "03": //Vehicle
+            case SalesInquiryStatic.Industry.CAR: //Vehicle
                 return new SalesInquiry_Vehicle();
-            case "04": //Monarch Food
+            case SalesInquiryStatic.Industry.HOSPITALITY: //Monarch Food
                 return new SalesInquiry_Monarch();
-            case "05": //Los Pedritos
+            case SalesInquiryStatic.Industry.LPFOOD: //Los Pedritos
                 return new SalesInquiry_LP();
-            case "07": //Appliances
+            case SalesInquiryStatic.Industry.APPLIANCES: //Appliances
                 return new SalesInquiry_Appliances();
             default:
                 return null;
