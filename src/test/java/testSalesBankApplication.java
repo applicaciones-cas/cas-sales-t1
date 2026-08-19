@@ -14,10 +14,10 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ph.com.guanzongroup.cas.sales.t1.SalesBankApplication;
-import ph.com.guanzongroup.cas.sales.t1.SalesInquiry;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Bank_Application;
-import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
+import org.guanzon.cas.sales.SalesBankApplication;
+import org.guanzon.cas.sales.SalesInquiry;
+import org.guanzon.cas.sales.model.Model_Bank_Application;
+import org.guanzon.cas.sales.services.SalesControllers;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

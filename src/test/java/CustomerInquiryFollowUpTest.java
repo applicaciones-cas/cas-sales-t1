@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 
-import ph.com.guanzongroup.cas.sales.t1.CustomerInquiryFollowUp;
-import ph.com.guanzongroup.cas.sales.t1.model.Model_Customer_Inquiry_FollowUp;
-import ph.com.guanzongroup.cas.sales.t1.status.CustomerInquiryFollowUpStatic;
+import org.guanzon.cas.sales.CustomerInquiryFollowUp;
+import org.guanzon.cas.sales.model.Model_Customer_Inquiry_FollowUp;
+import org.guanzon.cas.sales.status.CustomerInquiryFollowUpStatic;
 
 /*
  * -----------------------------------------------------------------------------
