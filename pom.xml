@@ -101,4 +101,5 @@
             <url>https://maven.pkg.github.com/mtcuison/Guanzon-Central-Repository/</url>
         </repository>
     </distributionManagement>
+    <name>cas-sales</name>
 </project>
