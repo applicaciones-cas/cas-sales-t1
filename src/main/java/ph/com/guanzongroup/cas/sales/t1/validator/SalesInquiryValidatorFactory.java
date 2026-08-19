@@ -20,6 +20,8 @@ public class SalesInquiryValidatorFactory {
             case SalesInquiryStatic.Industry.MOTORCYCLE: //Motorcycle
                 return new SalesInquiry_MC();
             case SalesInquiryStatic.Industry.CAR: //Vehicle
+            case SalesInquiryStatic.Industry.CAR_Nissan: //Vehicle
+            case SalesInquiryStatic.Industry.CAR_Any: //Vehicle
                 return new SalesInquiry_Vehicle();
             case SalesInquiryStatic.Industry.HOSPITALITY: //Monarch Food
                 return new SalesInquiry_Monarch();
