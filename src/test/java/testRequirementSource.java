@@ -16,8 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ph.com.guanzongroup.cas.sales.t1.RequirementsSource;
-import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
+import ph.com.guanzongroup.cas.sales.RequirementsSource;
+import ph.com.guanzongroup.cas.sales.services.SalesControllers;
 /**
  *
  * @author Arsiela

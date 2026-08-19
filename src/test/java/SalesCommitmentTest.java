@@ -16,14 +16,14 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import ph.com.guanzongroup.cas.sales.t1.SalesGiveaways;
-import ph.com.guanzongroup.cas.sales.t1.services.SalesControllers;
+import ph.com.guanzongroup.cas.sales.SalesGiveaways;
+import ph.com.guanzongroup.cas.sales.services.SalesControllers;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.constant.EditMode;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import ph.com.guanzongroup.cas.sales.t1.SalesCommitment;
-import ph.com.guanzongroup.cas.sales.t1.status.BankApplicationStatus;
+import ph.com.guanzongroup.cas.sales.SalesCommitment;
+import ph.com.guanzongroup.cas.sales.status.BankApplicationStatus;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SalesCommitmentTest {
